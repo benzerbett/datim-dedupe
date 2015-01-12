@@ -15,8 +15,9 @@ CREATE TYPE duplicate_records AS
 duplicate_type character varying(230) );
 
 
-CREATE  OR REPLACE FUNCTION view_duplicates(uid character varying(11)) returns setof duplicate_records AS 
+CREATE  OR REPLACE FUNCTION view_duplicates(uid character varying(11),showresolved boolean default false) returns setof duplicate_records AS 
 $$
+/*Discordant duplicates*/
 SELECT level2.name as oulevel2_name, 
 level3.name as oulevel3_name, 
 level4.name as oulevel4_name,
@@ -34,8 +35,20 @@ INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=
  WHERE _cocg.categoryoptioncomboid=dv.attributeoptioncomboid and _cogsm.categoryoptiongroupsetid= 481662 limit 1) as partner,
  dv.value as value,
  'DISCORDANT' as duplicate_type
- from datavalue dv 
- INNER JOIN datavalue dv2 on (dv.periodid=dv2.periodid and dv.sourceid=dv2.sourceid and dv.categoryoptioncomboid=dv2.categoryoptioncomboid and dv.attributeoptioncomboid != dv2.attributeoptioncomboid and dv.value != dv2.value
+ from datavalue dv
+ LEFT JOIN (SELECT DISTINCT sourceid,periodid,dataelementid,categoryoptioncomboid,'RESOLVED' as status from datavalue
+ where attributeoptioncomboid =(SELECT categoryoptioncomboid  from
+ _categoryoptioncomboname  where categoryoptioncomboname ~('De-duplication adjustment'))) AS status
+ ON (dv.sourceid = status.sourceid
+ AND dv.dataelementid = status.dataelementid
+ AND dv.categoryoptioncomboid = status.categoryoptioncomboid
+ and dv.periodid = status.periodid)
+ INNER JOIN datavalue dv2 
+ on (dv.periodid=dv2.periodid 
+ and dv.sourceid=dv2.sourceid 
+ and dv.categoryoptioncomboid=dv2.categoryoptioncomboid 
+ and dv.attributeoptioncomboid != dv2.attributeoptioncomboid 
+ and dv.value != dv2.value
  and ( 
  /*TX_CURR (N, NGI): Receiving ART
  *TX_CURR (N, DSD): Receiving ART
@@ -118,9 +131,10 @@ INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=
  INNER JOIN _categoryoptioncomboname cocn on dv.categoryoptioncomboid=cocn.categoryoptioncomboid 
  INNER JOIN categoryoptioncombo aoc on dv.attributeoptioncomboid=aoc.categoryoptioncomboid
  INNER JOIN _categoryoptioncomboname aocn on dv.attributeoptioncomboid=aocn.categoryoptioncomboid 
- WHERE ous.uidlevel3=$1 and dv.categoryoptioncomboid=15 
+ WHERE ous.uidlevel3=$1 and status.status IS NULL
  GROUP BY level2.name, level3.name, level4.name, level5.name, ou.name, ou.organisationunitid, ous.level, pe.periodid, pe.startdate, pe.enddate, de.name, cocn.categoryoptioncomboname, aocn.categoryoptioncomboname, dv.attributeoptioncomboid, dv.value,duplicate_type
  UNION
+ /*Concordant duplicates*/
  SELECT level2.name as oulevel2_name, 
 level3.name as oulevel3_name, 
 level4.name as oulevel4_name,
@@ -139,7 +153,18 @@ INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=
  dv.value as value,
  'CONCORDANT' as duplicate_type
  from datavalue dv 
- INNER JOIN datavalue dv2 on (dv.periodid=dv2.periodid and dv.sourceid=dv2.sourceid and dv.categoryoptioncomboid=dv2.categoryoptioncomboid and dv.attributeoptioncomboid != dv2.attributeoptioncomboid and dv.value = dv2.value
+ LEFT JOIN (SELECT DISTINCT sourceid,periodid,dataelementid,categoryoptioncomboid,'RESOLVED' as status from datavalue
+ where attributeoptioncomboid =(SELECT categoryoptioncomboid  from
+ _categoryoptioncomboname  where categoryoptioncomboname ~('De-duplication adjustment'))) AS status
+ ON (dv.sourceid = status.sourceid
+ AND dv.dataelementid = status.dataelementid
+ AND dv.categoryoptioncomboid = status.categoryoptioncomboid
+ and dv.periodid = status.periodid)
+ INNER JOIN datavalue dv2 on (dv.periodid=dv2.periodid 
+ and dv.sourceid=dv2.sourceid 
+ and dv.categoryoptioncomboid=dv2.categoryoptioncomboid 
+ and dv.attributeoptioncomboid != dv2.attributeoptioncomboid 
+ and dv.value = dv2.value
  and ( 
  /*TX_CURR (N, NGI): Receiving ART
  *TX_CURR (N, DSD): Receiving ART
@@ -222,8 +247,10 @@ INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=
  INNER JOIN _categoryoptioncomboname cocn on dv.categoryoptioncomboid=cocn.categoryoptioncomboid 
  INNER JOIN categoryoptioncombo aoc on dv.attributeoptioncomboid=aoc.categoryoptioncomboid
  INNER JOIN _categoryoptioncomboname aocn on dv.attributeoptioncomboid=aocn.categoryoptioncomboid 
- WHERE ous.uidlevel3=$1 and dv.categoryoptioncomboid=15 
+ WHERE ous.uidlevel3=$1 AND status.status IS NULL
  GROUP BY level2.name, level3.name, level4.name, level5.name, ou.name, ou.organisationunitid, ous.level, pe.periodid, pe.startdate, pe.enddate, de.name, cocn.categoryoptioncomboname, aocn.categoryoptioncomboname, dv.attributeoptioncomboid, dv.value,duplicate_type
  ORDER BY  oulevel2_name,  oulevel3_name, oulevel4_name, oulevel5_name , orgunit_name,  startdate,enddate, dataelement,disaggregation,mechanism,partner,value
  LIMIT 500000
+ 
+ 
  $$ LANGUAGE SQL;
