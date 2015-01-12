@@ -12,7 +12,8 @@ CREATE TYPE duplicate_records AS
  mechanism character varying(250)   ,
  partner character varying(230)   ,
  value character varying(50000),
-duplicate_type character varying(230) );
+duplicate_type character varying(50),
+duplicate_status character varying(50) );
 
 
 CREATE  OR REPLACE FUNCTION view_duplicates(uid character varying(11),showresolved boolean default false) returns setof duplicate_records AS 
@@ -34,7 +35,8 @@ INNER JOIN categoryoptiongroupmembers _cogm on _cog.categoryoptiongroupid=_cogm.
 INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=_cocg.categoryoptionid
  WHERE _cocg.categoryoptioncomboid=dv.attributeoptioncomboid and _cogsm.categoryoptiongroupsetid= 481662 limit 1) as partner,
  dv.value as value,
- 'DISCORDANT' as duplicate_type
+ 'DISCORDANT' as duplicate_type,
+ status.status as duplicate_status
  from datavalue dv
  LEFT JOIN (SELECT DISTINCT sourceid,periodid,dataelementid,categoryoptioncomboid,'RESOLVED' as status from datavalue
  where attributeoptioncomboid =(SELECT categoryoptioncomboid  from
@@ -131,8 +133,11 @@ INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=
  INNER JOIN _categoryoptioncomboname cocn on dv.categoryoptioncomboid=cocn.categoryoptioncomboid 
  INNER JOIN categoryoptioncombo aoc on dv.attributeoptioncomboid=aoc.categoryoptioncomboid
  INNER JOIN _categoryoptioncomboname aocn on dv.attributeoptioncomboid=aocn.categoryoptioncomboid 
- WHERE ous.uidlevel3=$1 and status.status IS NULL
- GROUP BY level2.name, level3.name, level4.name, level5.name, ou.name, ou.organisationunitid, ous.level, pe.periodid, pe.startdate, pe.enddate, de.name, cocn.categoryoptioncomboname, aocn.categoryoptioncomboname, dv.attributeoptioncomboid, dv.value,duplicate_type
+ WHERE ous.uidlevel3=$1 
+ and ( status.status IS NULL OR $2 )
+ GROUP BY level2.name, level3.name, level4.name, level5.name, ou.name, ou.organisationunitid, ous.level, pe.periodid, pe.startdate, pe.enddate, de.name, cocn.categoryoptioncomboname, aocn.categoryoptioncomboname, dv.attributeoptioncomboid, dv.value,duplicate_type,duplicate_status
+ 
+ 
  UNION
  /*Concordant duplicates*/
  SELECT level2.name as oulevel2_name, 
@@ -151,7 +156,8 @@ INNER JOIN categoryoptiongroupmembers _cogm on _cog.categoryoptiongroupid=_cogm.
 INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=_cocg.categoryoptionid
  WHERE _cocg.categoryoptioncomboid=dv.attributeoptioncomboid and _cogsm.categoryoptiongroupsetid= 481662 limit 1) as partner,
  dv.value as value,
- 'CONCORDANT' as duplicate_type
+ 'CONCORDANT' as duplicate_type,
+ status.status as duplicate_status
  from datavalue dv 
  LEFT JOIN (SELECT DISTINCT sourceid,periodid,dataelementid,categoryoptioncomboid,'RESOLVED' as status from datavalue
  where attributeoptioncomboid =(SELECT categoryoptioncomboid  from
@@ -247,8 +253,8 @@ INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=
  INNER JOIN _categoryoptioncomboname cocn on dv.categoryoptioncomboid=cocn.categoryoptioncomboid 
  INNER JOIN categoryoptioncombo aoc on dv.attributeoptioncomboid=aoc.categoryoptioncomboid
  INNER JOIN _categoryoptioncomboname aocn on dv.attributeoptioncomboid=aocn.categoryoptioncomboid 
- WHERE ous.uidlevel3=$1 AND status.status IS NULL
- GROUP BY level2.name, level3.name, level4.name, level5.name, ou.name, ou.organisationunitid, ous.level, pe.periodid, pe.startdate, pe.enddate, de.name, cocn.categoryoptioncomboname, aocn.categoryoptioncomboname, dv.attributeoptioncomboid, dv.value,duplicate_type
+ WHERE ous.uidlevel3=$1 and  (status.status IS NULL OR $2)
+ GROUP BY level2.name, level3.name, level4.name, level5.name, ou.name, ou.organisationunitid, ous.level, pe.periodid, pe.startdate, pe.enddate, de.name, cocn.categoryoptioncomboname, aocn.categoryoptioncomboname, dv.attributeoptioncomboid, dv.value,duplicate_type,duplicate_status
  ORDER BY  oulevel2_name,  oulevel3_name, oulevel4_name, oulevel5_name , orgunit_name,  startdate,enddate, dataelement,disaggregation,mechanism,partner,value
  LIMIT 500000
  
