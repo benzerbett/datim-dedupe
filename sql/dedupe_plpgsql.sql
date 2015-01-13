@@ -20,7 +20,6 @@ RETURNS setof duplicate_records AS  $$
 DECLARE
 returnrec duplicate_records;
 BEGIN
-/*This should never happen*/
 
 BEGIN
 CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
