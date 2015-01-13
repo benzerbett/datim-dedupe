@@ -21,9 +21,7 @@ DECLARE
 returnrec duplicate_records;
 BEGIN
 /*This should never happen*/
-EXECUTE 'DROP TABLE IF EXISTS temp1;
-DROP TABLE IF EXISTS temp2;
-';
+
 BEGIN
 CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
 CREATE  TEMP TABLE  temp1 
@@ -38,7 +36,7 @@ END;
 
 EXECUTE '
 INSERT INTO temp1
-SELECT 
+SELECT DISTINCT
 dv1.sourceid,
 dv1.periodid,
 dv1.dataelementid,
@@ -266,8 +264,7 @@ FROM temp1';
     END LOOP;
 
  END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql VOLATILE;
 
- 
  
  
