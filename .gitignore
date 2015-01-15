@@ -1,0 +1,15 @@
+*.iml
+
+.idea
+.sass-cache
+
+node_modules/
+vendor/
+build/
+temp/
+
+coverage
+
+*.zip
+
+dhis.json
