@@ -27,17 +27,17 @@ The `dhisDeployDirectory` is the directory on disk where the app should be copie
 ### Install the dependencies
 
 Run the following command to install the nodejs dependencies (This requires you to have nodejs installed)
-```
+```bash
 npm install
 ```
 
 Install the bower dependencies
-```
+```bash
 bower install
 ```
 
 Run the gulp build command to see if everything is installed correctly
-```
+```bash
 gulp build
 ```
 
