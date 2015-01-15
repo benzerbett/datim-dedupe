@@ -27,7 +27,12 @@ function runKarma(watch) {
  */
 function checkForDHIS2ConfigFile() {
     var path = require('path');
-    var dhisConfig = require(path.resolve('./dhis.json'));
+    try {
+        var dhisConfig = require(path.resolve('./dhis.json'));
+    } catch (e) {
+        console.log('DHIS 2 config file not found. Deploying dhis using gulp will not work.');
+        return {};
+    }
 
     if (!dhisConfig.dhisDeployDirectory) {
         console.log('');

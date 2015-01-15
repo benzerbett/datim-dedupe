@@ -3,6 +3,9 @@
 [![Coverage Status](https://coveralls.io/repos/dhis2/datim-dedupe/badge.svg)](https://coveralls.io/r/dhis2/datim-dedupe)
 [![Code Climate](https://codeclimate.com/github/dhis2/datim-dedupe/badges/gpa.svg)](https://codeclimate.com/github/dhis2/datim-dedupe)
 
+[![Dependency Status](https://www.versioneye.com/user/projects/54b7fc03fd43d3feab000146/badge.svg?style=flat)](https://www.versioneye.com/user/projects/54b7fc03fd43d3feab000146)
+[![Dependency Status](https://www.versioneye.com/user/projects/54b7fb06fd43d311050000a9/badge.svg?style=flat)](https://www.versioneye.com/user/projects/54b7fb06fd43d311050000a9)
+
 Deduplication app for DATIM
 
 ## Contribute
