@@ -5,7 +5,7 @@
     <title></title>
 
     <!-- build:css css/vendor.css -->
-    <link href="../vendor/bootstrap/dist/css/bootstrap-theme.css" rel="stylesheet" type="text/css" />
+    <link href="../vendor/bootstrap/dist/css/bootstrap.css" rel="stylesheet" type="text/css" />
     <link href="../vendor/font-awesome/css/font-awesome.css" rel="stylesheet" type="text/css" />
     <!-- endbuild -->
 
@@ -13,9 +13,14 @@
     <link href="../temp/css/app/app.css" rel="stylesheet" type="text/css" />
     <!-- endbuild -->
 </head>
-<body>
-    <div>
+<body ng-app="PEPFAR.dedupe">
+    <header-bar logo="app.headerBar.logo" title="app.headerBar.title" link="app.headerBar.link">
+        <div d2-menu></div>
+    </header-bar>
+
+    <div class="app-content-wrap">
         <i class="fa fa-globe"></i>
+        <dedupe></dedupe>
     </div>
 
     <!-- build:js js/vendor.js -->
@@ -30,6 +35,8 @@
 
     <!-- build:js js/app.js -->
     <script src="app/app.js"></script>
+    <script src="dedupe/dedupe-directive.js"></script>
+    <script src="headerbar/headerbar-directive.js"></script>
     <!-- endbuild -->
 </body>
 </html>
