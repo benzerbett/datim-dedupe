@@ -26,9 +26,10 @@ function runKarma(watch) {
  * tasks that interact with a running dhis2 instance (for example to circumvent the install process)
  */
 function checkForDHIS2ConfigFile() {
+    var dhisConfig;
     var path = require('path');
     try {
-        var dhisConfig = require(path.resolve('./dhis.json'));
+        dhisConfig = require(path.resolve('./dhis.json'));
     } catch (e) {
         console.log('DHIS 2 config file not found. Deploying dhis using gulp will not work.');
         return {};
