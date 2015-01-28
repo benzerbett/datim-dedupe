@@ -3,28 +3,48 @@
         <div class="organisation-unit-label col-sm-2">
             <span translate>Org unit:</span>
         </div>
-        <div class="organisation-unit-name col-sm-4"></div>
+        <div class="organisation-unit-name col-sm-4">
+            <span ng-bind="::dedupeCtrl.details.orgUnitName"></span>
+        </div>
         <div class="period-label col-sm-2">
             <span translate>Time period:</span>
         </div>
-        <div class="period-name col-sm-4"></div>
+        <div class="period-name col-sm-4">
+            <span ng-bind="::dedupeCtrl.details.timePeriodName"></span>
+        </div>
     </div>
-    <div class="row dedupe-data">
-        <div class="dedupe-data-table col-sm-12">
+    <div class="dedupe-data row">
+        <div class="dedupe-data-table col-sm-6">
             <div class="table-header row">
-                <div class="col-sm-2">
+                <div class="col-sm-4">
                     <span translate>Agency</span>
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-4">
                     <span translate>Partner</span>
                 </div>
-                <div class="col-sm-2">
+                <div class="col-sm-4">
                     <span translate>Value</span>
                 </div>
-                <div class="col-sm-6">
+            </div>
+            <div class="table-data row" ng-repeat="dedupeRecord in ::dedupeCtrl.data">
+                <div class="agency-name col-sm-4">
+                    <span ng-bind="::dedupeRecord.agency"></span>
+                </div>
+                <div class="partner-name col-sm-4">
+                    <span ng-bind="::dedupeRecord.partner"></span>
+                </div>
+                <div class="value col-sm-4">
+                    <span ng-bind="::dedupeRecord.value"></span>
+                </div>
+            </div>
+        </div>
+        <div class="dedupe-resolve-actions col-sm-6">
+            <div class="resolve-header row">
+                <div class="col-sm-12">
                     <span translate>How to resolve?</span>
                 </div>
             </div>
+            <div class="resolve-actions row"></div>
         </div>
     </div>
 </div>

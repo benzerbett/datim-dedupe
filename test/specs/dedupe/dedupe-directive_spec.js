@@ -10,10 +10,20 @@ describe('Dedupe directive', function () {
     beforeEach(inject(function ($injector) {
         var $compile = $injector.get('$compile');
         $rootScope = $injector.get('$rootScope');
-
-        element = angular.element('<dedupe></dedupe>');
+        element = angular.element('<dedupe dedupe-record="firstDedupeRecord"></dedupe>');
 
         $scope = $rootScope.$new();
+        $scope.firstDedupeRecord = {
+            details: {
+                orgUnitName: 'Glady\'s clinic',
+                timePeriodName: 'FY 2014'
+            },
+            data: [
+                {agency: 'USAID', partner: 'PartnerA', value: 60},
+                {agency: 'USAID', partner: 'PartnerB', value: 40},
+                {agency: 'USAID', partner: 'PartnerC', value: 20}
+            ]
+        };
 
         $compile(element)($scope);
         $scope.$digest();
@@ -83,9 +93,27 @@ describe('Dedupe directive', function () {
 
             expect(textElement).toHaveAttribute('translate');
         });
+
+        it('should set the org unit name to Glady\'s clinic', function () {
+            var textElement = dedupeDetailsElement.querySelector('.organisation-unit-name span');
+
+            expect(textElement.textContent).toEqual('Glady\'s clinic');
+        });
+
+        it('should set the time period to FY 2014', function () {
+            var textElement = dedupeDetailsElement.querySelector('.period-name span');
+
+            expect(textElement.textContent).toEqual('FY 2014');
+        });
     });
 
     describe('dedupe data', function () {
+        var dedupeDataElement;
+
+        beforeEach(function () {
+            dedupeDataElement = element[0].querySelector('.dedupe-data.row');
+        });
+
         it('should be a row', function () {
             expect(element[0].querySelector('.row.dedupe-data')).toEqual(jasmine.any(HTMLElement));
         });
@@ -95,7 +123,7 @@ describe('Dedupe directive', function () {
 
             expect(dedupeDataTable).toEqual(jasmine.any(HTMLElement));
             expect(dedupeDataTable).toHaveClass('dedupe-data-table');
-            expect(dedupeDataTable).toHaveClass('col-sm-12');
+            expect(dedupeDataTable).toHaveClass('col-sm-6');
         });
 
         describe('dedupe-data-table', function () {
@@ -105,10 +133,6 @@ describe('Dedupe directive', function () {
                 dedupeDataTable = element[0].querySelector('.row.dedupe-data').querySelector('div');
             });
 
-            it('should have one header row', function () {
-                expect(dedupeDataTable.querySelectorAll('.table-header').length).toBe(1);
-            });
-
             describe('header row', function () {
                 var headerRowNode;
 
@@ -116,12 +140,16 @@ describe('Dedupe directive', function () {
                     headerRowNode = dedupeDataTable.querySelector('.table-header');
                 });
 
+                it('should exist', function () {
+                    expect(dedupeDataTable.querySelectorAll('.table-header').length).toBe(1);
+                });
+
                 it('should have the class "row"', function () {
                     expect(headerRowNode).toHaveClass('row');
                 });
 
-                it('should have four columns', function () {
-                    expect(headerRowNode.querySelectorAll('div').length).toBe(4);
+                it('should have three columns', function () {
+                    expect(headerRowNode.querySelectorAll('div').length).toBe(3);
                 });
 
                 describe('first column', function () {
@@ -131,8 +159,8 @@ describe('Dedupe directive', function () {
                         firstHeaderColumn = headerRowNode.querySelectorAll('div')[0];
                     });
 
-                    it('should have the col-sm-2 class', function () {
-                        expect(firstHeaderColumn).toHaveClass('col-sm-2');
+                    it('should have the col-sm-4 class', function () {
+                        expect(firstHeaderColumn).toHaveClass('col-sm-4');
                     });
 
                     it('should have the label "Agency"', function () {
@@ -155,8 +183,8 @@ describe('Dedupe directive', function () {
                         secondHeaderColumn = headerRowNode.querySelectorAll('div')[1];
                     });
 
-                    it('should have the col-sm-2 class', function () {
-                        expect(secondHeaderColumn).toHaveClass('col-sm-2');
+                    it('should have the col-sm-4 class', function () {
+                        expect(secondHeaderColumn).toHaveClass('col-sm-4');
                     });
 
                     it('should have the label "Partner"', function () {
@@ -179,8 +207,8 @@ describe('Dedupe directive', function () {
                         thirdHeaderColumn = headerRowNode.querySelectorAll('div')[2];
                     });
 
-                    it('should have the col-sm-2 class', function () {
-                        expect(thirdHeaderColumn).toHaveClass('col-sm-2');
+                    it('should have the col-sm-4 class', function () {
+                        expect(thirdHeaderColumn).toHaveClass('col-sm-4');
                     });
 
                     it('should have the label "Value"', function () {
@@ -195,29 +223,110 @@ describe('Dedupe directive', function () {
                         expect(textNode).toHaveAttribute('translate');
                     });
                 });
+            });
 
-                describe('fourth column', function () {
-                    var fourthHeaderColumn;
+            describe('data', function () {
+                var dataRows;
 
-                    beforeEach(function () {
-                        fourthHeaderColumn = headerRowNode.querySelectorAll('div')[3];
-                    });
+                beforeEach(function () {
+                    dataRows = dedupeDataTable.querySelectorAll('.table-data.row');
+                });
 
-                    it('should have the col-sm-6 class', function () {
-                        expect(fourthHeaderColumn).toHaveClass('col-sm-6');
-                    });
+                it('should have three rows', function () {
+                    expect(dataRows.length).toBe(3);
+                });
 
-                    it('should have the label "How to resolve?"', function () {
-                        var textNode = fourthHeaderColumn.querySelector('span');
+                it('should have an agency-name column with the right class', function () {
+                    var agencyNameElement = dedupeDataTable.querySelector('.table-data.row .agency-name');
 
-                        expect(textNode.textContent).toBe('How to resolve?');
-                    });
+                    expect(agencyNameElement).toEqual(jasmine.any(HTMLElement));
+                    expect(agencyNameElement).toHaveClass('col-sm-4');
+                });
 
-                    it('should add the translate attribute to the label', function () {
-                        var textNode = fourthHeaderColumn.querySelector('span');
+                it('should have an partner-name column with the right class', function () {
+                    var partnerNameElement = dedupeDataTable.querySelector('.table-data.row .partner-name');
 
-                        expect(textNode).toHaveAttribute('translate');
-                    });
+                    expect(partnerNameElement).toEqual(jasmine.any(HTMLElement));
+                    expect(partnerNameElement).toHaveClass('col-sm-4');
+                });
+
+                it('should have an value column with the right class', function () {
+                    var valueElement = dedupeDataTable.querySelector('.table-data.row .value');
+
+                    expect(valueElement).toEqual(jasmine.any(HTMLElement));
+                    expect(valueElement).toHaveClass('col-sm-4');
+                });
+
+                it('should display the agency names', function () {
+                    var agencyNameElements = dedupeDataTable.querySelectorAll('.table-data.row .agency-name span');
+
+                    expect(agencyNameElements[0].textContent).toBe('USAID');
+                    expect(agencyNameElements[1].textContent).toBe('USAID');
+                    expect(agencyNameElements[2].textContent).toBe('USAID');
+                });
+
+                it('should display the partner names', function () {
+                    var partnerNameElements = dedupeDataTable.querySelectorAll('.table-data.row .partner-name span');
+
+                    expect(partnerNameElements[0].textContent).toBe('PartnerA');
+                    expect(partnerNameElements[1].textContent).toBe('PartnerB');
+                    expect(partnerNameElements[2].textContent).toBe('PartnerC');
+                });
+
+                it('should display the values', function () {
+                    var valueElements = dedupeDataTable.querySelectorAll('.table-data.row .value span');
+
+                    expect(valueElements[0].textContent).toBe('60');
+                    expect(valueElements[1].textContent).toBe('40');
+                    expect(valueElements[2].textContent).toBe('20');
+                });
+            });
+        });
+
+        describe('resolve', function () {
+            var resolveActionsNode;
+
+            beforeEach(function () {
+                resolveActionsNode = dedupeDataElement.querySelector('.dedupe-resolve-actions');
+            });
+
+            it('should have the class col-sm-6', function () {
+                expect(resolveActionsNode).toHaveClass('col-sm-6');
+            });
+
+            describe('header', function () {
+                var resolveHeaderElement;
+
+                beforeEach(function () {
+                    resolveHeaderElement = resolveActionsNode.querySelector('.resolve-header.row');
+                });
+
+                it('should have a column for the resolve actions', function () {
+                    expect(resolveHeaderElement).toEqual(jasmine.any(HTMLElement));
+                });
+
+                it('should have the label "How to resolve?"', function () {
+                    var textNode = resolveHeaderElement.querySelector('span');
+
+                    expect(textNode.textContent).toBe('How to resolve?');
+                });
+
+                it('should add the translate attribute to the label', function () {
+                    var textNode = resolveHeaderElement.querySelector('span');
+
+                    expect(textNode).toHaveAttribute('translate');
+                });
+            });
+
+            describe('actions', function () {
+                var actionsRow;
+
+                beforeEach(function () {
+                    actionsRow = resolveActionsNode.querySelector('.resolve-actions.row');
+                });
+
+                it('should be an element', function () {
+                    expect(actionsRow).toEqual(jasmine.any(HTMLElement));
                 });
             });
         });

@@ -10,7 +10,24 @@ beforeEach(function () {
                         message: 'Expected ' + actual + (result ? ' NOT' : '') + ' to be an object'
                     };
                 }
+            };
+        },
+
+        toBeANumber: function () {
+            function isNumber(n) {
+                return !isNaN(parseFloat(n)) && isFinite(n);
             }
+
+            return {
+                compare: function (actual) {
+                    var result = isNumber(actual);
+
+                    return {
+                        pass: result,
+                        message: 'Expected ' + actual + (result ? ' NOT' : '') + ' to be a number'
+                    };
+                }
+            };
         },
 
         toBeAnArray: function () {
@@ -36,7 +53,7 @@ beforeEach(function () {
                         message: 'Expected ' + actual + (result ? ' NOT' : '') + ' to be an function'
                     };
                 }
-            }
+            };
         },
 
         toBeAPromiseLikeObject: function () {
@@ -51,7 +68,7 @@ beforeEach(function () {
                         message: 'Expected ' + actual + (result ? ' NOT' : '') + ' to have the functions then, catch and finally'
                     };
                 }
-            }
+            };
         }
     });
 });
