@@ -22,7 +22,11 @@ describe('Dedupe directive', function () {
                 {agency: 'USAID', partner: 'PartnerA', value: 60},
                 {agency: 'USAID', partner: 'PartnerB', value: 40},
                 {agency: 'USAID', partner: 'PartnerC', value: 20}
-            ]
+            ],
+            resolve: {
+                type: undefined,
+                value: undefined
+            }
         };
 
         $compile(element)($scope);
@@ -344,9 +348,9 @@ describe('Dedupe directive', function () {
                         expect(actionsMax).toHaveClass('col-sm-12');
                     });
 
-                    describe('checkbox', function () {
+                    describe('radio button', function () {
                         it('should exist', function () {
-                            var actionMaxCheckbox = actionsMax.querySelector('input[type=checkbox]');
+                            var actionMaxCheckbox = actionsMax.querySelector('input[type=radio]');
 
                             expect(actionMaxCheckbox).toEqual(jasmine.any(HTMLElement));
                         });
@@ -356,7 +360,7 @@ describe('Dedupe directive', function () {
                         var maxLabel;
 
                         beforeEach(function () {
-                            maxLabel = actionsMax.querySelector('span');
+                            maxLabel = actionsMax.querySelector('label span');
                         });
 
                         it('should be an element', function () {
@@ -400,9 +404,9 @@ describe('Dedupe directive', function () {
                         expect(actionsSum).toHaveClass('col-sm-12');
                     });
 
-                    describe('checkbox', function () {
+                    describe('radio button', function () {
                         it('should exist', function () {
-                            var actionSumCheckbox = actionsSum.querySelector('input[type=checkbox]');
+                            var actionSumCheckbox = actionsSum.querySelector('input[type=radio]');
 
                             expect(actionSumCheckbox).toEqual(jasmine.any(HTMLElement));
                         });
@@ -412,7 +416,7 @@ describe('Dedupe directive', function () {
                         var sumLabel;
 
                         beforeEach(function () {
-                            sumLabel = actionsSum.querySelector('span');
+                            sumLabel = actionsSum.querySelector('label span');
                         });
 
                         it('should be an element', function () {
@@ -456,9 +460,9 @@ describe('Dedupe directive', function () {
                         expect(actionsCustom).toHaveClass('col-sm-12');
                     });
 
-                    describe('checkbox', function () {
+                    describe('radio button', function () {
                         it('should exist', function () {
-                            var actionCustomCheckbox = actionsCustom.querySelector('input[type=checkbox]');
+                            var actionCustomCheckbox = actionsCustom.querySelector('input[type=radio]');
 
                             expect(actionCustomCheckbox).toEqual(jasmine.any(HTMLElement));
                         });
@@ -468,7 +472,7 @@ describe('Dedupe directive', function () {
                         var customLabel;
 
                         beforeEach(function () {
-                            customLabel = actionsCustom.querySelector('span');
+                            customLabel = actionsCustom.querySelector('label span');
                         });
 
                         it('should be an element', function () {
@@ -499,6 +503,57 @@ describe('Dedupe directive', function () {
                         });
                     });
                 });
+            });
+        });
+
+        describe('resolve interaction', function () {
+            var isolatedScope;
+
+            beforeEach(function () {
+                isolatedScope = element.scope();
+            });
+
+            it('should set the resolve to max when the max action is clicked', function () {
+                var maxRadioButton = element[0].querySelector('.resolve-action-max input[type=radio]');
+
+                maxRadioButton.click();
+                $scope.$apply();
+
+                expect($scope.firstDedupeRecord.resolve.type).toBe('max');
+                expect($scope.firstDedupeRecord.resolve.value).toBe(60);
+            });
+
+            it('should set the resolve to sum when the sum action is clicked', function () {
+                var maxRadioButton = element[0].querySelector('.resolve-action-sum input[type=radio]');
+
+                maxRadioButton.click();
+                $scope.$apply();
+
+                expect($scope.firstDedupeRecord.resolve.type).toBe('sum');
+                expect($scope.firstDedupeRecord.resolve.value).toBe(120);
+            });
+
+            it('should set the resolve to custom when the custom action is clicked', function () {
+                var sumRadioButton = element[0].querySelector('.resolve-action-custom input[type=radio]');
+
+                sumRadioButton.click();
+                $scope.$apply();
+
+                expect($scope.firstDedupeRecord.resolve.type).toBe('custom');
+                expect($scope.firstDedupeRecord.resolve.value).toBe(undefined);
+            });
+
+            it('should set the resolve to custom when the custom action is clicked', function () {
+                var maxRadioButton = element[0].querySelector('.resolve-action-max input[type=radio]');
+                var customRadioButton = element[0].querySelector('.resolve-action-custom input[type=radio]');
+
+                maxRadioButton.click();
+                $scope.$apply();
+                customRadioButton.click();
+                $scope.$apply();
+
+                expect($scope.firstDedupeRecord.resolve.type).toBe('custom');
+                expect($scope.firstDedupeRecord.resolve.value).toBe(60);
             });
         });
     });
