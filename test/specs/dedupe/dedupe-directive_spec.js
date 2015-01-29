@@ -555,6 +555,33 @@ describe('Dedupe directive', function () {
                 expect($scope.firstDedupeRecord.resolve.type).toBe('custom');
                 expect($scope.firstDedupeRecord.resolve.value).toBe(60);
             });
+
+            it('should set the form to be invalid when it is not touched', function () {
+                var dedupeForm = element[0].querySelector('.dedupe-resolve-actions');
+
+                expect(dedupeForm).toHaveClass('ng-invalid');
+            });
+
+            it('should set the form to valid when a resolve has been chosen', function () {
+                var dedupeForm = element[0].querySelector('.dedupe-resolve-actions');
+                var sumRadioButton = element[0].querySelector('.resolve-action-sum input[type=radio]');
+
+                sumRadioButton.click();
+                $scope.$apply();
+
+                expect(dedupeForm).toHaveClass('ng-valid');
+            });
+
+            it('should keep the form invalid if the value is not a number', function () {
+                var dedupeForm = element[0].querySelector('.dedupe-resolve-actions');
+                var sumRadioButton = element[0].querySelector('.resolve-action-custom input[type=radio]');
+
+                sumRadioButton.click();
+                $scope.$apply();
+
+                expect($scope.firstDedupeRecord.resolve.value).toBe(undefined);
+                expect(dedupeForm).toHaveClass('ng-invalid');
+            });
         });
     });
 });

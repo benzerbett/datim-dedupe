@@ -47,7 +47,7 @@
             <div class="resolve-actions row">
                 <div class="resolve-action-max col-sm-12">
                     <label>
-                        <input value="max" type="radio" ng-model="dedupeCtrl.resolve.type" ng-change="dedupeCtrl.resolveWithMax()">
+                        <input value="max" type="radio" ng-model="dedupeCtrl.resolve.type" ng-required="!dedupeCtrl.resolve.type" ng-change="dedupeCtrl.resolveWithMax()">
                         <span translate>Use max</span>
                         <span class="value" ng-bind="'(' + dedupeCtrl.getMax() + ')'"></span>
                     </label>
@@ -56,7 +56,7 @@
             <div class="resolve-actions row">
                 <div class="resolve-action-sum col-sm-12">
                     <label>
-                        <input value="sum" type="radio" ng-model="dedupeCtrl.resolve.type" ng-change="dedupeCtrl.resolveWithSum()">
+                        <input value="sum" type="radio" ng-model="dedupeCtrl.resolve.type" ng-required="!dedupeCtrl.resolve.type" ng-change="dedupeCtrl.resolveWithSum()">
                         <span translate>Use sum</span>
                         <span class="value" ng-bind="'(' + dedupeCtrl.getSum() + ')'"></span>
                     </label>
@@ -65,12 +65,11 @@
             <div class="resolve-actions row">
                 <div class="resolve-action-custom col-sm-12">
                     <label>
-                        <input value="custom" type="radio" ng-model="dedupeCtrl.resolve.type" ng-change="dedupeCtrl.resolveWithCustom()">
+                        <input value="custom" type="radio" ng-model="dedupeCtrl.resolve.type" ng-required="!dedupeCtrl.resolve.type" ng-change="dedupeCtrl.resolveWithCustom()">
                         <span translate>Use a custom value</span>
                     </label>
                     <span class="value">
-                        <!--ng-required="dedupeCtrl.resolve.type == 'custom'"-->
-                        <input type="number" min="0" ng-model="dedupeCtrl.resolve.value" ng-change="dedupeCtrl.resolve.type = 'custom'" />
+                        <input type="number" min="0" ng-model="dedupeCtrl.resolve.value" ng-required="dedupeCtrl.resolve.type == 'custom'" ng-change="dedupeCtrl.resolve.type = 'custom'" />
                     </span>
                 </div>
             </div>
