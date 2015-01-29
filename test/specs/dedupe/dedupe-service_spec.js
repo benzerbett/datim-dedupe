@@ -72,7 +72,7 @@ describe('Dedupe service', function () {
         });
 
         it('should return an array', function () {
-            expect(dedupeService.getDuplicateRecords()).toBeAnArray();
+            expect(dedupeService.getDuplicateRecords()).toBeAPromiseLikeObject();
         });
     });
 });
