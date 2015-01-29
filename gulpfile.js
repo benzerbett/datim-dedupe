@@ -10,6 +10,8 @@ var buildDirectory = 'build';
 var files = [
     //Vendor dependency files
     'vendor/angular/angular.js',
+    'vendor/lodash/dist/lodash.js',
+    'vendor/restangular/dist/restangular.js',
 
     //Test specific includes
     'test/fixtures/fixtures.js',
