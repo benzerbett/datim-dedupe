@@ -7,25 +7,39 @@ function dedupeService() {
     };
 
     function getMax(dedupeRecords) {
-        if (!Array.isArray(dedupeRecords)) {
-            throw new Error('Parameter dedupeRecords that was passed to getMax is not an array');
-        }
+        throwIfNotArray(dedupeRecords, 'getMax');
 
-        return dedupeRecords.reduce(function (currentValue, dedupeRecord) {
-            if (currentValue < parseFloat(dedupeRecord.value)) {
-                return dedupeRecord.value;
-            }
-            return currentValue;
-        }, 0);
+        return dedupeRecords
+            .map(pick('value'))
+            .map(parseFloat)
+            .reduce(max, 0);
     }
 
     function getSum(dedupeRecords) {
-        if (!Array.isArray(dedupeRecords)) {
-            throw new Error('Parameter dedupeRecords that was passed to getSum is not an array');
-        }
+        throwIfNotArray(dedupeRecords, 'getSum');
 
-        return dedupeRecords.reduce(function (currentValue, dedupeRecord) {
-            return currentValue + parseFloat(dedupeRecord.value);
-        }, 0);
+        return dedupeRecords
+            .map(pick('value'))
+            .reduce(add, 0);
+    }
+
+    function throwIfNotArray(dedupeRecords, functionName) {
+        if (!Array.isArray(dedupeRecords)) {
+            throw new Error('Parameter dedupeRecords that was passed to ' + functionName + ' is not an array');
+        }
+    }
+
+    function pick(property) {
+        return function (item) {
+            return item[property];
+        };
+    }
+
+    function add(left, right) {
+        return parseFloat(left) + parseFloat(right);
+    }
+
+    function max(left, right) {
+        return Math.max(left, right);
     }
 }
