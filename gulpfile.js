@@ -19,6 +19,7 @@ var files = [
 
     //Source files
     'src/ngBootstrapper.js',
+    'src/app/app.js',
     'src/**/*.js',
     'src/**/*.html',
 

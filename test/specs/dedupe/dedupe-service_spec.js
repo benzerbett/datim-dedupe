@@ -65,4 +65,14 @@ describe('Dedupe service', function () {
             expect(dedupeService.getSum(dedupeValues)).toBe(120);
         });
     });
+
+    describe('getDuplicateRecords', function () {
+        it('should be a function', function () {
+            expect(dedupeService.getDuplicateRecords).toBeAFunction();
+        });
+
+        it('should return an array', function () {
+            expect(dedupeService.getDuplicateRecords()).toBeAnArray();
+        });
+    });
 });

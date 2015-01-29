@@ -2,9 +2,14 @@ angular.module('PEPFAR.dedupe').factory('dedupeService', dedupeService);
 
 function dedupeService() {
     return {
+        getDuplicateRecords: getDuplicateRecords,
         getMax: getMax,
         getSum: getSum
     };
+
+    function getDuplicateRecords() {
+        return [];
+    }
 
     function getMax(dedupeRecords) {
         throwIfNotArray(dedupeRecords, 'getMax');
