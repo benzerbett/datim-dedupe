@@ -4,13 +4,13 @@
             <span translate>Org unit:</span>
         </div>
         <div class="organisation-unit-name col-sm-4">
-            <span ng-bind="::dedupeCtrl.details.orgUnitName"></span>
+            <span ng-bind="::dedupeCtrl.dedupeRecord.details.orgUnitName"></span>
         </div>
         <div class="period-label col-sm-2">
             <span translate>Time period:</span>
         </div>
         <div class="period-name col-sm-4">
-            <span ng-bind="::dedupeCtrl.details.timePeriodName"></span>
+            <span ng-bind="::dedupeCtrl.dedupeRecord.details.timePeriodName"></span>
         </div>
     </div>
     <div class="dedupe-data row">
@@ -26,7 +26,7 @@
                     <span translate>Value</span>
                 </div>
             </div>
-            <div class="table-data row" ng-repeat="dedupeRecord in ::dedupeCtrl.data">
+            <div class="table-data row" ng-repeat="dedupeRecord in ::dedupeCtrl.dedupeRecord.data">
                 <div class="agency-name col-sm-4">
                     <span ng-bind="::dedupeRecord.agency"></span>
                 </div>
@@ -47,7 +47,7 @@
             <div class="resolve-actions row">
                 <div class="resolve-action-max col-sm-12">
                     <label>
-                        <input value="max" type="radio" ng-model="dedupeCtrl.resolve.type" ng-required="!dedupeCtrl.resolve.type" ng-change="dedupeCtrl.resolveWithMax()">
+                        <input value="max" type="radio" ng-model="dedupeCtrl.dedupeRecord.resolve.type" ng-required="!dedupeCtrl.dedupeRecord.resolve.type" ng-change="dedupeCtrl.resolveWithMax()">
                         <span translate>Use max</span>
                         <span class="value" ng-bind="'(' + dedupeCtrl.getMax() + ')'"></span>
                     </label>
@@ -56,7 +56,7 @@
             <div class="resolve-actions row">
                 <div class="resolve-action-sum col-sm-12">
                     <label>
-                        <input value="sum" type="radio" ng-model="dedupeCtrl.resolve.type" ng-required="!dedupeCtrl.resolve.type" ng-change="dedupeCtrl.resolveWithSum()">
+                        <input value="sum" type="radio" ng-model="dedupeCtrl.dedupeRecord.resolve.type" ng-required="!dedupeCtrl.dedupeRecord.resolve.type" ng-change="dedupeCtrl.resolveWithSum()">
                         <span translate>Use sum</span>
                         <span class="value" ng-bind="'(' + dedupeCtrl.getSum() + ')'"></span>
                     </label>
@@ -65,11 +65,11 @@
             <div class="resolve-actions row">
                 <div class="resolve-action-custom col-sm-12">
                     <label>
-                        <input value="custom" type="radio" ng-model="dedupeCtrl.resolve.type" ng-required="!dedupeCtrl.resolve.type" ng-change="dedupeCtrl.resolveWithCustom()">
+                        <input value="custom" type="radio" ng-model="dedupeCtrl.dedupeRecord.resolve.type" ng-required="!dedupeCtrl.dedupeRecord.resolve.type" ng-change="dedupeCtrl.resolveWithCustom()">
                         <span translate>Use a custom value</span>
                     </label>
                     <span class="value">
-                        <input type="number" min="0" ng-model="dedupeCtrl.resolve.value" ng-required="dedupeCtrl.resolve.type == 'custom'" ng-change="dedupeCtrl.resolve.type = 'custom'" />
+                        <input type="number" min="0" ng-model="dedupeCtrl.dedupeRecord.resolve.value" ng-required="dedupeCtrl.dedupeRecord.resolve.type == 'custom'" ng-change="dedupeCtrl.dedupeRecord.resolve.type = 'custom'" />
                     </span>
                 </div>
             </div>

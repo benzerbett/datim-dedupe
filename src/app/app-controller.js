@@ -14,7 +14,10 @@ function appController(dedupeService) {
     initialise();
 
     function initialise() {
-        ctrl.dedupeRecords = dedupeService.getDuplicateRecords();
+        dedupeService.getDuplicateRecords()
+            .then(function (duplicateRecords) {
+                ctrl.dedupeRecords = duplicateRecords;
+            });
     }
 
     function useMax() {

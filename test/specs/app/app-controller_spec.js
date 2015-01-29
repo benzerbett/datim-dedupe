@@ -1,16 +1,20 @@
 describe('App controller', function () {
     var dedupeServiceMock;
     var controller;
+    var $rootScope;
 
     beforeEach(module('PEPFAR.dedupe'));
     beforeEach(inject(function ($injector) {
         var $controller = $injector.get('$controller');
+        var $q = $injector.get('$q');
+
+        $rootScope = $injector.get('$rootScope');
 
         dedupeServiceMock = {
             getMax: jasmine.createSpy('dedupeService.getMax'),
             getSum: jasmine.createSpy('dedupeService.getSum'),
             getDuplicateRecords: jasmine.createSpy('dedupeService.getDuplicateRecords')
-                .and.returnValue([{
+                .and.returnValue($q.when([{
                     details: {
                         orgUnitName: 'Glady\'s clinic',
                         timePeriodName: 'FY 2014'
@@ -38,12 +42,15 @@ describe('App controller', function () {
                         type: undefined,
                         value: undefined
                     }
-                }])
+                }]))
         };
 
         controller = $controller('appController', {
             dedupeService: dedupeServiceMock
         });
+
+        //Apply rootscope to resolve the mock promise
+        $rootScope.$apply();
     }));
 
     it('should be an object', function () {

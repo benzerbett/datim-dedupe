@@ -7,17 +7,13 @@ function dedupeDirective() {
         templateUrl: 'dedupe/dedupe.html',
         controller: dedupeDirectiveController,
         controllerAs: 'dedupeCtrl',
+        bindToController: true,
         scope: {dedupeRecord: '='}
     };
 }
 
-function dedupeDirectiveController($scope, dedupeService) {
+function dedupeDirectiveController(dedupeService) {
     var ctrl = this;
-
-    //Properties
-    ctrl.details = $scope.dedupeRecord.details;
-    ctrl.data = $scope.dedupeRecord.data;
-    ctrl.resolve = $scope.dedupeRecord.resolve;
 
     //Controller methods
     ctrl.getMax = getMax;
@@ -26,18 +22,18 @@ function dedupeDirectiveController($scope, dedupeService) {
     ctrl.resolveWithSum = resolveWithSum;
 
     function getMax() {
-        return dedupeService.getMax(ctrl.data);
+        return dedupeService.getMax(ctrl.dedupeRecord.data);
     }
 
     function getSum() {
-        return dedupeService.getSum(ctrl.data);
+        return dedupeService.getSum(ctrl.dedupeRecord.data);
     }
 
     function resolveWithMax() {
-        ctrl.resolve.value = getMax();
+        ctrl.dedupeRecord.resolve.value = getMax();
     }
 
     function resolveWithSum() {
-        ctrl.resolve.value = getSum();
+        ctrl.dedupeRecord.resolve.value = getSum();
     }
 }
