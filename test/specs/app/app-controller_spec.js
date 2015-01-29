@@ -91,6 +91,18 @@ describe('App controller', function () {
             expect(controller.dedupeRecords[0].resolve.value).toBe(60);
             expect(controller.dedupeRecords[1].resolve.value).toBe(60);
         });
+
+        it('should not attempt to map the records if there are none', function () {
+            controller.dedupeRecords = undefined;
+
+            controller.useMax();
+        });
+
+        it('should not throw an error when dedupeRecords is an empty array', function () {
+            controller.dedupeRecords = [];
+
+            controller.useMax();
+        });
     });
 
     describe('useSum', function () {
@@ -116,6 +128,18 @@ describe('App controller', function () {
 
             expect(controller.dedupeRecords[0].resolve.value).toBe(120);
             expect(controller.dedupeRecords[1].resolve.value).toBe(120);
+        });
+
+        it('should not attempt to map the records if there are none', function () {
+            controller.dedupeRecords = undefined;
+
+            controller.useSum();
+        });
+
+        it('should not throw an error when dedupeRecords is an empty array', function () {
+            controller.dedupeRecords = [];
+
+            controller.useSum();
         });
     });
 });
