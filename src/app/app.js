@@ -1,1 +1,1 @@
-angular.module('PEPFAR.dedupe', []);
+angular.module('PEPFAR.dedupe', ['d2HeaderBar']);

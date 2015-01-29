@@ -319,14 +319,185 @@ describe('Dedupe directive', function () {
             });
 
             describe('actions', function () {
-                var actionsRow;
+                var actionsRows;
 
                 beforeEach(function () {
-                    actionsRow = resolveActionsNode.querySelector('.resolve-actions.row');
+                    actionsRows = resolveActionsNode.querySelectorAll('.resolve-actions.row');
                 });
 
                 it('should be an element', function () {
-                    expect(actionsRow).toEqual(jasmine.any(HTMLElement));
+                    expect(actionsRows[0]).toEqual(jasmine.any(HTMLElement));
+                });
+
+                describe('max', function () {
+                    var actionsMax;
+
+                    beforeEach(function () {
+                        actionsMax = actionsRows[0].querySelector('.resolve-action-max');
+                    });
+
+                    it('should have a action-max column', function () {
+                        expect(actionsMax).toEqual(jasmine.any(HTMLElement));
+                    });
+
+                    it('should have the class col-sm-12', function () {
+                        expect(actionsMax).toHaveClass('col-sm-12');
+                    });
+
+                    describe('checkbox', function () {
+                        it('should exist', function () {
+                            var actionMaxCheckbox = actionsMax.querySelector('input[type=checkbox]');
+
+                            expect(actionMaxCheckbox).toEqual(jasmine.any(HTMLElement));
+                        });
+                    });
+
+                    describe('label', function () {
+                        var maxLabel;
+
+                        beforeEach(function () {
+                            maxLabel = actionsMax.querySelector('span');
+                        });
+
+                        it('should be an element', function () {
+                            expect(maxLabel).toEqual(jasmine.any(HTMLElement));
+                        });
+
+                        it('should have the translate attribute', function () {
+                            expect(maxLabel).toHaveAttribute('translate');
+                        });
+
+                        it('should have the text "Use max"', function () {
+                            expect(maxLabel.textContent).toBe('Use max');
+                        });
+                    });
+
+                    describe('value to use', function () {
+                        var maxValueElement;
+
+                        beforeEach(function () {
+                            maxValueElement = actionsMax.querySelector('span.value');
+                        });
+
+                        it('should display the value', function () {
+                            expect(maxValueElement.textContent).toBe('(60)');
+                        });
+                    });
+                });
+
+                describe('sum', function () {
+                    var actionsSum;
+
+                    beforeEach(function () {
+                        actionsSum = actionsRows[1].querySelector('.resolve-action-sum');
+                    });
+
+                    it('should have a action-sum column', function () {
+                        expect(actionsSum).toEqual(jasmine.any(HTMLElement));
+                    });
+
+                    it('should have the class col-sm-12', function () {
+                        expect(actionsSum).toHaveClass('col-sm-12');
+                    });
+
+                    describe('checkbox', function () {
+                        it('should exist', function () {
+                            var actionSumCheckbox = actionsSum.querySelector('input[type=checkbox]');
+
+                            expect(actionSumCheckbox).toEqual(jasmine.any(HTMLElement));
+                        });
+                    });
+
+                    describe('label', function () {
+                        var sumLabel;
+
+                        beforeEach(function () {
+                            sumLabel = actionsSum.querySelector('span');
+                        });
+
+                        it('should be an element', function () {
+                            expect(sumLabel).toEqual(jasmine.any(HTMLElement));
+                        });
+
+                        it('should have the translate attribute', function () {
+                            expect(sumLabel).toHaveAttribute('translate');
+                        });
+
+                        it('should have the text "Use sum"', function () {
+                            expect(sumLabel.textContent).toBe('Use sum');
+                        });
+                    });
+
+                    describe('value to use', function () {
+                        var sumValueElement;
+
+                        beforeEach(function () {
+                            sumValueElement = actionsSum.querySelector('span.value');
+                        });
+
+                        it('should display the value', function () {
+                            expect(sumValueElement.textContent).toBe('(120)');
+                        });
+                    });
+                });
+
+                describe('custom', function () {
+                    var actionsCustom;
+
+                    beforeEach(function () {
+                        actionsCustom = actionsRows[2].querySelector('.resolve-action-custom');
+                    });
+
+                    it('should have a action-custom column', function () {
+                        expect(actionsCustom).toEqual(jasmine.any(HTMLElement));
+                    });
+
+                    it('should have the class col-sm-12', function () {
+                        expect(actionsCustom).toHaveClass('col-sm-12');
+                    });
+
+                    describe('checkbox', function () {
+                        it('should exist', function () {
+                            var actionCustomCheckbox = actionsCustom.querySelector('input[type=checkbox]');
+
+                            expect(actionCustomCheckbox).toEqual(jasmine.any(HTMLElement));
+                        });
+                    });
+
+                    describe('label', function () {
+                        var customLabel;
+
+                        beforeEach(function () {
+                            customLabel = actionsCustom.querySelector('span');
+                        });
+
+                        it('should be an element', function () {
+                            expect(customLabel).toEqual(jasmine.any(HTMLElement));
+                        });
+
+                        it('should have the translate attribute', function () {
+                            expect(customLabel).toHaveAttribute('translate');
+                        });
+
+                        it('should have the text "Use a custom value"', function () {
+                            expect(customLabel.textContent).toBe('Use a custom value');
+                        });
+                    });
+
+                    describe('value to use', function () {
+                        var customValueElement;
+
+                        beforeEach(function () {
+                            customValueElement = actionsCustom.querySelector('span.value');
+                        });
+
+                        it('should have an input box', function () {
+                            var inputBox = customValueElement.querySelector('input');
+
+                            expect(inputBox).toEqual(jasmine.any(HTMLElement));
+                            expect(inputBox.nodeName).toBe('INPUT');
+                        });
+                    });
                 });
             });
         });

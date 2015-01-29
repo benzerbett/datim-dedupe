@@ -44,7 +44,25 @@
                     <span translate>How to resolve?</span>
                 </div>
             </div>
-            <div class="resolve-actions row"></div>
+            <div class="resolve-actions row">
+                <div class="resolve-action-max col-sm-12">
+                    <input type="checkbox"><span translate>Use max</span><span class="value" ng-bind="'(' + dedupeCtrl.getMax() + ')'"></span>
+                </div>
+            </div>
+            <div class="resolve-actions row">
+                <div class="resolve-action-sum col-sm-12">
+                    <input type="checkbox"><span translate>Use sum</span><span class="value" ng-bind="'(' + dedupeCtrl.getSum() + ')'"></span>
+                </div>
+            </div>
+            <div class="resolve-actions row">
+                <div class="resolve-action-custom col-sm-12">
+                    <input type="checkbox">
+                    <span translate>Use a custom value</span>
+                    <span class="value">
+                        <input />
+                    </span>
+                </div>
+            </div>
         </div>
     </div>
 </div>

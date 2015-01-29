@@ -11,9 +11,22 @@ function dedupeDirective() {
     };
 }
 
-function dedupeDirectiveController($scope) {
+function dedupeDirectiveController($scope, dedupeService) {
     var ctrl = this;
 
+    //Properties
     ctrl.details = $scope.dedupeRecord.details;
     ctrl.data = $scope.dedupeRecord.data;
+
+    //Controller methods
+    ctrl.getMax = getMax;
+    ctrl.getSum = getSum;
+
+    function getMax() {
+        return dedupeService.getMax(ctrl.data);
+    }
+
+    function getSum() {
+        return dedupeService.getSum(ctrl.data);
+    }
 }
