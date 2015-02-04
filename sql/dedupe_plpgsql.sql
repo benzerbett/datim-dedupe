@@ -5,14 +5,19 @@ CREATE TYPE duplicate_records AS
  oulevel5_name character varying(230)   ,
  orgunit_name  character varying(230)   ,
  orgunit_level integer                  ,
- iso_period character varying(20),
+ iso_period character varying(20)       , 
  dataelement   character varying(230)   ,
  disaggregation character varying(250)   ,
  mechanism character varying(250)   ,
  partner character varying(230)   ,
  value character varying(50000),
 duplicate_type character varying(50),
-duplicate_status character varying(50) );
+duplicate_status character varying(50),
+ou_uid character varying (11),
+de_uid character varying (11),
+coc_uid character varying (11)
+
+ );
 
 CREATE  OR REPLACE FUNCTION view_duplicates(uid character varying(11),showresolved boolean default false) 
 RETURNS setof duplicate_records AS  $$
@@ -172,14 +177,23 @@ and temp1.categoryoptioncomboid = b.categoryoptioncomboid';
 /*Data element names*/
 
 EXECUTE 'ALTER TABLE temp1 ADD COLUMN dataelement character varying(230);
+ALTER TABLE temp1 ADD COLUMN de_uid character varying(11);
 
 UPDATE temp1 set dataelement = b.name from dataelement b
+where temp1.dataelementid = b.dataelementid;
+
+UPDATE temp1 set de_uid = b.uid from dataelement b
 where temp1.dataelementid = b.dataelementid';
  
  
  /*Disagg*/
 EXECUTE 'ALTER TABLE temp1 ADD COLUMN disaggregation character varying(250);
+ALTER TABLE temp1 ADD COLUMN coc_uid character varying(11);
+
 UPDATE temp1 set disaggregation = b.categoryoptioncomboname from _categoryoptioncomboname b
+where temp1.categoryoptioncomboid = b.categoryoptioncomboid;
+
+UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
 where temp1.categoryoptioncomboid = b.categoryoptioncomboid';
 
 /*Mechanism*/
@@ -195,16 +209,17 @@ ALTER TABLE temp1 ADD COLUMN oulevel4_name character varying(230);
 ALTER TABLE temp1 ADD COLUMN oulevel5_name character varying(230);
 ALTER TABLE temp1 ADD COLUMN orgunit_name character varying(230);
 ALTER TABLE temp1 ADD COLUMN orgunit_level integer;
-
+ALTER TABLE temp1 ADD COLUMN ou_uid character varying(11);
 
 UPDATE temp1 SET orgunit_name = b.orgunit_name,
+ou_uid = b.ou_uid,
 orgunit_level = b.orgunit_level,
 oulevel2_name = b.oulevel2_name,
 oulevel3_name = b.oulevel3_name,
 oulevel4_name = b.oulevel4_name,
 oulevel5_name = b.oulevel5_name FROM (
 
-SELECT temp1.sourceid,ou.name as orgunit_name,
+SELECT temp1.sourceid,ou.name as orgunit_name, ou.uid as ou_uid,
 ous.level as orgunit_level,
 oulevel2.name as oulevel2_name,
 oulevel3.name as oulevel3_name,
@@ -213,7 +228,7 @@ oulevel5.name as oulevel5_name from _orgunitstructure ous
 INNER JOIN temp1 on temp1.sourceid = ous.organisationunitid
 INNER JOIN organisationunit ou on temp1.sourceid = ou.organisationunitid
 INNER JOIN organisationunit oulevel2 on ous.idlevel4 = oulevel2.organisationunitid
-LEFT  JOIN organisationunit oulevel3 on ous.idlevel5 = oulevel3.organisationunitid
+LEFT JOIN organisationunit oulevel3 on ous.idlevel5 = oulevel3.organisationunitid
 LEFT JOIN  organisationunit oulevel4 on ous.idlevel6 = oulevel4.organisationunitid
 LEFT JOIN  organisationunit oulevel5 on ous.idlevel7 = oulevel5.organisationunitid ) b
 
@@ -233,8 +248,6 @@ INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=
  WHERE _cogsm.categoryoptiongroupsetid= 481662 ) b
  where temp1.attributeoptioncomboid = b.categoryoptioncomboid';
 
-
-
  EXECUTE 'INSERT INTO temp2 SELECT 
  oulevel2_name ,
  oulevel3_name,
@@ -249,8 +262,13 @@ INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=
  partner  ,
  value ,
 duplicate_type,
-duplication_status   
-FROM temp1';
+duplication_status,
+ou_uid,
+de_uid,
+coc_uid   
+FROM temp1
+ORDER by oulevel2_name,oulevel3_name,orgunit_name,iso_period,dataelement,
+disaggregation,partner,mechanism';
   
   /*Return the records*/
   FOR returnrec IN SELECT * FROM temp2 LOOP
