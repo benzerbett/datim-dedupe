@@ -139,21 +139,7 @@ dv1.attributeoptioncomboid  != dv2.attributeoptioncomboid
 
 EXECUTE 'ALTER TABLE temp1 ADD COLUMN duplicate_type character varying(50);';
 
- /*Duplication status*/
-
-EXECUTE 'ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50);
-
-UPDATE temp1 set duplication_status = b.duplication_status from (
-
-SELECT DISTINCT sourceid,periodid,dataelementid,categoryoptioncomboid,''RESOLVED'' AS duplication_status
-FROM temp1
-WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
- FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment'')) ) b
-where temp1.sourceid = b.sourceid
-and temp1.periodid = b.periodid
-and temp1.dataelementid = b.dataelementid
-and temp1.categoryoptioncomboid = b.categoryoptioncomboid';
-
+ 
 /*Data element names*/
 
 EXECUTE 'ALTER TABLE temp1 ADD COLUMN dataelement character varying(230);
@@ -238,6 +224,35 @@ INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=
  EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
 UPDATE temp1 SET group_id = md5( COALESCE(orgunit_name,'') || COALESCE(dataelement,'') || COALESCE(disaggregation,'') || COALESCE(iso_period,'') )';
 
+/*Concordance*/
+EXECUTE '
+UPDATE temp1 set duplicate_type = b.concordance from (
+
+SELECT group_id,
+ CASE 
+ WHEN COUNT(value) = 1 THEN ''CONCORDANT''
+ WHEN COUNT(value) > 0 THEN ''DISCORDANT''
+ ELSE ''UNKNOWN''
+ END as concordance from 
+(
+SELECT  DISTINCT group_id ,value from temp1
+WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
+ FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment''))
+ ) a
+GROUP BY group_id ) b
+where temp1.group_id = b.group_id';
+/*Duplication status*/
+
+EXECUTE 'ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT ''UNRESOLVED'';
+
+UPDATE temp1 set duplication_status = b.duplication_status from (
+
+SELECT DISTINCT group_id,''RESOLVED'' AS duplication_status
+FROM temp1
+WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
+ FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment'')) ) b
+where temp1.group_id = b.group_id';
+
 
  EXECUTE 'INSERT INTO temp2 SELECT 
  oulevel2_name ,
@@ -263,21 +278,7 @@ FROM temp1
 ORDER by oulevel2_name,oulevel3_name,orgunit_name,iso_period,dataelement,
 disaggregation,partner,mechanism';
  
-/*Concordance*/
-EXECUTE '
-UPDATE temp1 set duplicate_type = b.concordance from (
 
-SELECT group_id,
- CASE WHEN COUNT(value) = 1 THEN ''CONCORDANT''
- ELSE ''DISCORDANT''
- END as concordance from 
-(
-SELECT  DISTINCT group_id ,value from temp1
-WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
- FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment''))
- ) a
-GROUP BY group_id ) b
-where temp1.group_id = b.group_id';
  
  
   /*Return the records*/
