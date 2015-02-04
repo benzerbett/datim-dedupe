@@ -37,6 +37,10 @@ describe('Dedupe directive', function () {
         expect(element).toHaveClass('dedupe-wrap');
     });
 
+    it('should have the well class', function () {
+        expect(element).toHaveClass('well');
+    });
+
     describe('dedupe details', function () {
         var dedupeDetailsElement;
 
@@ -283,6 +287,18 @@ describe('Dedupe directive', function () {
                     expect(valueElements[0].textContent).toBe('60');
                     expect(valueElements[1].textContent).toBe('40');
                     expect(valueElements[2].textContent).toBe('20');
+                });
+
+                it('should add the odd class to the first row', function () {
+                    var dataRows = dedupeDataTable.querySelectorAll('.table-data.row');
+
+                    expect(dataRows[0]).toHaveClass('odd');
+                });
+
+                it('should add the even class to the second row', function () {
+                    var dataRows = dedupeDataTable.querySelectorAll('.table-data.row');
+
+                    expect(dataRows[1]).toHaveClass('even');
                 });
             });
         });

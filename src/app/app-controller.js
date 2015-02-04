@@ -8,7 +8,6 @@ function appController(dedupeService) {
     //Controller methods
     ctrl.useMax = useMax;
     ctrl.useSum = useSum;
-    ctrl.initialise = initialise;
 
     //Call init method to get data from services
     initialise();

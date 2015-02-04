@@ -58,13 +58,15 @@ describe('App controller', function () {
     });
 
     describe('initialise', function () {
-        it('should be a function', function () {
-            expect(controller.initialise).toBeAFunction();
-        });
-
         it('should call the dedupe service for the duplicates', function () {
-
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalled();
         });
+
+        it('should set the duplicate records onto the controller', inject(function ($rootScope) {
+            $rootScope.$apply();
+
+            expect(controller.dedupeRecords.length).toEqual(2);
+        }));
     });
 
     describe('useMax', function () {

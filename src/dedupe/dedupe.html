@@ -1,4 +1,4 @@
-<div class="dedupe-wrap">
+<div class="dedupe-wrap well">
     <div class="dedupe-details row">
         <div class="organisation-unit-label col-sm-2">
             <span translate>Org unit:</span>
@@ -26,7 +26,10 @@
                     <span translate>Value</span>
                 </div>
             </div>
-            <div class="table-data row" ng-repeat="dedupeRecord in ::dedupeCtrl.dedupeRecord.data">
+            <div class="table-data row"
+                 ng-repeat="dedupeRecord in ::dedupeCtrl.dedupeRecord.data"
+                 ng-class-odd="'odd'"
+                 ng-class-even="'even'">
                 <div class="agency-name col-sm-4">
                     <span ng-bind="::dedupeRecord.agency"></span>
                 </div>

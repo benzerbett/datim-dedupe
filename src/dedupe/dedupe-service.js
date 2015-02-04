@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').factory('dedupeService', dedupeService);
 
-function dedupeService($q) {
+function dedupeService(dedupeRecordService) {
     return {
         getDuplicateRecords: getDuplicateRecords,
         getMax: getMax,
@@ -8,29 +8,29 @@ function dedupeService($q) {
     };
 
     function getDuplicateRecords() {
-        return $q.when([]);
+        return dedupeRecordService.getRecords();
     }
 
-    function getMax(dedupeRecords) {
-        throwIfNotArray(dedupeRecords, 'getMax');
+    function getMax(dedupeRecordData) {
+        throwIfNotArray(dedupeRecordData, 'getMax');
 
-        return dedupeRecords
+        return dedupeRecordData
             .map(pick('value'))
             .map(parseFloat)
             .reduce(max, 0);
     }
 
-    function getSum(dedupeRecords) {
-        throwIfNotArray(dedupeRecords, 'getSum');
+    function getSum(dedupeRecordData) {
+        throwIfNotArray(dedupeRecordData, 'getSum');
 
-        return dedupeRecords
+        return dedupeRecordData
             .map(pick('value'))
             .reduce(add, 0);
     }
 
-    function throwIfNotArray(dedupeRecords, functionName) {
-        if (!Array.isArray(dedupeRecords)) {
-            throw new Error('Parameter dedupeRecords that was passed to ' + functionName + ' is not an array');
+    function throwIfNotArray(dedupeRecordData, functionName) {
+        if (!Array.isArray(dedupeRecordData)) {
+            throw new Error('Parameter dedupeRecordData that was passed to ' + functionName + ' is not an array');
         }
     }
 

@@ -1,7 +1,14 @@
 describe('Dedupe service', function () {
     var dedupeService;
 
-    beforeEach(module('PEPFAR.dedupe'));
+    beforeEach(module('PEPFAR.dedupe', function ($provide) {
+        $provide.factory('dedupeRecordService', function ($q) {
+            return {
+                getRecords: jasmine.createSpy('dedupeRecordService.getRecords')
+                    .and.returnValue($q.when(window.fixtures.get('dedupeRecords')))
+            };
+        });
+    }));
     beforeEach(inject(function ($injector) {
         dedupeService = $injector.get('dedupeService');
     }));
@@ -20,7 +27,7 @@ describe('Dedupe service', function () {
                 dedupeService.getMax();
             }
 
-            expect(shouldThrow).toThrowError('Parameter dedupeRecords that was passed to getMax is not an array');
+            expect(shouldThrow).toThrowError('Parameter dedupeRecordData that was passed to getMax is not an array');
         });
 
         it('should return a number', function () {
@@ -48,7 +55,7 @@ describe('Dedupe service', function () {
                 dedupeService.getSum();
             }
 
-            expect(shouldThrow).toThrowError('Parameter dedupeRecords that was passed to getSum is not an array');
+            expect(shouldThrow).toThrowError('Parameter dedupeRecordData that was passed to getSum is not an array');
         });
 
         it('should return a number', function () {
@@ -67,12 +74,24 @@ describe('Dedupe service', function () {
     });
 
     describe('getDuplicateRecords', function () {
+        var dedupeRecordServiceMock;
+
+        beforeEach(inject(function (dedupeRecordService) {
+            dedupeRecordServiceMock = dedupeRecordService;
+        }));
+
         it('should be a function', function () {
             expect(dedupeService.getDuplicateRecords).toBeAFunction();
         });
 
         it('should return an array', function () {
             expect(dedupeService.getDuplicateRecords()).toBeAPromiseLikeObject();
+        });
+
+        it('should call getRecords on the dedupeRecordsService', function () {
+            dedupeService.getDuplicateRecords();
+
+            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalled();
         });
     });
 });

@@ -20,7 +20,7 @@ var files = [
     'vendor/angular-mocks/angular-mocks.js',
 
     //Source files
-    'src/ngBootstrapper.js',
+    'vendor/ngBootstrapper/ngBootstrapper.js',
     'src/app/app.js',
     'src/**/*.js',
     'src/**/*.html',

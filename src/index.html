@@ -13,11 +13,10 @@
     <link href="../temp/css/app/app.css" rel="stylesheet" type="text/css" />
     <!-- endbuild -->
 </head>
-<body ng-app="PEPFAR.dedupe" ng-controller="appController as app">
+<body ng-controller="appController as app">
     <d2-header-bar></d2-header-bar>
 
     <div class="app-content-wrap">
-        <i class="fa fa-globe"></i>
         <form name="deduplication">
             <dedupe dedupe-record="dedupeRecord" ng-repeat="dedupeRecord in app.dedupeRecords"></dedupe>
             <div class="row">
@@ -38,9 +37,14 @@
     </div>
 
     <!-- build:js js/vendor.js -->
+    <script src="../vendor/jquery/dist/jquery.js"></script>
+
     <script src="../vendor/angular/angular.js"></script>
     <script src="../vendor/angular-animate/angular-animate.js"></script>
     <script src="../vendor/angular-messages/angular-messages.js"></script>
+
+    <script src="../vendor/lodash/dist/lodash.js"></script>
+    <script src="../vendor/restangular/dist/restangular.js"></script>
 
     <script src="../vendor/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <script src="../vendor/angular-translate/angular-translate.js"></script>
@@ -48,9 +52,12 @@
     <!-- endbuild -->
 
     <!-- build:js js/app.js -->
+    <script src="ngBootstrapper.js"></script>
     <script src="app/app.js"></script>
+    <script src="app/app-controller.js"></script>
     <script src="dedupe/dedupe-directive.js"></script>
     <script src="dedupe/dedupe-service.js"></script>
+    <script src="dedupe/deduperecord-service.js"></script>
     <!-- endbuild -->
 </body>
 </html>

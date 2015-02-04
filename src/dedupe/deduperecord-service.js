@@ -1,80 +1,90 @@
 angular.module('PEPFAR.dedupe').factory('dedupeRecordService', dedupeRecordService);
 
 function dedupeRecordService(Restangular) {
+    var headers;
+
     return {
         getRecords: getRecords
     };
 
     function getRecords() {
         return executeSqlViewOnApi()
-            .then(processRecords);
+            .then(extractHeaders)
+            .then(createDedupeRecords);
+    }
+
+    function extractHeaders(sqlViewData) {
+        headers = _.chain(sqlViewData.headers)
+            .map(_.compose(_.values, _.partialRight(_.pick, ['column'])))
+            .flatten()
+            .value();
+
+        return sqlViewData.rows;
     }
 
     function executeSqlViewOnApi() {
         return Restangular.all('sqlViews')
-            .all('I3vdXPDm1Ye')
-            .get('execute');
+            .all('AuL6zTSLxNc')
+            .get('data');
     }
 
-    function processRecords(recordObjects) {
-        var value = _.chain(recordObjects.rows)
+    function createDedupeRecords(rows) {
+        return _.chain(rows)
             .groupBy(recordGroupIdentifier)
             .values()
-            .map(function (records) {
-                var resultObject = {
-                    details: {
-                        orgUnitName: records[0][4],
-                        timePeriodName: undefined
-                    },
-                    data: [],
-                    resolve: {
-                        type: undefined,
-                        value: undefined
-                    }
-                };
-
-                records.forEach(function (record) {
-                    var mechanism = record[10];
-                    var partnerName = record[11];
-                    var value = record[12];
-
-                    if (partnerName === '' && mechanism === '(00000 De-duplication adjustment)') {
-                        resultObject.resolve.value = parseFloat(value);
-                    } else {
-                        resultObject.data.push({
-                            agency: '',
-                            partner: partnerName,
-                            value: parseFloat(value)
-                        });
-                    }
-                });
-
-                return resultObject;
-            })
+            .map(createDedupeRecord)
             .value();
-
-        return value;
     }
 
-    function recordGroupIdentifier(recordObject) {
-        //TODO: Check if string concat is faster if this gives trouble
-        //TODO: See if we can create an identifier serverside?
-        return [
-            recordObject[0], //oulevel2_name
-            recordObject[1], //oulevel3_name
-            recordObject[2], //oulevel4_name
-            recordObject[3], //oulevel5_name
-            recordObject[4], //orgunit_name
-            recordObject[5], //orgunit_level
-            recordObject[6], //startdate
-            recordObject[7], //enddate
-            recordObject[8], //dataelement
-            recordObject[9]  //disaggregation
-                             //mechanism
-                             //partner
-                             //value
-                             //duplication type
-                             //duplicate_status
-        ].join('_');
+    function createDedupeRecord(rows) {
+        var dedupeRecord = {
+            details: {
+                orgUnitId: getColumnValue('ou_uid', rows[0]),
+                orgUnitName: getColumnValue('orgunit_name', rows[0]),
+                timePeriodName: getColumnValue('iso_period', rows[0]),
+                dataElementId: getColumnValue('de_uid', rows[0]),
+                dataElementName: getColumnValue('dataelement', rows[0]),
+                categoryOptionComboId: getColumnValue('coc_uid', rows[0]),
+                categoryOptionComboName: getColumnValue('disaggregation', rows[0])
+            },
+            data: [],
+            resolve: {
+                isResolved: getColumnValue('orgunit_name', rows[0]) === 'RESOLVED' ? true : false,
+                type: undefined,
+                value: undefined
+            }
+        };
+
+        rows.forEach(processRecord(dedupeRecord));
+
+        return dedupeRecord;
+    }
+    function processRecord(dedupeRecord) {
+        return function (record) {
+            var mechanism = getColumnValue('mechanism', record);
+            var partnerName = getColumnValue('partner', record);
+            var agencyName = getColumnValue('agency', record);
+            var value = getColumnValue('value', record);
+
+            if (partnerName === '' && mechanism === '(00000 De-duplication adjustment)') {
+                dedupeRecord.resolve.value = parseFloat(value);
+            } else {
+                dedupeRecord.data.push({
+                    agency: agencyName,
+                    partner: partnerName,
+                    value: parseFloat(value)
+                });
+            }
+        };
+    }
+
+    function recordGroupIdentifier(record) {
+        return getColumnValue('group_id', record);
+    }
+
+    function getColumnValue(columnName, record) {
+        var columnIndex = headers.indexOf(columnName);
+
+        return columnIndex >= 0 ? record[columnIndex] : undefined;
     }
 }
