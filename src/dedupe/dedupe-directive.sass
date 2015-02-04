@@ -12,13 +12,45 @@
     border-color: green
 
 .dedupe-wrap
+  border-color: #CCCCCC
   margin-bottom: 30px
+
+.dedupe-details
+  position: relative
+  background: #276696
+  padding: 10px
+  margin: 5px -20px 5px -30px
+  color: #FFFFFF
+  -webkit-box-shadow: 0px 2px 4px #888
+  -moz-box-shadow: 0px 2px 4px #888
+  box-shadow: 0px 2px 4px #888
+  margin-bottom: 20px
+
+
+  &:before
+    content: ' '
+    position: absolute
+    width: 0
+    height: 0
+    left: 0px
+    top: 100%
+    border-width: 5px 5px
+    border-style: solid
+    border-color: #103A5A #103A5A transparent transparent
+
+
+  .organisation-unit-name,
+  .period-name
+    font-size: 1.2em
+    font-weight: bold
+
+.table-header
+  font-weight: bold
+  border-bottom: 1px solid #DDDDDD
+  border-bottom: 1px solid #DDDDDD
 
 .table-data.row
   border-bottom: 1px solid #DDDDDD
-
-  &:first-child
-    border-top: 1px solid #DDDDDD
 
   &.odd
     background-color: #EEEEEE
