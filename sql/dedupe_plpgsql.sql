@@ -16,11 +16,12 @@ duplicate_type character varying(50),
 duplicate_status character varying(50),
 ou_uid character varying (11),
 de_uid character varying (11),
-coc_uid character varying (11)
+coc_uid character varying (11),
+group_id character (32)
 
  );
 
-CREATE  OR REPLACE FUNCTION view_duplicates(uid character varying(11),showresolved boolean default false) 
+CREATE  OR REPLACE FUNCTION view_duplicates(uid character (11),showresolved boolean default false) 
 RETURNS setof duplicate_records AS  $$
 DECLARE
 returnrec duplicate_records;
@@ -253,6 +254,12 @@ INNER JOIN categoryoptiongroupmembers _cogm on _cog.categoryoptiongroupid=_cogm.
 INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=_cocg.categoryoptionid
  WHERE _cogsm.categoryoptiongroupsetid= 481662 ) b
  where temp1.attributeoptioncomboid = b.categoryoptioncomboid';
+ 
+ /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
+ 
+ EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
+UPDATE temp1 SET group_id = md5( COALESCE(orgunit_name,'') || COALESCE(dataelement,'') || COALESCE(disaggregation,'') || COALESCE(iso_period,'') )';
+
 
  EXECUTE 'INSERT INTO temp2 SELECT 
  oulevel2_name ,
@@ -272,7 +279,8 @@ duplicate_type,
 duplication_status,
 ou_uid,
 de_uid,
-coc_uid   
+coc_uid,
+group_id  
 FROM temp1
 ORDER by oulevel2_name,oulevel3_name,orgunit_name,iso_period,dataelement,
 disaggregation,partner,mechanism';
