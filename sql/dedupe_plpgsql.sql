@@ -29,6 +29,7 @@ BEGIN
 
 BEGIN
 CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
+
 CREATE  TEMP TABLE  temp1 
 (sourceid integer,
 periodid integer,
@@ -137,30 +138,7 @@ dv1.attributeoptioncomboid  != dv2.attributeoptioncomboid
  ) ;';
 
 EXECUTE 'ALTER TABLE temp1 ADD COLUMN duplicate_type character varying(50);';
-/*Concordance*/
-EXECUTE '
-UPDATE temp1 set duplicate_type = b.concordance from (
 
-SELECT sourceid,periodid,dataelementid,categoryoptioncomboid,
-
- CASE WHEN COUNT(value) = 1 THEN ''CONCORDANT''
- ELSE ''DISCORDANT''
- END as concordance from 
-(
-SELECT  DISTINCT sourceid,periodid,
-dataelementid,
-categoryoptioncomboid,
-value from temp1
-WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
- FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment''))
-
- ) a
-GROUP BY 
-sourceid,periodid,dataelementid,categoryoptioncomboid ) b
-where temp1.sourceid = b.sourceid
-and temp1.periodid = b.periodid
-and temp1.dataelementid = b.dataelementid
-and temp1.categoryoptioncomboid = b.categoryoptioncomboid';
  /*Duplication status*/
 
 EXECUTE 'ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50);
@@ -234,7 +212,7 @@ oulevel4.name as oulevel4_name,
 oulevel5.name as oulevel5_name from _orgunitstructure ous
 INNER JOIN temp1 on temp1.sourceid = ous.organisationunitid
 INNER JOIN organisationunit ou on temp1.sourceid = ou.organisationunitid
-INNER JOIN organisationunit oulevel2 on ous.idlevel4 = oulevel2.organisationunitid
+LEFT JOIN organisationunit oulevel2 on ous.idlevel4 = oulevel2.organisationunitid
 LEFT JOIN organisationunit oulevel3 on ous.idlevel5 = oulevel3.organisationunitid
 LEFT JOIN  organisationunit oulevel4 on ous.idlevel6 = oulevel4.organisationunitid
 LEFT JOIN  organisationunit oulevel5 on ous.idlevel7 = oulevel5.organisationunitid ) b
@@ -284,7 +262,24 @@ group_id
 FROM temp1
 ORDER by oulevel2_name,oulevel3_name,orgunit_name,iso_period,dataelement,
 disaggregation,partner,mechanism';
-  
+ 
+/*Concordance*/
+EXECUTE '
+UPDATE temp1 set duplicate_type = b.concordance from (
+
+SELECT group_id,
+ CASE WHEN COUNT(value) = 1 THEN ''CONCORDANT''
+ ELSE ''DISCORDANT''
+ END as concordance from 
+(
+SELECT  DISTINCT group_id ,value from temp1
+WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
+ FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment''))
+ ) a
+GROUP BY group_id ) b
+where temp1.group_id = b.group_id';
+ 
+ 
   /*Return the records*/
   FOR returnrec IN SELECT * FROM temp2 LOOP
     	RETURN NEXT returnrec;
