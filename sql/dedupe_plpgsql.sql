@@ -137,7 +137,7 @@ dv1.attributeoptioncomboid  != dv2.attributeoptioncomboid
   
  ) ;';
 
-EXECUTE 'ALTER TABLE temp1 ADD COLUMN duplicate_type character varying(50);';
+
 
  
 /*Data element names*/
@@ -225,7 +225,10 @@ INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=
 UPDATE temp1 SET group_id = md5( COALESCE(orgunit_name,'') || COALESCE(dataelement,'') || COALESCE(disaggregation,'') || COALESCE(iso_period,'') )';
 
 /*Concordance*/
+
+EXECUTE 'ALTER TABLE temp1 ADD COLUMN duplicate_type character varying(50) DEFAULT ''UNKNOWN'';';
 EXECUTE '
+
 UPDATE temp1 set duplicate_type = b.concordance from (
 
 SELECT group_id,
@@ -241,17 +244,15 @@ WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
  ) a
 GROUP BY group_id ) b
 where temp1.group_id = b.group_id';
+
 /*Duplication status*/
 
 EXECUTE 'ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT ''UNRESOLVED'';
 
-UPDATE temp1 set duplication_status = b.duplication_status from (
-
-SELECT DISTINCT group_id,''RESOLVED'' AS duplication_status
-FROM temp1
+UPDATE temp1 set duplication_status = ''RESOLVED''
+where group_id IN (SELECT DISTINCT group_id FROM temp1
 WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
- FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment'')) ) b
-where temp1.group_id = b.group_id';
+ FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment'')))';
 
 
  EXECUTE 'INSERT INTO temp2 SELECT 
@@ -277,8 +278,6 @@ group_id
 FROM temp1
 ORDER by oulevel2_name,oulevel3_name,orgunit_name,iso_period,dataelement,
 disaggregation,partner,mechanism';
- 
-
  
  
   /*Return the records*/
