@@ -5,8 +5,7 @@ CREATE TYPE duplicate_records AS
  oulevel5_name character varying(230)   ,
  orgunit_name  character varying(230)   ,
  orgunit_level integer                  ,
- startdate     date                     ,
- enddate       date                     ,
+ iso_period character varying(20),
  dataelement   character varying(230)   ,
  disaggregation character varying(250)   ,
  mechanism character varying(250)   ,
@@ -15,7 +14,7 @@ CREATE TYPE duplicate_records AS
 duplicate_type character varying(50),
 duplicate_status character varying(50) );
 
-CREATE  OR REPLACE FUNCTION view_duplicates2(uid character varying(11),showresolved boolean default false) 
+CREATE  OR REPLACE FUNCTION view_duplicates(uid character varying(11),showresolved boolean default false) 
 RETURNS setof duplicate_records AS  $$
 DECLARE
 returnrec duplicate_records;
@@ -221,11 +220,8 @@ LEFT JOIN  organisationunit oulevel5 on ous.idlevel7 = oulevel5.organisationunit
 where temp1.sourceid = b.sourceid';
  
  /*Periods*/
-EXECUTE 'ALTER TABLE temp1 ADD COLUMN startdate date;
-ALTER TABLE temp1 ADD COLUMN enddate date;
- 
-UPDATE temp1 SET startdate = p.startdate from period p where p.periodid = temp1.periodid;
-UPDATE temp1 SET enddate = p.enddate from period p where p.periodid = temp1.periodid;';
+EXECUTE 'ALTER TABLE temp1 ADD COLUMN iso_period character varying;
+UPDATE temp1 SET iso_period = p.iso from _periodstructure p where p.periodid = temp1.periodid';
  /*Partner*/
  
  EXECUTE 'ALTER TABLE temp1 ADD COLUMN partner character varying(230);
@@ -246,8 +242,7 @@ INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=
  oulevel5_name,
  orgunit_name,
  orgunit_level,
- startdate,
- enddate,
+ iso_period,
  dataelement ,
  disaggregation,
  mechanism   ,
