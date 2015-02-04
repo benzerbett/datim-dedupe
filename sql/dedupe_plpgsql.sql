@@ -8,6 +8,7 @@ CREATE TYPE duplicate_records AS
  iso_period character varying(20)       , 
  dataelement   character varying(230)   ,
  disaggregation character varying(250)   ,
+ agency character varying (250),
  mechanism character varying(250)   ,
  partner character varying(230)   ,
  value character varying(50000),
@@ -195,6 +196,11 @@ where temp1.categoryoptioncomboid = b.categoryoptioncomboid;
 
 UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
 where temp1.categoryoptioncomboid = b.categoryoptioncomboid';
+ /*Agency*/
+EXECUTE 'ALTER TABLE temp1 ADD COLUMN agency character varying(250);
+
+UPDATE temp1 set agency = b."Funding Agency" from _categoryoptiongroupsetstructure b
+where temp1.attributeoptioncomboid = b.categoryoptioncomboid';
 
 /*Mechanism*/
 EXECUTE 'ALTER TABLE temp1 ADD COLUMN mechanism character varying(250);
@@ -258,6 +264,7 @@ INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=
  iso_period,
  dataelement ,
  disaggregation,
+ agency,
  mechanism   ,
  partner  ,
  value ,
