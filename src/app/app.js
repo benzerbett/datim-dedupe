@@ -26,7 +26,6 @@ window.getBootstrapper('PEPFAR.dedupe', document)
     })
     .loadStylesheet('/dhis-web-commons/css/menu.css')
     .loadScript('/dhis-web-commons/javascripts/dhis2/dhis2.translate.js')
-    .loadModule('/dhis-web-commons/javascripts/dhis2/dhis2.menu.js', 'd2Menu')
     .loadModule('/dhis-web-commons/javascripts/dhis2/dhis2.menu.js', 'd2HeaderBar')
     .loadScript('/dhis-web-commons/javascripts/dhis2/dhis2.menu.ui.js')
     .bootstrap();
