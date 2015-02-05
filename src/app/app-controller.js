@@ -3,11 +3,13 @@ angular.module('PEPFAR.dedupe').controller('appController', appController);
 function appController(dedupeService) {
     var ctrl = this;
 
+    ctrl.isProcessing = true;
     ctrl.dedupeRecords = [];
 
     //Controller methods
     ctrl.useMax = useMax;
     ctrl.useSum = useSum;
+    ctrl.resolveDeduplication = resolveDeduplication;
 
     //Call init method to get data from services
     initialise();
@@ -16,6 +18,7 @@ function appController(dedupeService) {
         dedupeService.getDuplicateRecords()
             .then(function (duplicateRecords) {
                 ctrl.dedupeRecords = duplicateRecords;
+                ctrl.isProcessing = false;
             });
     }
 
@@ -39,5 +42,11 @@ function appController(dedupeService) {
             item.resolve.type = 'sum';
             item.resolve.value = dedupeService.getSum(item.data);
         });
+    }
+
+    function resolveDeduplication() {
+        ctrl.isProcessing = true;
+
+        dedupeService.resolveDeduplication(ctrl.dedupeRecords);
     }
 }

@@ -42,15 +42,13 @@ describe('App controller', function () {
                         type: undefined,
                         value: undefined
                     }
-                }]))
+                }])),
+            resolveDeduplication: jasmine.createSpy('dedupeService.resolveDeduplication')
         };
 
         controller = $controller('appController', {
             dedupeService: dedupeServiceMock
         });
-
-        //Apply rootscope to resolve the mock promise
-        $rootScope.$apply();
     }));
 
     it('should be an object', function () {
@@ -62,14 +60,29 @@ describe('App controller', function () {
             expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalled();
         });
 
+        it('should set processing to true', function () {
+            expect(controller.isProcessing).toBe(true);
+        });
+
         it('should set the duplicate records onto the controller', inject(function ($rootScope) {
             $rootScope.$apply();
 
             expect(controller.dedupeRecords.length).toEqual(2);
         }));
+
+        it('should set processing to false after duplicate records are loaded', function () {
+            $rootScope.$apply();
+            
+            expect(controller.isProcessing).toBe(false);
+        });
     });
 
     describe('useMax', function () {
+        beforeEach(function () {
+            //Apply rootscope to resolve the mock promise
+            $rootScope.$apply();
+        });
+
         it('should set the resolve type to max on all the records', function () {
             controller.useMax();
 
@@ -108,6 +121,11 @@ describe('App controller', function () {
     });
 
     describe('useSum', function () {
+        beforeEach(function () {
+            //Apply rootscope to resolve the mock promise
+            $rootScope.$apply();
+        });
+
         it('should set the resolve type to sum on all records', function () {
             controller.useSum();
 
@@ -142,6 +160,24 @@ describe('App controller', function () {
             controller.dedupeRecords = [];
 
             controller.useSum();
+        });
+    });
+
+    describe('resolveDeduplication', function () {
+        it('should be a function', function () {
+            expect(controller.resolveDeduplication).toBeAFunction();
+        });
+
+        it('should call resolveDeduplication on the dedupeService', function () {
+            controller.resolveDeduplication();
+
+            expect(dedupeServiceMock.resolveDeduplication).toHaveBeenCalledWith(controller.dedupeRecords);
+        });
+
+        it('should set processing to true', function () {
+            controller.resolveDeduplication();
+
+            expect(controller.isProcessing).toBe(true);
         });
     });
 });
