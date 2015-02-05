@@ -20,6 +20,7 @@ function dedupeDirectiveController(dedupeService) {
     ctrl.getSum = getSum;
     ctrl.resolveWithMax = resolveWithMax;
     ctrl.resolveWithSum = resolveWithSum;
+    ctrl.resolve = resolve;
 
     function getMax() {
         return dedupeService.getMax(ctrl.dedupeRecord.data);
@@ -35,5 +36,9 @@ function dedupeDirectiveController(dedupeService) {
 
     function resolveWithSum() {
         ctrl.dedupeRecord.resolve.value = getSum();
+    }
+
+    function resolve() {
+        dedupeService.resolveDuplicates([ctrl.dedupeRecord]);
     }
 }

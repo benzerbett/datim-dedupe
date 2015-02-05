@@ -65,8 +65,8 @@ describe('Dedupe saver service', function () {
                 dedupeRecordOne = dedupeRecords[0];
                 dedupeRecordTwo = dedupeRecords[1];
 
-                dedupeRecordOne.resolve.adjustmentValue = -400;
-                dedupeRecordTwo.resolve.adjustmentValue = 124;
+                dedupeRecordOne.resolve.adjustedValue = -400;
+                dedupeRecordTwo.resolve.adjustedValue = 124;
             });
 
             afterEach(function () {

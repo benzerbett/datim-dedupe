@@ -1,4 +1,5 @@
 describe('Dedupe service', function () {
+    var fixtures = window.fixtures;
     var dedupeService;
 
     beforeEach(module('PEPFAR.dedupe', function ($provide) {
@@ -104,9 +105,13 @@ describe('Dedupe service', function () {
 
     describe('resolveDeduplication', function () {
         var dedupeSaverServiceMock;
+        var dedupeRecords;
+        var dedupeRecord;
 
         beforeEach(inject(function (dedupeSaverService) {
             dedupeSaverServiceMock = dedupeSaverService;
+            dedupeRecords = fixtures.get('dedupeRecords');
+            dedupeRecord = dedupeRecords[0];
         }));
 
         it('should be a function', function () {
@@ -118,13 +123,63 @@ describe('Dedupe service', function () {
         });
 
         it('should call the saveDuplicates on the dedupesaver service', function () {
-            dedupeService.resolveDuplicates();
+            dedupeService.resolveDuplicates([dedupeRecord]);
 
             expect(dedupeSaverServiceMock.saveDeduplication).toHaveBeenCalled();
         });
 
         it('should return a promise', function () {
-            expect(dedupeService.resolveDuplicates()).toBeAPromiseLikeObject();
+            expect(dedupeService.resolveDuplicates([dedupeRecord])).toBeAPromiseLikeObject();
         });
+
+        it('should reject when the passed records is not an array', inject(function ($rootScope) {
+            var catchCallBack = jasmine.createSpy('catchCallback');
+
+            dedupeService.resolveDuplicates()
+                .catch(catchCallBack);
+            $rootScope.$apply();
+
+            expect(catchCallBack).toHaveBeenCalledWith('Duplicate records passed to resolveDuplicates should be an array with at least one element');
+        }));
+
+        it('should reject when the passed records is an empty array', inject(function ($rootScope) {
+            var catchCallBack = jasmine.createSpy('catchCallback');
+
+            dedupeService.resolveDuplicates([])
+                .catch(catchCallBack);
+            $rootScope.$apply();
+
+            expect(catchCallBack).toHaveBeenCalledWith('Duplicate records passed to resolveDuplicates should be an array with at least one element');
+        }));
+
+        it('should set the adjustedvalue onto the dedupe record', function () {
+            dedupeService.resolveDuplicates([dedupeRecord]);
+
+            expect(dedupeRecord.resolve.adjustedValue).toBe(-1600);
+        });
+
+        it('should filter out unresolved dedupes', function () {
+            dedupeService.resolveDuplicates(dedupeRecords);
+
+            expect(dedupeSaverServiceMock.saveDeduplication).toHaveBeenCalledWith([dedupeRecord]);
+        });
+
+        it('should not call saveDeduplicates if there are no resolved records', function () {
+            delete dedupeRecords[0];
+            dedupeService.resolveDuplicates(dedupeRecords);
+
+            expect(dedupeSaverServiceMock.saveDeduplication).not.toHaveBeenCalled();
+        });
+
+        it('should reject the promise when there are no records to save', inject(function ($rootScope) {
+            var catchCallBack = jasmine.createSpy('catchCallback');
+            delete dedupeRecords[0];
+
+            dedupeService.resolveDuplicates(dedupeRecords)
+                .catch(catchCallBack);
+            $rootScope.$apply();
+
+            expect(catchCallBack).toHaveBeenCalledWith('Non of the passed dedupe records had resolved values that should be saved.');
+        }));
     });
 });

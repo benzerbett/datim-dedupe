@@ -394,7 +394,9 @@
                     }
                 ],
                 "resolve": {
-                    "isResolved": false
+                    "isResolved": true,
+                    "type": "custom",
+                    "value": 2023
                 }
             },
             {
@@ -539,7 +541,127 @@
             }
         ],
 
-        importResponse: {"status":"SUCCESS","description":"Import process completed successfully","dataValueCount":{"imported":1,"updated":0,"ignored":0,"deleted":0},"importCount":{"imported":0,"updated":0,"ignored":0,"deleted":0},"dataSetComplete":"false"}
+        importResponse: {"status":"SUCCESS","description":"Import process completed successfully","dataValueCount":{"imported":1,"updated":0,"ignored":0,"deleted":0},"importCount":{"imported":0,"updated":0,"ignored":0,"deleted":0},"dataSetComplete":"false"},
+
+        resolvedDedupe: {
+            "title": "DEDUPLICATION_Demoland",
+            "headers": [{
+                "name": "oulevel2_name",
+                "column": "oulevel2_name",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "oulevel3_name",
+                "column": "oulevel3_name",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "oulevel4_name",
+                "column": "oulevel4_name",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "oulevel5_name",
+                "column": "oulevel5_name",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "orgunit_name",
+                "column": "orgunit_name",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "orgunit_level",
+                "column": "orgunit_level",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "iso_period",
+                "column": "iso_period",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "dataelement",
+                "column": "dataelement",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "disaggregation",
+                "column": "disaggregation",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "agency",
+                "column": "agency",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "mechanism",
+                "column": "mechanism",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "partner",
+                "column": "partner",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "value",
+                "column": "value",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "duplicate_type",
+                "column": "duplicate_type",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "duplicate_status",
+                "column": "duplicate_status",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "ou_uid",
+                "column": "ou_uid",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "de_uid",
+                "column": "de_uid",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "coc_uid",
+                "column": "coc_uid",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {"name": "group_id", "column": "group_id", "type": "java.lang.String", "hidden": false, "meta": false}],
+            "rows": [
+                ["Animal Region","Bird District","Cardinal Site","","Cardinal Site","6","2013Oct","TX_CURR (N, DSD, Age/Sex Aggregated): Receiving ART","(15+, Female)","USAID","(1009 Demoland USAID Owl IM)","Demoland Owl IP","11","DISCORDANT","RESOLVED","HfiOUYEPgLK","H9Q2jDZ76ih","TbYpjxM5j6w","dd978a42a0fa04a0441e88bac3e394b8"],
+                ["Animal Region","Bird District","Cardinal Site","","Cardinal Site","6","2013Oct","TX_CURR (N, DSD, Age/Sex Aggregated): Receiving ART","(15+, Female)","USAID","(1030 Demoland USAID Perch IM)","Demoland Perch IP","3","DISCORDANT","RESOLVED","HfiOUYEPgLK","H9Q2jDZ76ih","TbYpjxM5j6w","dd978a42a0fa04a0441e88bac3e394b8"],
+                ["Animal Region","Bird District","Cardinal Site","","Cardinal Site","6","2013Oct","TX_CURR (N, DSD, Age/Sex Aggregated): Receiving ART","(15+, Female)","","(00000 De-duplication adjustment)","","-2","DISCORDANT","RESOLVED","HfiOUYEPgLK","H9Q2jDZ76ih","TbYpjxM5j6w","dd978a42a0fa04a0441e88bac3e394b8"]
+            ],
+            "width": 19,
+            "height": 3
+        }
     };
 
     window.fixtures = {

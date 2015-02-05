@@ -2,6 +2,7 @@ describe('Dedupe record service', function () {
     var fixtures = window.fixtures;
     var $httpBackend;
     var dedupeRecordService;
+    var getRecordsRequest;
 
     beforeEach(module('PEPFAR.dedupe'));
     beforeEach(inject(function ($injector) {
@@ -10,7 +11,7 @@ describe('Dedupe record service', function () {
         dedupeRecordService = $injector.get('dedupeRecordService');
 
         //TODO: Exchange this for the "real" url
-        $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data')
+        getRecordsRequest = $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data')
             .respond(200, fixtures.get('smallerDedupe'));
     }));
 
@@ -105,6 +106,33 @@ describe('Dedupe record service', function () {
                 it('should set the value onto the data object', function () {
                     expect(firstDataRow.value).toBe(23);
                 });
+            });
+        });
+
+        describe('resolved', function () {
+            var dedupeRecord;
+
+            beforeEach(function () {
+                getRecordsRequest.respond(200, fixtures.get('resolvedDedupe'));
+
+                dedupeRecordService.getRecords()
+                    .then(function (records) {
+                        dedupeRecord = records[0];
+                    });
+
+                $httpBackend.flush();
+            });
+
+            it('should set resolve.isResolved to true', function () {
+                expect(dedupeRecord.resolve.isResolved).toBe(true);
+            });
+
+            it('should set the resolve.value to the actual number', function () {
+                expect(dedupeRecord.resolve.value).toBe(12);
+            });
+
+            it('should set the resolved type to custom', function () {
+                expect(dedupeRecord.resolve.type).toBe('custom');
             });
         });
 

@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').factory('dedupeSaverService', dedupeSaverService);
 
-function dedupeSaverService($q, Restangular, dedupeCategoryOptionComboId) {
+function dedupeSaverService($q, Restangular, DEDUPE_CATEGORY_OPTION_COMBO_ID) {
     return {
         saveDeduplication: saveDeduplication
     };
@@ -42,8 +42,8 @@ function dedupeSaverService($q, Restangular, dedupeCategoryOptionComboId) {
             period: getValueFromObjectorThrow('timePeriodName', dedupeRecord.details),
             orgUnit: getValueFromObjectorThrow('orgUnitId', dedupeRecord.details),
             categoryOptionCombo: getValueFromObjectorThrow('categoryOptionComboId', dedupeRecord.details),
-            attributeOptionCombo: dedupeCategoryOptionComboId,
-            value: getValueFromObjectorThrow('adjustmentValue', dedupeRecord.resolve).toString()
+            attributeOptionCombo: DEDUPE_CATEGORY_OPTION_COMBO_ID,
+            value: getValueFromObjectorThrow('adjustedValue', dedupeRecord.resolve).toString()
         };
     }
 

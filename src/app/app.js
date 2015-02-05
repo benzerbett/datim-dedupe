@@ -7,7 +7,8 @@ angular.module('PEPFAR.dedupe').run(function (Restangular) {
 });
 
 //Config values
-angular.module('PEPFAR.dedupe').value('dedupeCategoryOptionComboId', 'LJ8K9VORX9s');
+angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_OPTION_COMBO_ID', 'LJ8K9VORX9s');
+angular.module('PEPFAR.dedupe').value('DEDUPE_MECHANISM_NAME', '(00000 De-duplication adjustment)');
 
 //==================================================================================
 // Bootstrap the app manually

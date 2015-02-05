@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').factory('dedupeRecordService', dedupeRecordService);
 
-function dedupeRecordService(Restangular) {
+function dedupeRecordService(Restangular, DEDUPE_MECHANISM_NAME) {
     var headers;
 
     return {
@@ -49,33 +49,54 @@ function dedupeRecordService(Restangular) {
             },
             data: [],
             resolve: {
-                isResolved: getColumnValue('orgunit_name', rows[0]) === 'RESOLVED' ? true : false,
+                isResolved: isResolved(rows),
                 type: undefined,
                 value: undefined
             }
         };
 
-        rows.forEach(processRecord(dedupeRecord));
+        if (isResolved(rows)) {
+            dedupeRecord.resolve.type = getDedupeType(rows);
+            dedupeRecord.resolve.value = calculateActualDedupedValue(rows);
+        }
+
+        getNonDedupeRows(rows).forEach(processRecord(dedupeRecord));
 
         return dedupeRecord;
     }
     function processRecord(dedupeRecord) {
         return function (record) {
-            var mechanism = getColumnValue('mechanism', record);
+            //var mechanism = getColumnValue('mechanism', record);
             var partnerName = getColumnValue('partner', record);
             var agencyName = getColumnValue('agency', record);
             var value = getColumnValue('value', record);
 
-            if (partnerName === '' && mechanism === '(00000 De-duplication adjustment)') {
-                dedupeRecord.resolve.value = parseFloat(value);
-            } else {
-                dedupeRecord.data.push({
-                    agency: agencyName,
-                    partner: partnerName,
-                    value: parseFloat(value)
-                });
-            }
+            dedupeRecord.data.push({
+                agency: agencyName,
+                partner: partnerName,
+                value: parseFloat(value)
+            });
         };
+    }
+
+    function isResolved(dataRows) {
+        return dataRows.some(isDedupeMechanismRow) && dataRows.every(function (row) {
+                return (getColumnValue('duplicate_status', row) === 'RESOLVED');
+            });
+    }
+
+    function getDedupeType(dataRows) {
+        switch (calculateActualDedupedValue(dataRows)) {
+            case getTotalOfAllNonDedupeRows(dataRows):
+                return 'sum';
+            case getMaxOfAllNonDedupedRows(dataRows):
+                return 'max';
+        }
+        return 'custom';
+    }
+
+    function calculateActualDedupedValue(dataRows) {
+        return getTotalOfAllNonDedupeRows(dataRows) + getDedupeAdjustmentValue(dataRows);
     }
 
     function recordGroupIdentifier(record) {
@@ -86,5 +107,49 @@ function dedupeRecordService(Restangular) {
         var columnIndex = headers.indexOf(columnName);
 
         return columnIndex >= 0 ? record[columnIndex] : undefined;
+    }
+
+    function getDedupeAdjustmentValue(dataRows) {
+        var dedupeAdjustmentRow = _.chain(dataRows)
+            .filter(isDedupeMechanismRow)
+            .map(pickValueColumn)
+            .value();
+
+        if (dedupeAdjustmentRow.length > 1) { throw new Error('More than 1 dedupe adjustment row found'); }
+
+        return dedupeAdjustmentRow.reduce(add, 0);
+    }
+
+    function getTotalOfAllNonDedupeRows(dataRows) {
+        return _.chain(getNonDedupeRows(dataRows))
+            .map(pickValueColumn)
+            .reduce(add, 0)
+            .value();
+    }
+
+    function getMaxOfAllNonDedupedRows(dataRows) {
+        var rowValues = _.chain(getNonDedupeRows(dataRows))
+            .map(pickValueColumn)
+            .value();
+
+        return Math.max.apply(Math, rowValues);
+    }
+
+    function getNonDedupeRows(dataRows) {
+        return _.chain(dataRows)
+            .reject(isDedupeMechanismRow)
+            .value();
+    }
+
+    function isDedupeMechanismRow(row) {
+        return getColumnValue('mechanism', row) === DEDUPE_MECHANISM_NAME;
+    }
+
+    function pickValueColumn(row) {
+        return parseFloat(getColumnValue('value', row));
+    }
+
+    function add(left, right) {
+        return left + right;
     }
 }

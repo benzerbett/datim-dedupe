@@ -5,7 +5,18 @@ describe('Dedupe directive', function () {
     var $rootScope;
 
     beforeEach(module('dedupe/dedupe.html'));
-    beforeEach(module('PEPFAR.dedupe'));
+    beforeEach(module('PEPFAR.dedupe', function ($provide) {
+        $provide.factory('dedupeService', function ($q) {
+            return {
+                resolveDuplicates: jasmine.createSpy()
+                    .and.returnValue($q.when(true)),
+                getMax: jasmine.createSpy()
+                    .and.returnValue(60),
+                getSum: jasmine.createSpy()
+                    .and.returnValue(120)
+            };
+        });
+    }));
 
     beforeEach(inject(function ($injector) {
         var $compile = $injector.get('$compile');
@@ -538,6 +549,51 @@ describe('Dedupe directive', function () {
                         });
                     });
                 });
+
+                describe('resolve button row', function () {
+                    var resolveButtonColumn;
+
+                    beforeEach(function () {
+                        resolveButtonColumn = actionsRows[3].querySelector('.resolve-action-button');
+                    });
+
+                    it('should have a column', function () {
+                        expect(resolveButtonColumn).toEqual(jasmine.any(HTMLElement));
+                    });
+
+                    it('should have the col-sm-12 class', function () {
+                        expect(resolveButtonColumn).toHaveClass('col-sm-12');
+                    });
+
+                    describe('button', function () {
+                        var resolveButton;
+
+                        beforeEach(function () {
+                            resolveButton = resolveButtonColumn.querySelector('button');
+                        });
+
+                        it('should exist', function () {
+                            expect(resolveButton).toEqual(jasmine.any(HTMLElement));
+                        });
+
+                        it('should have a translate attribute', function () {
+                            expect(resolveButton).toHaveAttribute('translate');
+                        });
+
+                        it('should have the content Resolve', function () {
+                            expect(resolveButton.textContent).toBe('Resolve');
+                        });
+
+                        it('should have the classes button and btn-primary', function () {
+                            expect(resolveButton).toHaveClass('btn');
+                            expect(resolveButton).toHaveClass('btn-primary');
+                        });
+
+                        it('should have ng-click', function () {
+                            expect(resolveButton).toHaveAttribute('ng-click');
+                        });
+                    });
+                });
             });
         });
 
@@ -617,6 +673,15 @@ describe('Dedupe directive', function () {
                 expect($scope.firstDedupeRecord.resolve.value).toBe(undefined);
                 expect(dedupeForm).toHaveClass('ng-invalid');
             });
+
+            it('should call resolve on the dedupeService', inject(function (dedupeService) {
+                var resolveButton = element[0].querySelector('.resolve-action-button button');
+
+                resolveButton.click();
+                $scope.$apply();
+
+                expect(dedupeService.resolveDuplicates).toHaveBeenCalledWith([$scope.firstDedupeRecord]);
+            }));
         });
     });
 });
