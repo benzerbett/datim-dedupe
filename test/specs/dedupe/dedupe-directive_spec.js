@@ -16,7 +16,9 @@ describe('Dedupe directive', function () {
         $scope.firstDedupeRecord = {
             details: {
                 orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014'
+                timePeriodName: 'FY 2014',
+                dataElementId: 'K6f6jR0NOcZ',
+                dataElementName: 'HTC_TST (N, DSD): HTC received results'
             },
             data: [
                 {agency: 'USAID', partner: 'PartnerA', value: 60},
@@ -42,74 +44,91 @@ describe('Dedupe directive', function () {
     });
 
     describe('dedupe details', function () {
-        var dedupeDetailsElement;
+        var dedupeDetailsElementFirstRow;
+        var dedupeDetailsElementSecondRow;
 
         beforeEach(function () {
-            dedupeDetailsElement = element[0].querySelector('.row.dedupe-details');
+            dedupeDetailsElementFirstRow = element[0].querySelectorAll('.dedupe-details .row')[0];
+            dedupeDetailsElementSecondRow = element[0].querySelectorAll('.dedupe-details .row')[1];
         });
 
-        it('should be a row', function () {
-            expect(dedupeDetailsElement).toEqual(jasmine.any(HTMLElement));
+        it('should have two rows', function () {
+            expect(dedupeDetailsElementFirstRow).toEqual(jasmine.any(HTMLElement));
+            expect(dedupeDetailsElementSecondRow).toEqual(jasmine.any(HTMLElement));
+        });
+
+        it('should have a column for the data element name', function () {
+            expect(dedupeDetailsElementFirstRow.querySelector('.dataelement-name')).toEqual(jasmine.any(HTMLElement));
+        });
+
+        it('should have a span for the value of data element', function () {
+            expect(dedupeDetailsElementFirstRow.querySelector('.dataelement-name').querySelector('span')).toEqual(jasmine.any(HTMLElement));
         });
 
         it('should have a column for the org unit label', function () {
-            expect(dedupeDetailsElement.querySelector('.organisation-unit-label')).toEqual(jasmine.any(HTMLElement));
+            expect(dedupeDetailsElementSecondRow.querySelector('.organisation-unit-label')).toEqual(jasmine.any(HTMLElement));
         });
 
         it('should have a column for the org unit name', function () {
-            expect(dedupeDetailsElement.querySelector('.organisation-unit-name')).toEqual(jasmine.any(HTMLElement));
+            expect(dedupeDetailsElementSecondRow.querySelector('.organisation-unit-name')).toEqual(jasmine.any(HTMLElement));
         });
 
         it('should set the appropriate column width for the org unit fields', function () {
-            expect(dedupeDetailsElement.querySelector('.organisation-unit-label')).toHaveClass('col-sm-2');
-            expect(dedupeDetailsElement.querySelector('.organisation-unit-name')).toHaveClass('col-sm-4');
+            expect(dedupeDetailsElementSecondRow.querySelector('.organisation-unit-label')).toHaveClass('col-sm-2');
+            expect(dedupeDetailsElementSecondRow.querySelector('.organisation-unit-name')).toHaveClass('col-sm-4');
         });
 
         it('should have a column for the period label', function () {
-            expect(dedupeDetailsElement.querySelector('.period-label')).toEqual(jasmine.any(HTMLElement));
+            expect(dedupeDetailsElementSecondRow.querySelector('.period-label')).toEqual(jasmine.any(HTMLElement));
         });
 
         it('should have a column for the period name', function () {
-            expect(dedupeDetailsElement.querySelector('.period-name')).toEqual(jasmine.any(HTMLElement));
+            expect(dedupeDetailsElementSecondRow.querySelector('.period-name')).toEqual(jasmine.any(HTMLElement));
         });
 
         it('should set the appropriate column width for the period fields', function () {
-            expect(dedupeDetailsElement.querySelector('.period-label')).toHaveClass('col-sm-2');
-            expect(dedupeDetailsElement.querySelector('.period-name')).toHaveClass('col-sm-4');
+            expect(dedupeDetailsElementSecondRow.querySelector('.period-label')).toHaveClass('col-sm-2');
+            expect(dedupeDetailsElementSecondRow.querySelector('.period-name')).toHaveClass('col-sm-4');
         });
 
         it('should place the text "Org unit:" in the org unit label', function () {
-            var textElement = dedupeDetailsElement.querySelector('.organisation-unit-label').querySelector('span');
+            var textElement = dedupeDetailsElementSecondRow.querySelector('.organisation-unit-label').querySelector('span');
 
             expect(textElement.textContent).toEqual('Org unit:');
         });
 
         it('should add the translate directive onto the org unit label', function () {
-            var textElement = dedupeDetailsElement.querySelector('.organisation-unit-label').querySelector('span');
+            var textElement = dedupeDetailsElementSecondRow.querySelector('.organisation-unit-label').querySelector('span');
 
             expect(textElement).toHaveAttribute('translate');
         });
 
         it('should place the text "Time period:" into the period label', function () {
-            var textElement = dedupeDetailsElement.querySelector('.period-label').querySelector('span');
+            var textElement = dedupeDetailsElementSecondRow.querySelector('.period-label').querySelector('span');
 
             expect(textElement.textContent).toEqual('Time period:');
         });
 
         it('should add the translate directive onto the period label', function () {
-            var textElement = dedupeDetailsElement.querySelector('.period-label').querySelector('span');
+            var textElement = dedupeDetailsElementSecondRow.querySelector('.period-label').querySelector('span');
 
             expect(textElement).toHaveAttribute('translate');
         });
 
+        it('should set the data element name to ', function () {
+            var textElement = dedupeDetailsElementFirstRow.querySelector('.dataelement-name').querySelector('span');
+
+            expect(textElement.textContent).toEqual('HTC_TST (N, DSD): HTC received results');
+        });
+
         it('should set the org unit name to Glady\'s clinic', function () {
-            var textElement = dedupeDetailsElement.querySelector('.organisation-unit-name span');
+            var textElement = dedupeDetailsElementSecondRow.querySelector('.organisation-unit-name span');
 
             expect(textElement.textContent).toEqual('Glady\'s clinic');
         });
 
         it('should set the time period to FY 2014', function () {
-            var textElement = dedupeDetailsElement.querySelector('.period-name span');
+            var textElement = dedupeDetailsElementSecondRow.querySelector('.period-name span');
 
             expect(textElement.textContent).toEqual('FY 2014');
         });
@@ -192,7 +211,7 @@ describe('Dedupe directive', function () {
                     });
 
                     it('should have the col-sm-4 class', function () {
-                        expect(secondHeaderColumn).toHaveClass('col-sm-4');
+                        expect(secondHeaderColumn).toHaveClass('col-sm-6');
                     });
 
                     it('should have the label "Partner"', function () {
@@ -216,7 +235,7 @@ describe('Dedupe directive', function () {
                     });
 
                     it('should have the col-sm-4 class', function () {
-                        expect(thirdHeaderColumn).toHaveClass('col-sm-4');
+                        expect(thirdHeaderColumn).toHaveClass('col-sm-2');
                     });
 
                     it('should have the label "Value"', function () {
@@ -255,14 +274,14 @@ describe('Dedupe directive', function () {
                     var partnerNameElement = dedupeDataTable.querySelector('.table-data.row .partner-name');
 
                     expect(partnerNameElement).toEqual(jasmine.any(HTMLElement));
-                    expect(partnerNameElement).toHaveClass('col-sm-4');
+                    expect(partnerNameElement).toHaveClass('col-sm-6');
                 });
 
                 it('should have an value column with the right class', function () {
                     var valueElement = dedupeDataTable.querySelector('.table-data.row .value');
 
                     expect(valueElement).toEqual(jasmine.any(HTMLElement));
-                    expect(valueElement).toHaveClass('col-sm-4');
+                    expect(valueElement).toHaveClass('col-sm-2');
                 });
 
                 it('should display the agency names', function () {
@@ -573,13 +592,13 @@ describe('Dedupe directive', function () {
             });
 
             it('should set the form to be invalid when it is not touched', function () {
-                var dedupeForm = element[0].querySelector('.dedupe-resolve-actions');
+                var dedupeForm = element[0];
 
                 expect(dedupeForm).toHaveClass('ng-invalid');
             });
 
             it('should set the form to valid when a resolve has been chosen', function () {
-                var dedupeForm = element[0].querySelector('.dedupe-resolve-actions');
+                var dedupeForm = element[0];
                 var sumRadioButton = element[0].querySelector('.resolve-action-sum input[type=radio]');
 
                 sumRadioButton.click();
@@ -589,7 +608,7 @@ describe('Dedupe directive', function () {
             });
 
             it('should keep the form invalid if the value is not a number', function () {
-                var dedupeForm = element[0].querySelector('.dedupe-resolve-actions');
+                var dedupeForm = element[0];
                 var sumRadioButton = element[0].querySelector('.resolve-action-custom input[type=radio]');
 
                 sumRadioButton.click();

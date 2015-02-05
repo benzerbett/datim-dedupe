@@ -1,16 +1,23 @@
-<div class="dedupe-wrap well">
-    <div class="dedupe-details row">
-        <div class="organisation-unit-label col-sm-2">
-            <span translate>Org unit:</span>
+<div class="dedupe-wrap well" ng-form>
+    <div class="dedupe-details">
+        <div class="row">
+            <div class="dataelement-name col-sm-12">
+                <span ng-bind="::dedupeCtrl.dedupeRecord.details.dataElementName"></span>
+            </div>
         </div>
-        <div class="organisation-unit-name col-sm-4">
-            <span ng-bind="::dedupeCtrl.dedupeRecord.details.orgUnitName"></span>
-        </div>
-        <div class="period-label col-sm-2">
-            <span translate>Time period:</span>
-        </div>
-        <div class="period-name col-sm-4">
-            <span ng-bind="::dedupeCtrl.dedupeRecord.details.timePeriodName"></span>
+        <div class="row">
+            <div class="organisation-unit-label col-sm-2">
+                <span translate>Org unit:</span>
+            </div>
+            <div class="organisation-unit-name col-sm-4">
+                <span ng-bind="::dedupeCtrl.dedupeRecord.details.orgUnitName"></span>
+            </div>
+            <div class="period-label col-sm-2">
+                <span translate>Time period:</span>
+            </div>
+            <div class="period-name col-sm-4">
+                <span ng-bind="::dedupeCtrl.dedupeRecord.details.timePeriodName"></span>
+            </div>
         </div>
     </div>
     <div class="dedupe-data row">
@@ -19,10 +26,10 @@
                 <div class="col-sm-4">
                     <span translate>Agency</span>
                 </div>
-                <div class="col-sm-4">
+                <div class="col-sm-6">
                     <span translate>Partner</span>
                 </div>
-                <div class="col-sm-4">
+                <div class="col-sm-2">
                     <span translate>Value</span>
                 </div>
             </div>
@@ -33,47 +40,49 @@
                 <div class="agency-name col-sm-4">
                     <span ng-bind="::dedupeRecord.agency"></span>
                 </div>
-                <div class="partner-name col-sm-4">
+                <div class="partner-name col-sm-6">
                     <span ng-bind="::dedupeRecord.partner"></span>
                 </div>
-                <div class="value col-sm-4">
+                <div class="value col-sm-2">
                     <span ng-bind="::dedupeRecord.value"></span>
                 </div>
             </div>
         </div>
-        <div class="dedupe-resolve-actions col-sm-6" ng-form>
-            <div class="resolve-header row">
-                <div class="col-sm-12">
-                    <span translate>How to resolve?</span>
+        <div class="dedupe-resolve-actions col-sm-6">
+            <div class="resolve-wrap">
+                <div class="resolve-header row">
+                    <div class="col-sm-12">
+                        <span translate>How to resolve?</span>
+                    </div>
                 </div>
-            </div>
-            <div class="resolve-actions row">
-                <div class="resolve-action-max col-sm-12">
-                    <label>
-                        <input value="max" type="radio" ng-model="dedupeCtrl.dedupeRecord.resolve.type" ng-required="!dedupeCtrl.dedupeRecord.resolve.type" ng-change="dedupeCtrl.resolveWithMax()">
-                        <span translate>Use max</span>
-                        <span class="value" ng-bind="'(' + dedupeCtrl.getMax() + ')'"></span>
-                    </label>
+                <div class="resolve-actions row">
+                    <div class="resolve-action-max col-sm-12">
+                        <label>
+                            <input value="max" type="radio" ng-model="dedupeCtrl.dedupeRecord.resolve.type" ng-required="!dedupeCtrl.dedupeRecord.resolve.type" ng-change="dedupeCtrl.resolveWithMax()">
+                            <span translate>Use max</span>
+                            <span class="value" ng-bind="'(' + dedupeCtrl.getMax() + ')'"></span>
+                        </label>
+                    </div>
                 </div>
-            </div>
-            <div class="resolve-actions row">
-                <div class="resolve-action-sum col-sm-12">
-                    <label>
-                        <input value="sum" type="radio" ng-model="dedupeCtrl.dedupeRecord.resolve.type" ng-required="!dedupeCtrl.dedupeRecord.resolve.type" ng-change="dedupeCtrl.resolveWithSum()">
-                        <span translate>Use sum</span>
-                        <span class="value" ng-bind="'(' + dedupeCtrl.getSum() + ')'"></span>
-                    </label>
+                <div class="resolve-actions row">
+                    <div class="resolve-action-sum col-sm-12">
+                        <label>
+                            <input value="sum" type="radio" ng-model="dedupeCtrl.dedupeRecord.resolve.type" ng-required="!dedupeCtrl.dedupeRecord.resolve.type" ng-change="dedupeCtrl.resolveWithSum()">
+                            <span translate>Use sum</span>
+                            <span class="value" ng-bind="'(' + dedupeCtrl.getSum() + ')'"></span>
+                        </label>
+                    </div>
                 </div>
-            </div>
-            <div class="resolve-actions row">
-                <div class="resolve-action-custom col-sm-12">
-                    <label>
-                        <input value="custom" type="radio" ng-model="dedupeCtrl.dedupeRecord.resolve.type" ng-required="!dedupeCtrl.dedupeRecord.resolve.type" ng-change="dedupeCtrl.resolveWithCustom()">
-                        <span translate>Use a custom value</span>
-                    </label>
-                    <span class="value">
-                        <input type="number" min="0" ng-model="dedupeCtrl.dedupeRecord.resolve.value" ng-required="dedupeCtrl.dedupeRecord.resolve.type == 'custom'" ng-change="dedupeCtrl.dedupeRecord.resolve.type = 'custom'" />
-                    </span>
+                <div class="resolve-actions row">
+                    <div class="resolve-action-custom col-sm-12">
+                        <label>
+                            <input value="custom" type="radio" ng-model="dedupeCtrl.dedupeRecord.resolve.type" ng-required="!dedupeCtrl.dedupeRecord.resolve.type" ng-change="dedupeCtrl.resolveWithCustom()">
+                            <span translate>Use a custom value</span>
+                        </label>
+                        <span class="value">
+                            <input type="number" min="0" ng-model="dedupeCtrl.dedupeRecord.resolve.value" ng-required="dedupeCtrl.dedupeRecord.resolve.type == 'custom'" ng-change="dedupeCtrl.dedupeRecord.resolve.type = 'custom'" />
+                        </span>
+                    </div>
                 </div>
             </div>
         </div>

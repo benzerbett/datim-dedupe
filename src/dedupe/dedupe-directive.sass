@@ -1,61 +1,69 @@
-.dedupe-resolve-actions
-  border: 1px solid transparent
-  border-radius: 5px
-  padding: 10px
-
-  &.ng-invalid.ng-dirty
-    background-color: rgba(255, 0, 0, .025)
-    border-color: red
-
-  &.ng-valid.ng-dirty
-    background-color: rgba(0,255,0,.025)
-    border-color: green
-
 .dedupe-wrap
   border-color: #CCCCCC
   margin-bottom: 30px
 
-.dedupe-details
-  position: relative
-  background: #276696
-  padding: 10px
-  margin: 5px -20px 5px -30px
-  color: #FFFFFF
-  -webkit-box-shadow: 0px 2px 4px #888
-  -moz-box-shadow: 0px 2px 4px #888
-  box-shadow: 0px 2px 4px #888
-  margin-bottom: 20px
+  .dedupe-resolve-actions
+    .resolve-wrap
+      border: 1px solid transparent
+      border-radius: 5px
+      padding: 10px
+      margin: 0 auto
+      width: 75%
 
+  &.ng-valid .dedupe-details
+    background-color: green
 
-  &:before
-    content: ' '
-    position: absolute
-    width: 0
-    height: 0
-    left: 0px
-    top: 100%
-    border-width: 5px 5px
-    border-style: solid
-    border-color: #103A5A #103A5A transparent transparent
+  &.ng-invalid.ng-dirty .dedupe-details
+    background-color: #CA0000
 
+  .dedupe-details
+    position: relative
+    background: rgb(228, 121, 0)
+    padding: 10px
+    margin: 5px -20px 5px -30px
+    color: #FFFFFF
+    -webkit-box-shadow: 0px 2px 4px #888
+    -moz-box-shadow: 0px 2px 4px #888
+    box-shadow: 0px 2px 4px #888
+    margin-bottom: 20px
 
-  .organisation-unit-name,
-  .period-name
-    font-size: 1.2em
-    font-weight: bold
+    &:before
+      content: ' '
+      position: absolute
+      width: 0
+      height: 0
+      left: 0px
+      top: 100%
+      border-width: 5px 5px
+      border-style: solid
+      border-color: #103A5A #103A5A transparent transparent
 
-.table-header
-  font-weight: bold
-  border-bottom: 1px solid #DDDDDD
-  border-bottom: 1px solid #DDDDDD
+    .dataelement-name
+      font-size: 1.3em
+      font-weight: bold
 
-.table-data.row
-  border-bottom: 1px solid #DDDDDD
+    .organisation-unit-name,
+    .period-name
+      font-weight: bold
 
-  &.odd
-    background-color: #EEEEEE
+  .dedupe-data-table
+    font-size: 1.1em
 
-  &.even
+    .table-header
+      font-weight: bold
+      border-bottom: 1px solid #DDDDDD
+      border-bottom: 1px solid #DDDDDD
 
-  div
-    line-height: 2em
+    .table-data.row
+      border-bottom: 1px solid #DDDDDD
+
+      &.odd
+        background-color: #EEEEEE
+
+      &.even
+
+      div
+        line-height: 2em
+
+      .value
+        text-align: right
