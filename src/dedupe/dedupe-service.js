@@ -4,7 +4,8 @@ function dedupeService(dedupeRecordService) {
     return {
         getDuplicateRecords: getDuplicateRecords,
         getMax: getMax,
-        getSum: getSum
+        getSum: getSum,
+        resolveDuplicates: resolveDuplicates
     };
 
     function getDuplicateRecords() {
@@ -46,5 +47,9 @@ function dedupeService(dedupeRecordService) {
 
     function max(left, right) {
         return Math.max(left, right);
+    }
+
+    function resolveDuplicates() {
+
     }
 }

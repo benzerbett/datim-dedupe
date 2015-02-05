@@ -43,7 +43,8 @@ describe('App controller', function () {
                         value: undefined
                     }
                 }])),
-            resolveDeduplication: jasmine.createSpy('dedupeService.resolveDeduplication')
+            resolveDuplicates: jasmine.createSpy('dedupeService.resolveDuplicates')
+                .and.returnValue($q.when(true))
         };
 
         controller = $controller('appController', {
@@ -72,7 +73,7 @@ describe('App controller', function () {
 
         it('should set processing to false after duplicate records are loaded', function () {
             $rootScope.$apply();
-            
+
             expect(controller.isProcessing).toBe(false);
         });
     });
@@ -164,20 +165,32 @@ describe('App controller', function () {
     });
 
     describe('resolveDeduplication', function () {
+        beforeEach(function () {
+            //Apply rootscope to resolve the mock promise
+            $rootScope.$apply();
+        });
+
         it('should be a function', function () {
-            expect(controller.resolveDeduplication).toBeAFunction();
+            expect(controller.resolveDuplicates).toBeAFunction();
         });
 
         it('should call resolveDeduplication on the dedupeService', function () {
-            controller.resolveDeduplication();
+            controller.resolveDuplicates();
 
-            expect(dedupeServiceMock.resolveDeduplication).toHaveBeenCalledWith(controller.dedupeRecords);
+            expect(dedupeServiceMock.resolveDuplicates).toHaveBeenCalledWith(controller.dedupeRecords);
         });
 
         it('should set processing to true', function () {
-            controller.resolveDeduplication();
+            controller.resolveDuplicates();
 
             expect(controller.isProcessing).toBe(true);
+        });
+
+        it('should set processing to false after the resolve was completed', function () {
+            controller.resolveDuplicates();
+            $rootScope.$apply();
+
+            expect(controller.isProcessing).toBe(false);
         });
     });
 });

@@ -94,4 +94,10 @@ describe('Dedupe service', function () {
             expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalled();
         });
     });
+
+    describe('resolveDeduplication', function () {
+        it('should be a function', function () {
+            expect(dedupeService.resolveDuplicates).toBeAFunction();
+        });
+    });
 });

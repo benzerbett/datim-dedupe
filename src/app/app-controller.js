@@ -9,7 +9,7 @@ function appController(dedupeService) {
     //Controller methods
     ctrl.useMax = useMax;
     ctrl.useSum = useSum;
-    ctrl.resolveDeduplication = resolveDeduplication;
+    ctrl.resolveDuplicates = resolveDuplicates;
 
     //Call init method to get data from services
     initialise();
@@ -18,8 +18,8 @@ function appController(dedupeService) {
         dedupeService.getDuplicateRecords()
             .then(function (duplicateRecords) {
                 ctrl.dedupeRecords = duplicateRecords;
-                ctrl.isProcessing = false;
-            });
+            })
+            .finally(setProcessingToFalse);
     }
 
     function useMax() {
@@ -44,9 +44,14 @@ function appController(dedupeService) {
         });
     }
 
-    function resolveDeduplication() {
+    function resolveDuplicates() {
         ctrl.isProcessing = true;
 
-        dedupeService.resolveDeduplication(ctrl.dedupeRecords);
+        dedupeService.resolveDuplicates(ctrl.dedupeRecords)
+            .finally(setProcessingToFalse);
+    }
+
+    function setProcessingToFalse() {
+        ctrl.isProcessing = false;
     }
 }
