@@ -8,6 +8,13 @@ describe('Dedupe service', function () {
                     .and.returnValue($q.when(window.fixtures.get('dedupeRecords')))
             };
         });
+
+        $provide.factory('dedupeSaverService', function ($q) {
+            return {
+                saveDeduplication: jasmine.createSpy('dedupeSaverService.saveDeduplication')
+                    .and.returnValue($q.when(true))
+            };
+        });
     }));
     beforeEach(inject(function ($injector) {
         dedupeService = $injector.get('dedupeService');
@@ -96,8 +103,28 @@ describe('Dedupe service', function () {
     });
 
     describe('resolveDeduplication', function () {
+        var dedupeSaverServiceMock;
+
+        beforeEach(inject(function (dedupeSaverService) {
+            dedupeSaverServiceMock = dedupeSaverService;
+        }));
+
         it('should be a function', function () {
             expect(dedupeService.resolveDuplicates).toBeAFunction();
+        });
+
+        it('should take one argument', function () {
+            expect(dedupeService.resolveDuplicates.length).toBe(1);
+        });
+
+        it('should call the saveDuplicates on the dedupesaver service', function () {
+            dedupeService.resolveDuplicates();
+
+            expect(dedupeSaverServiceMock.saveDeduplication).toHaveBeenCalled();
+        });
+
+        it('should return a promise', function () {
+            expect(dedupeService.resolveDuplicates()).toBeAPromiseLikeObject();
         });
     });
 });

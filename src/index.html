@@ -18,13 +18,15 @@
 
     <div class="app-content-wrap">
         <form name="deduplication">
-            <dedupe dedupe-record="dedupeRecord" ng-repeat="dedupeRecord in app.dedupeRecords"></dedupe>
-            <div class="row">
+            <div class="dedupe-records">
+                <dedupe dedupe-record="dedupeRecord" ng-repeat="dedupeRecord in app.dedupeRecords"></dedupe>
+            </div>
+            <div class="resolve-footer">
                 <div class="col-sm-3">
                     <span translate>Mark all duplicates as</span>
                 </div>
                 <div class="col-sm-3">
-                    <div class="btn-group-vertical">
+                    <div class="btn-group">
                         <button class="btn btn-default" ng-click="app.useMax()">Use max</button>
                         <button class="btn btn-default" ng-click="app.useSum()">Use sum</button>
                     </div>
@@ -59,6 +61,7 @@
     <script src="dedupe/dedupe-directive.js"></script>
     <script src="dedupe/dedupe-service.js"></script>
     <script src="dedupe/deduperecord-service.js"></script>
+    <script src="dedupe/dedupesaver-service.js"></script>
     <!-- endbuild -->
 </body>
 </html>

@@ -6,6 +6,9 @@ angular.module('PEPFAR.dedupe').run(function (Restangular) {
     Restangular.setBaseUrl('/dhis/api');
 });
 
+//Config values
+angular.module('PEPFAR.dedupe').value('dedupeCategoryOptionComboId', 'LJ8K9VORX9s');
+
 //==================================================================================
 // Bootstrap the app manually
 //

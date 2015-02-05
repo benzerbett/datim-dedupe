@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').factory('dedupeService', dedupeService);
 
-function dedupeService(dedupeRecordService) {
+function dedupeService(dedupeRecordService, dedupeSaverService) {
     return {
         getDuplicateRecords: getDuplicateRecords,
         getMax: getMax,
@@ -49,7 +49,7 @@ function dedupeService(dedupeRecordService) {
         return Math.max(left, right);
     }
 
-    function resolveDuplicates() {
-
+    function resolveDuplicates(dedupeRecords) {
+        return dedupeSaverService.saveDeduplication(dedupeRecords);
     }
 }
