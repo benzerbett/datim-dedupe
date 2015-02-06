@@ -8,6 +8,27 @@
 
 Deduplication app for DATIM
 
+##Installing the app into your DHIS2
+
+####Step 1: Create the sql view
+The sql query to install the function needed to get de-dedupe data from the server can be found here https://raw.githubusercontent.com/dhis2/datim-dedupe/master/sql/dedupe_plpgsql.sql
+
+####Step 2: Create a system setting
+In order for the app to know which SQL view to ask for the data you need to add a system setting. The system setting should have the following name `keyDedupeSqlViewId`
+
+The value for this system setting is as shown below. This is a basic javascript object with the property name id and the sql view uid as its value.
+```json
+{
+	"id": "AuL6zTSLxNc"
+}
+```
+
+####Step 3: Install the datim-dedupe app
+You will find the latest version of the dedupe app here http://dhis2.github.io/pepfar-releases/. Download the zipfile and install it into dhis2 using the app management app you will find in the app menu. 
+
+That should be all.
+
+
 ## Contribute
 
 ### Setup the dhis.json config file
