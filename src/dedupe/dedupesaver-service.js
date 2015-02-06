@@ -6,8 +6,6 @@ function dedupeSaverService($q, Restangular, DEDUPE_CATEGORY_OPTION_COMBO_ID) {
     };
 
     function saveDeduplication(dedupeRecords) {
-        var dataValueSet = getDataValueSet();
-
         if (!Array.isArray(dedupeRecords)) {
             return $q.reject('Expected passed argument to dedupeSaverService.saveDeduplication to be an array.');
         }
@@ -16,23 +14,86 @@ function dedupeSaverService($q, Restangular, DEDUPE_CATEGORY_OPTION_COMBO_ID) {
             return $q.reject('No dedupe records passed to dedupeSaverService.saveDeduplication. (Empty array)');
         }
 
-        try {
-            dedupeRecords
-                .forEach(function (dedupeRecord) {
-                    dataValueSet.dataValues.push(getDataValue(dedupeRecord));
-                });
+        if (dedupeRecords.length > 1) {
+            return saveMultiple(dedupeRecords);
+        }
+        return saveSingle(_.first(dedupeRecords));
+    }
 
-        } catch (e) {
-            return window.console.log(e);
+    function saveMultiple(dedupeRecords) {
+        var dataValueSet = getDataValueSet();
+        var errorCount = 0;
+        var errors = [];
+
+        dedupeRecords
+            .forEach(function (dedupeRecord) {
+                try {
+                    dataValueSet.dataValues.push(getDataValue(dedupeRecord));
+                } catch (e) {
+                    errorCount += 1;
+                    errors.push(e);
+                }
+            });
+
+        if (dataValueSet.dataValues.length === 0) {
+            return $q.reject(getResponseStructure(0, errorCount, errors));
         }
 
         return Restangular.all('dataValueSets')
-            .post(dataValueSet);
+            .post(dataValueSet)
+            .then(function (importResult) {
+                //TODO: Include the conflicts that failed.
+                return getResponseStructure(
+                    importResult.dataValueCount.imported + importResult.dataValueCount.updated,
+                    errorCount + importResult.dataValueCount.ignored,
+                    _.union(errors, (importResult.conflicts || []))
+                        .map(function (error) {
+                            if (angular.isString(error.value) && !(error instanceof Error)) {
+                                return new Error(error.value);
+                            }
+                            return error;
+                        })
+                );
+            });
+    }
+
+    function saveSingle(dedupeRecord) {
+        try {
+            return Restangular.all('dataValues')
+                .customPOST('', undefined, getDataValuesQueryParameters(dedupeRecord))
+                .then(function () {
+                    return getResponseStructure(1, 0, []);
+                })
+                .catch(function (response) {
+                    return $q.reject(getResponseStructure(0, 1, [new Error('Saving failed (' + response.status + ': ' + response.data + ')')]));
+                });
+        } catch (e) {
+            return $q.reject(e.message);
+        }
+    }
+
+    function getResponseStructure(successCount, errorCount, errors) {
+        return {
+            successCount: successCount,
+            errorCount: errorCount,
+            errors: errors
+        };
     }
 
     function getDataValueSet() {
         return {
             dataValues: []
+        };
+    }
+
+    function getDataValuesQueryParameters(dedupeRecord) {
+        return {
+            de: getValueFromObjectorThrow('dataElementId', dedupeRecord.details),
+            pe: getValueFromObjectorThrow('timePeriodName', dedupeRecord.details),
+            ou: getValueFromObjectorThrow('orgUnitId', dedupeRecord.details),
+            co: getValueFromObjectorThrow('categoryOptionComboId', dedupeRecord.details),
+            cc: DEDUPE_CATEGORY_OPTION_COMBO_ID,
+            value: getValueFromObjectorThrow('adjustedValue', dedupeRecord.resolve).toString()
         };
     }
 

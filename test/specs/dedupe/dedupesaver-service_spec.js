@@ -78,8 +78,89 @@ describe('Dedupe saver service', function () {
                 dedupeSaverService.saveDeduplication([]);
             });
 
-            it('should call the api with the correct dataValueSet structure', function () {
-                $httpBackend.expectPOST('', {
+            describe('single value', function () {
+                it('should call the api with the correct dataValueSet structure', function () {
+                    $httpBackend.expectPOST('/dhis/api/dataValues?cc=LJ8K9VORX9s&co=HllvX50cXC0&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
+                        .respond(200, fixtures.get('importResponse'));
+
+                    dedupeSaverService.saveDeduplication([dedupeRecordOne]);
+
+                    $httpBackend.flush();
+                });
+
+                it('should return the response structure', function () {
+                    var responseStructure;
+                    $httpBackend.expectPOST('/dhis/api/dataValues?cc=LJ8K9VORX9s&co=HllvX50cXC0&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
+                        .respond(200, fixtures.get('importResponse'));
+
+                    dedupeSaverService.saveDeduplication([dedupeRecordOne])
+                        .then(function (response) {
+                            responseStructure = response;
+                        });
+
+                    $httpBackend.flush();
+
+                    expect(responseStructure.successCount).toBe(1);
+                    expect(responseStructure.errorCount).toBe(0);
+                    expect(responseStructure.errors).toEqual([]);
+                });
+
+                it('should reject the promise and not call the api when a value is incorrect', function () {
+                    var catchFunction = jasmine.createSpy('catchFunction');
+
+                    delete dedupeRecordOne.resolve.adjustedValue;
+
+                    dedupeSaverService.saveDeduplication([dedupeRecordOne])
+                        .catch(catchFunction);
+                    $rootScope.$apply();
+
+                    expect(catchFunction).toHaveBeenCalledWith('Did not find a value for "adjustedValue" on passed record. {"isResolved":true,"type":"custom","value":2023}');
+                });
+
+                it('should return the error structure when saving fails', function () {
+                    var catchFunction = jasmine.createSpy('catchFunction');
+
+                    $httpBackend.expectPOST('/dhis/api/dataValues?cc=LJ8K9VORX9s&co=HllvX50cXC0&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
+                        .respond(409, 'html error message');
+
+                    dedupeSaverService.saveDeduplication([dedupeRecordOne])
+                        .catch(catchFunction);
+                    $httpBackend.flush();
+
+                    expect(catchFunction).toHaveBeenCalledWith({successCount: 0, errorCount: 1, errors: [new Error('Saving failed (409: html error message)')]});
+                });
+            });
+
+            describe('multiple values', function () {
+                it('should call the api with multiple values when passed multiple', function () {
+                    $httpBackend.expectPOST('/dhis/api/dataValueSets', {
+                        dataValues: [
+                            {
+                                dataElement: 'K6f6jR0NOcZ',
+                                period: '2013Oct',
+                                orgUnit: 'HfiOUYEPgLK',
+                                categoryOptionCombo: 'HllvX50cXC0',
+                                attributeOptionCombo: 'LJ8K9VORX9s',
+                                value: '-400'
+                            },
+                            {
+                                dataElement: 'H9Q2jDZ76ih',
+                                period: '2013Oct',
+                                orgUnit: 'HfiOUYEPgLK',
+                                categoryOptionCombo: 'TbYpjxM5j6w',
+                                attributeOptionCombo: 'LJ8K9VORX9s',
+                                value: '124'
+                            }
+                        ]
+                    }).respond(200, fixtures.get('importResponse'));
+
+                    dedupeSaverService.saveDeduplication([dedupeRecordOne, dedupeRecordTwo]);
+
+                    $httpBackend.flush();
+                });
+
+                it('should call the api with the resulting values if one of the values was incorrect', function () {
+                    $httpBackend.expectPOST('/dhis/api/dataValueSets', {
                         dataValues: [
                             {
                                 dataElement: 'K6f6jR0NOcZ',
@@ -92,36 +173,79 @@ describe('Dedupe saver service', function () {
                         ]
                     }).respond(200, fixtures.get('importResponse'));
 
-                dedupeSaverService.saveDeduplication([dedupeRecordOne]);
+                    delete dedupeRecordTwo.resolve.adjustedValue;
 
-                $httpBackend.flush();
-            });
+                    dedupeSaverService.saveDeduplication([dedupeRecordOne, dedupeRecordTwo]);
 
-            it('should call the api with multiple values when passed multiple', function () {
-                $httpBackend.expectPOST('', {
-                    dataValues: [
-                        {
-                            dataElement: 'K6f6jR0NOcZ',
-                            period: '2013Oct',
-                            orgUnit: 'HfiOUYEPgLK',
-                            categoryOptionCombo: 'HllvX50cXC0',
-                            attributeOptionCombo: 'LJ8K9VORX9s',
-                            value: '-400'
-                        },
-                        {
-                            dataElement: 'H9Q2jDZ76ih',
-                            period: '2013Oct',
-                            orgUnit: 'HfiOUYEPgLK',
-                            categoryOptionCombo: 'TbYpjxM5j6w',
-                            attributeOptionCombo: 'LJ8K9VORX9s',
-                            value: '124'
-                        }
-                    ]
-                }).respond(200, fixtures.get('importResponse'));
+                    $httpBackend.flush();
+                });
 
-                dedupeSaverService.saveDeduplication([dedupeRecordOne, dedupeRecordTwo]);
+                it('should return an object with the number of success', function () {
+                    var promiseResult;
+                    var importResponse = fixtures.get('importResponse');
+                    importResponse.dataValueCount.imported = 2;
 
-                $httpBackend.flush();
+                    $httpBackend.expectPOST('/dhis/api/dataValueSets').respond(200, importResponse);
+
+                    dedupeSaverService.saveDeduplication([dedupeRecordOne, dedupeRecordTwo])
+                        .then(function (data) {
+                            promiseResult = data;
+                        });
+                    $httpBackend.flush();
+
+                    expect(promiseResult.successCount).toBe(2);
+                    expect(promiseResult.errorCount).toBe(0);
+                    expect(promiseResult.errors).toEqual([]);
+                });
+
+                it('should return an object with the errors', function () {
+                    var promiseResult;
+
+                    delete dedupeRecordOne.resolve.adjustedValue;
+                    delete dedupeRecordTwo.details.orgUnitId;
+
+                    dedupeSaverService.saveDeduplication([dedupeRecordOne, dedupeRecordTwo])
+                        .catch(function (data) {
+                            promiseResult = data;
+                        });
+                    $rootScope.$apply();
+
+                    expect(promiseResult.successCount).toBe(0);
+                    expect(promiseResult.errorCount).toBe(2);
+                    expect(promiseResult.errors).toEqual([
+                        new Error('Did not find a value for "adjustedValue" on passed record. {"isResolved":true,"type":"custom","value":2023}'),
+                        new Error('Did not find a value for "orgUnitId" on passed record. ' +
+                        '{"orgUnitName":"Cardinal Site","timePeriodName":"2013Oct","dataElementId":"H9Q2jDZ76ih",' +
+                        '"dataElementName":"TX_CURR (N, DSD, Age/Sex Aggregated): Receiving ART",' +
+                        '"categoryOptionComboId":"TbYpjxM5j6w","categoryOptionComboName":"(15+, Female)"}')
+                    ]);
+                });
+
+                it('should add the conflicts as errors', function () {
+                    var promiseResult;
+                    var importResponse = fixtures.get('importResponse');
+                    importResponse.dataValueCount.imported = 1;
+                    importResponse.dataValueCount.ignored = 1;
+                    importResponse.conflicts = [
+                        {value:'Data element not found or not acccessible'}
+                    ];
+                    delete dedupeRecordOne.resolve.adjustedValue;
+
+                    $httpBackend.expectPOST('/dhis/api/dataValueSets').respond(200, importResponse);
+
+                    dedupeSaverService.saveDeduplication([dedupeRecordOne, dedupeRecordTwo])
+                        .then(function (data) {
+                            promiseResult = data;
+                        });
+                    $httpBackend.flush();
+
+                    expect(promiseResult.successCount).toBe(1);
+                    expect(promiseResult.errorCount).toBe(2);
+                    expect(promiseResult.errors).toEqual([
+                        new Error('Did not find a value for "adjustedValue" on passed record. {"isResolved":true,"type":"custom","value":2023}'),
+                        new Error('Data element not found or not acccessible')
+                    ]);
+                });
             });
         });
     });
