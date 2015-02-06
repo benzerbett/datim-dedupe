@@ -51,8 +51,15 @@ describe('Dedupe saver service', function () {
             expect(catchFunction).toHaveBeenCalledWith('Expected passed argument to dedupeSaverService.saveDeduplication to be an array.');
         });
 
-        it('should throw if the argument is an empty array', function () {
+        it('should reject if the argument is an empty array', function () {
+            var catchFunction = jasmine.createSpy('saveDeduplication.catch');
 
+            dedupeSaverService.saveDeduplication([])
+                .catch(catchFunction);
+
+            $rootScope.$apply();
+
+            expect(catchFunction).toHaveBeenCalledWith('No dedupe records passed to dedupeSaverService.saveDeduplication. (Empty array)');
         });
 
         describe('save requests', function () {
@@ -80,7 +87,7 @@ describe('Dedupe saver service', function () {
 
             describe('single value', function () {
                 it('should call the api with the correct dataValueSet structure', function () {
-                    $httpBackend.expectPOST('/dhis/api/dataValues?cc=LJ8K9VORX9s&co=HllvX50cXC0&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
+                    $httpBackend.expectPOST('/dhis/api/dataValues?cc=wUpfppgjEza&co=HllvX50cXC0&cp=xEzelmtHWPn&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
                         .respond(200, fixtures.get('importResponse'));
 
                     dedupeSaverService.saveDeduplication([dedupeRecordOne]);
@@ -90,7 +97,7 @@ describe('Dedupe saver service', function () {
 
                 it('should return the response structure', function () {
                     var responseStructure;
-                    $httpBackend.expectPOST('/dhis/api/dataValues?cc=LJ8K9VORX9s&co=HllvX50cXC0&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
+                    $httpBackend.expectPOST('/dhis/api/dataValues?cc=wUpfppgjEza&co=HllvX50cXC0&cp=xEzelmtHWPn&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
                         .respond(200, fixtures.get('importResponse'));
 
                     dedupeSaverService.saveDeduplication([dedupeRecordOne])
@@ -120,7 +127,7 @@ describe('Dedupe saver service', function () {
                 it('should return the error structure when saving fails', function () {
                     var catchFunction = jasmine.createSpy('catchFunction');
 
-                    $httpBackend.expectPOST('/dhis/api/dataValues?cc=LJ8K9VORX9s&co=HllvX50cXC0&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
+                    $httpBackend.expectPOST('/dhis/api/dataValues?cc=wUpfppgjEza&co=HllvX50cXC0&cp=xEzelmtHWPn&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
                         .respond(409, 'html error message');
 
                     dedupeSaverService.saveDeduplication([dedupeRecordOne])
