@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').controller('appController', appController);
 
-function appController(dedupeService, $scope) {
+function appController(dedupeService, $scope, notify) {
     var ctrl = this;
 
     ctrl.isProcessing = true;
@@ -17,10 +17,12 @@ function appController(dedupeService, $scope) {
     //Call init method to get data from services
     initialise();
 
-    $scope.$on('DEDUPE_DIRECTIVE.resolve', function (event, dedupeRecordId/*, saveStatus*/) {
+    $scope.$on('DEDUPE_DIRECTIVE.resolve', function (event, dedupeRecordId, saveStatus) {
         ctrl.dedupeRecords = ctrl.dedupeRecords.filter(function (dedupeRecord) {
             return dedupeRecord.id !== dedupeRecordId;
         });
+
+        reportStatusToUser(saveStatus);
     });
 
     function initialise() {
@@ -52,6 +54,21 @@ function appController(dedupeService, $scope) {
         }
     }
 
+    //TODO: Write tests for this
+    function reportStatusToUser(saveStatus) {
+        if (saveStatus.successCount > 0) {
+            notify.success(['Successfully saved', saveStatus.successCount, 'dedupe(s).'].join(' '));
+        }
+
+        if (saveStatus.errorCount > 0) {
+            notify.error(['Unable to save', saveStatus.successCount, 'dedupe(s).'].join(' '));
+
+            saveStatus.errors.forEach(function (error) {
+                notify.warning(error.message);
+            });
+        }
+    }
+
     function useMax() {
         if (!Array.isArray(ctrl.dedupeRecords)) {
             return;
@@ -78,6 +95,12 @@ function appController(dedupeService, $scope) {
         ctrl.isProcessing = true;
 
         dedupeService.resolveDuplicates(ctrl.dedupeRecords)
+            .then(function (saveStatus) {
+                reportStatusToUser(saveStatus); //TODO: Write tests for this
+            })
+            .catch(function (saveStatus) {
+                reportStatusToUser(saveStatus); //TODO: Write tests for this
+            })
             .finally(setProcessingToFalse);
     }
 

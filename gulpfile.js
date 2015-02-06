@@ -13,6 +13,7 @@ var files = [
     'vendor/angular-animate/angular-animate.js',
     'vendor/lodash/dist/lodash.js',
     'vendor/restangular/dist/restangular.js',
+    'vendor/notify/notify-service.js',
 
     //Test specific includes
     'test/fixtures/fixtures.js',
@@ -130,8 +131,15 @@ gulp.task('copy-fonts', function () {
         .pipe(gulp.dest(buildDirectory));
 });
 
-gulp.task('build', function () {
-    runSequence('clean', 'test', 'i18n', 'manifest', 'images', 'jshint', 'jscs', 'min', 'copy-files', 'copy-fonts');
+gulp.task('build', function (cb) {
+    runSequence('clean', 'test', 'i18n', 'manifest', 'images', 'jshint', 'jscs', 'min', 'copy-files', 'copy-fonts', cb);
+});
+
+gulp.task('build-prod', function () {
+    runSequence('build', 'package', function () {
+        console.log();
+        console.log([__dirname, 'datim-dedupe.zip'].join('/'));
+    });
 });
 
 gulp.task('modify-manifest', function () {
@@ -168,11 +176,10 @@ gulp.task('copy-to-dev', function () {
     return runSequence('clean', 'i18n', 'manifest', 'images', 'jshint', 'jscs', 'min', 'copy-files', 'copy-fonts', 'modify-manifest', 'copy-app');
 });
 
-
 gulp.task('package', function () {
     var zip = require('gulp-zip');
     return gulp.src('build/**/*', { base: './build/' })
-        .pipe(zip('user-management.zip', { compress: false }))
+        .pipe(zip('datim-dedupe.zip', { compress: false }))
         .pipe(gulp.dest('.'));
 });
 

@@ -1,4 +1,4 @@
-angular.module('PEPFAR.dedupe', ['ngAnimate', 'restangular']);
+angular.module('PEPFAR.dedupe', ['ngAnimate', 'restangular', 'dhis2.notify']);
 
 angular.module('PEPFAR.dedupe').run(function (Restangular) {
     //TODO: Set the right base url using the manifest

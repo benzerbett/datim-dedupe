@@ -7,6 +7,7 @@
     <!-- build:css css/vendor.css -->
     <link href="../vendor/bootstrap/dist/css/bootstrap.css" rel="stylesheet" type="text/css" />
     <link href="../vendor/font-awesome/css/font-awesome.css" rel="stylesheet" type="text/css" />
+    <link href="../vendor/toastr/toastr.css" rel="stylesheet" type="text/css" />
     <link href="../vendor/animate.css/animate.css" rel="stylesheet" type="text/css" />
     <!-- endbuild -->
 
@@ -30,14 +31,16 @@
                         <button class="btn btn-default" ng-click="app.useSum()">Use sum</button>
                     </div>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-2">
                     <label>
                         <span>Show resolved: </span>
                         <input type="checkbox" ng-model="app.isIncludeResolved" ng-change="app.changedIncludeResolved()">
                     </label>
+                </div>
+                <div class="col-sm-2">
                     <span>Showing <span ng-bind="app.dedupeRecords.length"></span> of <span ng-bind="app.allDedupeRecords.length"></span></span>
                 </div>
-                <div class="col-sm-3 pull-right">
+                <div class="col-sm-3">
                     <button class="btn btn-primary" ng-disabled="!deduplication.$valid" ng-click="app.resolveDuplicates()" translate>Resolve duplicates</button>
                 </div>
             </div>
@@ -46,6 +49,7 @@
 
     <!-- build:js js/vendor.js -->
     <script src="../vendor/jquery/dist/jquery.js"></script>
+    <script src="../vendor/toastr/toastr.js"></script>
 
     <script src="../vendor/angular/angular.js"></script>
     <script src="../vendor/angular-animate/angular-animate.js"></script>
@@ -59,6 +63,7 @@
     <script src="../vendor/angular-translate-loader-static-files/angular-translate-loader-static-files.js"></script>
 
     <script src="../vendor/ngBootstrapper/ngBootstrapper.js"></script>
+    <script src="../vendor/notify/notify-service.js"></script>
     <!-- endbuild -->
 
     <!-- build:js js/app.js -->
