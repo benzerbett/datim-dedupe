@@ -50,8 +50,6 @@ function appController(dedupeService, $scope) {
         } else {
             ctrl.dedupeRecords = getNonResolvedRecords(ctrl.allDedupeRecords);
         }
-
-        window.console.log(ctrl.dedupeRecords);
     }
 
     function useMax() {
