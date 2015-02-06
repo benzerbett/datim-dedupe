@@ -10,6 +10,11 @@ describe('Dedupe record service', function () {
 
         dedupeRecordService = $injector.get('dedupeRecordService');
 
+        $httpBackend.expectGET('/dhis/api/systemSettings/keyDedupeSqlViewId')
+            .respond(200, {
+                id: 'AuL6zTSLxNc'
+            });
+
         //TODO: Exchange this for the "real" url
         getRecordsRequest = $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data')
             .respond(200, fixtures.get('smallerDedupe'));

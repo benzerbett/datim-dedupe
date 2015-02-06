@@ -23,9 +23,13 @@ function dedupeRecordService(Restangular, DEDUPE_MECHANISM_NAME) {
     }
 
     function executeSqlViewOnApi() {
-        return Restangular.all('sqlViews')
-            .all('AuL6zTSLxNc')
-            .get('data');
+        return Restangular.all('systemSettings').withHttpConfig({cache: true})
+            .get('keyDedupeSqlViewId')
+            .then(function (settingsObject) {
+                return Restangular.all('sqlViews')
+                    .all(settingsObject.id)
+                    .get('data');
+            });
     }
 
     function createDedupeRecords(rows) {
