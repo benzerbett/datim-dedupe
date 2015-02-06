@@ -10,6 +10,7 @@ var buildDirectory = 'build';
 var files = [
     //Vendor dependency files
     'vendor/angular/angular.js',
+    'vendor/angular-animate/angular-animate.js',
     'vendor/lodash/dist/lodash.js',
     'vendor/restangular/dist/restangular.js',
 

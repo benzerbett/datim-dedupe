@@ -1,6 +1,22 @@
 .dedupe-wrap
   border-color: #CCCCCC
   margin-bottom: 30px
+  position: relative
+  transition: all linear 200ms
+
+  &.ng-enter
+    animation: bounceInLeft 400ms
+    -webkit-animation: bounceInLeft 400ms
+
+  &.ng-leave
+    animation: bounceOutRight 400ms
+    -webkit-animation: bounceOutRight 400ms
+
+  &.ng-enter-stagger, &.ng-leave-stagger
+    animation-delay: 100ms
+    -webkit-animation-delay: 100ms
+
+
 
   .dedupe-resolve-actions
     .resolve-wrap
@@ -9,6 +25,10 @@
       padding: 10px
       margin: 0 auto
       width: 75%
+
+  .resolve-action-button button
+    margin-top: 20px
+    width: 100%
 
   &.ng-valid .dedupe-details
     background-color: green

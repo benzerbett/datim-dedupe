@@ -2,6 +2,7 @@ describe('App controller', function () {
     var dedupeServiceMock;
     var controller;
     var $rootScope;
+    var scope;
 
     beforeEach(module('PEPFAR.dedupe'));
     beforeEach(inject(function ($injector) {
@@ -15,6 +16,7 @@ describe('App controller', function () {
             getSum: jasmine.createSpy('dedupeService.getSum'),
             getDuplicateRecords: jasmine.createSpy('dedupeService.getDuplicateRecords')
                 .and.returnValue($q.when([{
+                    id: '2364f5b15e57185fc6564ce64cc9c629',
                     details: {
                         orgUnitName: 'Glady\'s clinic',
                         timePeriodName: 'FY 2014'
@@ -42,13 +44,35 @@ describe('App controller', function () {
                         type: undefined,
                         value: undefined
                     }
+                }, {
+                    details: {
+                        orgUnitName: 'Mark\'s clinic',
+                        timePeriodName: 'FY 2014'
+                    },
+                    data: [
+                        {agency: 'CDC', partner: 'PartnerD', value: 50},
+                        {agency: 'CDC', partner: 'PartnerU', value: 20},
+                        {agency: 'CDC', partner: 'PartnerT', value: 17}
+                    ],
+                    resolve: {
+                        type: 'custom',
+                        value: -10,
+                        isResolved: true
+                    }
                 }])),
             resolveDuplicates: jasmine.createSpy('dedupeService.resolveDuplicates')
-                .and.returnValue($q.when(true))
+                .and.returnValue($q.when({
+                    successCount: 1,
+                    errorCount: 0,
+                    errors: []
+                }))
         };
 
+        scope = $rootScope.$new();
+
         controller = $controller('appController', {
-            dedupeService: dedupeServiceMock
+            dedupeService: dedupeServiceMock,
+            $scope: scope
         });
     }));
 
@@ -65,7 +89,7 @@ describe('App controller', function () {
             expect(controller.isProcessing).toBe(true);
         });
 
-        it('should set the duplicate records onto the controller', inject(function ($rootScope) {
+        it('should set the non resolved duplicate records onto the controller', inject(function ($rootScope) {
             $rootScope.$apply();
 
             expect(controller.dedupeRecords.length).toEqual(2);
@@ -191,6 +215,43 @@ describe('App controller', function () {
             $rootScope.$apply();
 
             expect(controller.isProcessing).toBe(false);
+        });
+
+        it('should remove the the duplicate from the list when it has been resolved', function () {
+            $rootScope.$broadcast('DEDUPE_DIRECTIVE.resolve', '2364f5b15e57185fc6564ce64cc9c629', {successCount: 1, errorCount: 0, errors: []});
+            $rootScope.$apply();
+
+            expect(controller.dedupeRecords.length).toBe(1);
+        });
+    });
+
+    describe('includeResolved', function () {
+        beforeEach(function () {
+            //Apply rootscope to resolve the mock promise
+            $rootScope.$apply();
+        });
+
+        it('isIncludeResolved should be a property', function () {
+            expect(controller.isIncludeResolved).toBe(false);
+        });
+
+        it('should update the records when calling changedIncludeResolved', function () {
+            controller.isIncludeResolved = true;
+            controller.changedIncludeResolved();
+
+            expect(controller.dedupeRecords.length).toBe(3);
+        });
+
+        it('should return to only showing the resolved ones', function () {
+            controller.isIncludeResolved = true;
+            controller.changedIncludeResolved();
+
+            expect(controller.dedupeRecords.length).toBe(3);
+
+            controller.isIncludeResolved = false;
+            controller.changedIncludeResolved();
+
+            expect(controller.dedupeRecords.length).toBe(2);
         });
     });
 });

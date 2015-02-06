@@ -12,7 +12,7 @@ function dedupeDirective() {
     };
 }
 
-function dedupeDirectiveController(dedupeService) {
+function dedupeDirectiveController(dedupeService, $scope) {
     var ctrl = this;
 
     //Controller methods
@@ -39,6 +39,9 @@ function dedupeDirectiveController(dedupeService) {
     }
 
     function resolve() {
-        dedupeService.resolveDuplicates([ctrl.dedupeRecord]);
+        dedupeService.resolveDuplicates([ctrl.dedupeRecord])
+            .then(function (responseStatus) {
+                $scope.$emit('DEDUPE_DIRECTIVE.resolve', ctrl.dedupeRecord.id, responseStatus);
+            });
     }
 }

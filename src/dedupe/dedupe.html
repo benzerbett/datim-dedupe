@@ -1,4 +1,4 @@
-<div class="dedupe-wrap well" ng-form>
+<div class="dedupe-wrap well" ng-form name="dedupeRecordForm">
     <div class="dedupe-details">
         <div class="row">
             <div class="dataelement-name col-sm-12">
@@ -86,7 +86,7 @@
                 </div>
                 <div class="resolve-actions row">
                     <div class="resolve-action-button col-sm-12">
-                        <button type="button" class="btn btn-primary" ng-click="dedupeCtrl.resolve()" translate>Resolve</button>
+                        <button type="button" class="btn btn-primary" ng-click="dedupeCtrl.resolve()" ng-disabled="dedupeRecordForm.$invalid" translate>Resolve</button>
                     </div>
                 </div>
             </div>

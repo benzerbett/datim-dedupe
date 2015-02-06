@@ -9,7 +9,11 @@ describe('Dedupe directive', function () {
         $provide.factory('dedupeService', function ($q) {
             return {
                 resolveDuplicates: jasmine.createSpy()
-                    .and.returnValue($q.when(true)),
+                    .and.returnValue($q.when({
+                        successCount: 1,
+                        errorCount: 0,
+                        errors: []
+                    })),
                 getMax: jasmine.createSpy()
                     .and.returnValue(60),
                 getSum: jasmine.createSpy()
@@ -25,6 +29,7 @@ describe('Dedupe directive', function () {
 
         $scope = $rootScope.$new();
         $scope.firstDedupeRecord = {
+            id: '2364f5b15e57185fc6564ce64cc9c629',
             details: {
                 orgUnitName: 'Glady\'s clinic',
                 timePeriodName: 'FY 2014',
@@ -52,6 +57,11 @@ describe('Dedupe directive', function () {
 
     it('should have the well class', function () {
         expect(element).toHaveClass('well');
+    });
+
+    it('should set the name of the form', function () {
+        expect(element[0]).toHaveAttribute('name');
+        expect(element.attr('name')).toBe('dedupeRecordForm');
     });
 
     describe('dedupe details', function () {
@@ -592,6 +602,10 @@ describe('Dedupe directive', function () {
                         it('should have ng-click', function () {
                             expect(resolveButton).toHaveAttribute('ng-click');
                         });
+
+                        it('resolve button should be disabled', function () {
+                            expect(resolveButton).toHaveAttribute('disabled');
+                        });
                     });
                 });
             });
@@ -675,13 +689,36 @@ describe('Dedupe directive', function () {
             });
 
             it('should call resolve on the dedupeService', inject(function (dedupeService) {
+                var resolveMaxRadio = element[0].querySelector('.resolve-action-sum input');
                 var resolveButton = element[0].querySelector('.resolve-action-button button');
+
+                //Make sure the form is valid
+                resolveMaxRadio.click();
+                $scope.$apply();
 
                 resolveButton.click();
                 $scope.$apply();
 
                 expect(dedupeService.resolveDuplicates).toHaveBeenCalledWith([$scope.firstDedupeRecord]);
             }));
+
+            it('should emit an event when the record has been resolved', function () {
+                var resolveMaxRadio = element[0].querySelector('.resolve-action-sum input');
+                var resolveButton = element[0].querySelector('.resolve-action-button button');
+                var eventFunction = jasmine.createSpy('eventFunction');
+
+                $rootScope.$on('DEDUPE_DIRECTIVE.resolve', eventFunction);
+
+                //Make sure the form is valid
+                resolveMaxRadio.click();
+                $scope.$apply();
+
+                resolveButton.click();
+                $scope.$apply();
+
+                expect(eventFunction.calls.argsFor(0)[1]).toBe('2364f5b15e57185fc6564ce64cc9c629');
+                expect(eventFunction.calls.argsFor(0)[2]).toEqual({successCount: 1, errorCount: 0, errors: []});
+            });
         });
     });
 });

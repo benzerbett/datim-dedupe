@@ -38,6 +38,7 @@ function dedupeRecordService(Restangular, DEDUPE_MECHANISM_NAME) {
 
     function createDedupeRecord(rows) {
         var dedupeRecord = {
+            id: getColumnValue('group_id', rows[0]),
             details: {
                 orgUnitId: getColumnValue('ou_uid', rows[0]),
                 orgUnitName: getColumnValue('orgunit_name', rows[0]),

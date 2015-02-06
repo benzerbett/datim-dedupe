@@ -84,6 +84,10 @@ describe('Dedupe record service', function () {
                 expect(dedupeRecords[0].details.categoryOptionComboName).toBe('(default)');
             });
 
+            it('should set the groupId as the id onto the record', function () {
+                expect(dedupeRecords[0].id).toBe('2364f5b15e57185fc6564ce64cc9c629');
+            });
+
             describe('data rows', function () {
                 var firstDataRow;
 
@@ -135,21 +139,5 @@ describe('Dedupe record service', function () {
                 expect(dedupeRecord.resolve.type).toBe('custom');
             });
         });
-
-        //console.log(JSON.stringify(dedupeRecords, undefined, 4));
-        //TODO: Add a resolve test to check the status
-        //it('should have set a resolved value for the first dedupeRecord', function () {
-        //    var dedupeRecords;
-        //
-        //    dedupeRecordService.getRecords()
-        //        .then(function (records) {
-        //            dedupeRecords = records;
-        //        });
-        //
-        //    $httpBackend.flush();
-        //
-        //    //TODO: This is a bit of a volatile test...
-        //    expect(dedupeRecords[0].resolve.value).toBe(450);
-        //});
     });
 });
