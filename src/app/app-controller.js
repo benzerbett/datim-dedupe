@@ -13,6 +13,7 @@ function appController(dedupeService, $scope, notify) {
     ctrl.useSum = useSum;
     ctrl.resolveDuplicates = resolveDuplicates;
     ctrl.changedIncludeResolved = changedIncludeResolved;
+    ctrl.isShowingAll = isShowingAll;
 
     //Call init method to get data from services
     initialise();
@@ -47,11 +48,15 @@ function appController(dedupeService, $scope, notify) {
     }
 
     function changedIncludeResolved() {
-        if (ctrl.isIncludeResolved) {
-            ctrl.dedupeRecords = ctrl.allDedupeRecords;
-        } else {
+        if (isShowingAll()) {
             ctrl.dedupeRecords = getNonResolvedRecords(ctrl.allDedupeRecords);
+        } else {
+            ctrl.dedupeRecords = ctrl.allDedupeRecords;
         }
+    }
+
+    function isShowingAll() {
+        return ctrl.allDedupeRecords.length === ctrl.dedupeRecords.length;
     }
 
     //TODO: Write tests for this

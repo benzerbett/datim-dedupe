@@ -33,8 +33,8 @@
                 </div>
                 <div class="col-sm-2">
                     <label>
-                        <span>Show resolved: </span>
-                        <input type="checkbox" ng-model="app.isIncludeResolved" ng-change="app.changedIncludeResolved()">
+                        <span>Show all: </span>
+                        <input type="checkbox" ng-checked="app.isShowingAll()" ng-click="app.changedIncludeResolved()">
                     </label>
                 </div>
                 <div class="col-sm-2">
