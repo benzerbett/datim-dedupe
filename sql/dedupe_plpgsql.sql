@@ -21,7 +21,7 @@ group_id character (32)
 
  );
 
-CREATE  OR REPLACE FUNCTION view_duplicates(uid character (11),showresolved boolean default false) 
+CREATE  OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),showresolved boolean default false) 
 RETURNS setof duplicate_records AS  $$
 DECLARE
 returnrec duplicate_records;
@@ -135,7 +135,8 @@ dv1.attributeoptioncomboid  != dv2.attributeoptioncomboid
  OR (dv1.dataelementid  IN (1486451,1486449,1486450)
   AND dv2.dataelementid IN  (1486451,1486449,1486450) )
   
- ) ;';
+ ) 
+ AND dv1.periodid IN (SELECT DISTINCT periodid from _periodstructure where financialoct = ''' || $2 || ''' );';
 
 
 
@@ -254,7 +255,10 @@ where group_id IN (SELECT DISTINCT group_id FROM temp1
 WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
  FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment'')))';
 
-
+IF showresolved = FALSE THEN 
+	EXECUTE 'DELETE FROM temp1 where duplication_status =''RESOLVED''';
+END IF;
+ 
  EXECUTE 'INSERT INTO temp2 SELECT 
  oulevel2_name ,
  oulevel3_name,
