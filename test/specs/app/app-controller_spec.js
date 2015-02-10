@@ -243,9 +243,37 @@ describe('App controller', function () {
 
         it('should remove the the duplicate from the list when it has been resolved', function () {
             $rootScope.$broadcast('DEDUPE_DIRECTIVE.resolve', '2364f5b15e57185fc6564ce64cc9c629', {successCount: 1, errorCount: 0, errors: []});
-            $rootScope.$apply();
 
             expect(controller.dedupeRecords.length).toBe(1);
+        });
+
+        it('should log error when getting the records failed', inject(function ($q) {
+            dedupeServiceMock.resolveDuplicates
+                .and.returnValue($q.reject('Duplicate records passed to resolveDuplicates should be an array with at least one element.'));
+
+            //Recreate controller to re-run the init method with error returning dedupeService
+            controller = $controller('appController', {
+                dedupeService: dedupeServiceMock,
+                $scope: scope,
+                notify: notifyMock
+            });
+            controller.resolveDuplicates();
+            $rootScope.$apply();
+
+            expect(notifyMock.error).toHaveBeenCalled();
+        }));
+
+        it('should report back the status when it is successful', function () {
+            $rootScope.$broadcast('DEDUPE_DIRECTIVE.resolve', '2364f5b15e57185fc6564ce64cc9c629', {successCount: 1, errorCount: 0, errors: []});
+
+            expect(notifyMock.success).toHaveBeenCalled();
+        });
+
+        it('should report back when the save failed', function () {
+            $rootScope.$broadcast('DEDUPE_DIRECTIVE.resolve', '2364f5b15e57185fc6564ce64cc9c629', {successCount: 0, errorCount: 1, errors: ['Save failed']});
+
+            expect(notifyMock.warning).toHaveBeenCalled();
+            expect(notifyMock.error).toHaveBeenCalled();
         });
     });
 

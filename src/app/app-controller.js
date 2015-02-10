@@ -35,9 +35,6 @@ function appController(dedupeService, $scope, notify) {
                 return duplicateRecords;
             })
             .then(function (dedupeRecords) {
-                if (ctrl.isIncludeResolved) {
-                    return dedupeRecords;
-                }
                 return (ctrl.dedupeRecords = getNonResolvedRecords(dedupeRecords));
             })
             .catch(function (errorMessage) {
@@ -74,7 +71,7 @@ function appController(dedupeService, $scope, notify) {
             notify.error(['Unable to save', saveStatus.successCount, 'dedupe(s).'].join(' '));
         }
 
-        saveStatus.errors.forEach(function (error) {
+        (saveStatus.errors || []).forEach(function (error) {
             notify.warning(error.message);
         });
     }
@@ -108,8 +105,8 @@ function appController(dedupeService, $scope, notify) {
             .then(function (saveStatus) {
                 reportStatusToUser(saveStatus); //TODO: Write tests for this
             })
-            .catch(function (saveStatus) {
-                reportStatusToUser(saveStatus); //TODO: Write tests for this
+            .catch(function (errorMessage) {
+                notify.error(errorMessage);
             })
             .finally(setProcessingToFalse);
     }
