@@ -40,6 +40,9 @@ function appController(dedupeService, $scope, notify) {
                 }
                 return (ctrl.dedupeRecords = getNonResolvedRecords(dedupeRecords));
             })
+            .catch(function (errorMessage) {
+                notify.error(errorMessage);
+            })
             .finally(setProcessingToFalse);
     }
 

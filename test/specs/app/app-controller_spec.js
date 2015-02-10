@@ -1,13 +1,15 @@
 describe('App controller', function () {
     var dedupeServiceMock;
+    var notifyMock;
+    var $controller;
     var controller;
     var $rootScope;
     var scope;
 
     beforeEach(module('PEPFAR.dedupe'));
     beforeEach(inject(function ($injector) {
-        var $controller = $injector.get('$controller');
         var $q = $injector.get('$q');
+        $controller = $injector.get('$controller');
 
         $rootScope = $injector.get('$rootScope');
 
@@ -70,9 +72,16 @@ describe('App controller', function () {
 
         scope = $rootScope.$new();
 
+        notifyMock = {
+            error: jasmine.createSpy('notify.error'),
+            warning: jasmine.createSpy('notify.warning'),
+            success: jasmine.createSpy('notify.success')
+        };
+
         controller = $controller('appController', {
             dedupeService: dedupeServiceMock,
-            $scope: scope
+            $scope: scope,
+            notify: notifyMock
         });
     }));
 
@@ -100,6 +109,21 @@ describe('App controller', function () {
 
             expect(controller.isProcessing).toBe(false);
         });
+
+        it('should log error when getting the records failed', inject(function ($q) {
+            dedupeServiceMock.getDuplicateRecords
+                .and.returnValue($q.reject('System setting with id of view not found. Please check if your app is configured correctly.'));
+
+            //Recreate controller to re-run the init method with error returning dedupeService
+            controller = $controller('appController', {
+                dedupeService: dedupeServiceMock,
+                $scope: scope,
+                notify: notifyMock
+            });
+            $rootScope.$apply();
+
+            expect(notifyMock.error).toHaveBeenCalled();
+        }));
     });
 
     describe('useMax', function () {

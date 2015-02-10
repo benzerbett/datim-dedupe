@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').factory('dedupeRecordService', dedupeRecordService);
 
-function dedupeRecordService(Restangular, DEDUPE_MECHANISM_NAME) {
+function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
     var headers;
 
     return {
@@ -26,6 +26,10 @@ function dedupeRecordService(Restangular, DEDUPE_MECHANISM_NAME) {
         return Restangular.all('systemSettings').withHttpConfig({cache: true})
             .get('keyDedupeSqlViewId')
             .then(function (settingsObject) {
+                if (!settingsObject || !settingsObject.id) {
+                    return $q.reject('System setting with id of sqlview not found. Please check if your app is configured correctly.');
+                }
+
                 return Restangular.all('sqlViews')
                     .all(settingsObject.id)
                     .get('data');

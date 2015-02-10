@@ -3,6 +3,7 @@ describe('Dedupe record service', function () {
     var $httpBackend;
     var dedupeRecordService;
     var getRecordsRequest;
+    var dedupeSystemSetting;
 
     beforeEach(module('PEPFAR.dedupe'));
     beforeEach(inject(function ($injector) {
@@ -10,12 +11,11 @@ describe('Dedupe record service', function () {
 
         dedupeRecordService = $injector.get('dedupeRecordService');
 
-        $httpBackend.expectGET('/dhis/api/systemSettings/keyDedupeSqlViewId')
+        dedupeSystemSetting = $httpBackend.expectGET('/dhis/api/systemSettings/keyDedupeSqlViewId')
             .respond(200, {
                 id: 'AuL6zTSLxNc'
             });
 
-        //TODO: Exchange this for the "real" url
         getRecordsRequest = $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data')
             .respond(200, fixtures.get('smallerDedupe'));
     }));
@@ -143,6 +143,25 @@ describe('Dedupe record service', function () {
             it('should set the resolved type to custom', function () {
                 expect(dedupeRecord.resolve.type).toBe('custom');
             });
+        });
+    });
+
+    describe('dedupeSystemSetting error handling', function () {
+        it('should reject the promise when the systemsetting could not be found', function () {
+            var message;
+            $httpBackend.resetExpectations();
+
+            $httpBackend.expectGET('/dhis/api/systemSettings/keyDedupeSqlViewId')
+                .respond(200, '');
+
+            dedupeRecordService.getRecords()
+                .catch(function (errorMessage) {
+                    message = errorMessage;
+                });
+
+            $httpBackend.flush();
+
+            expect(message).toBe('System setting with id of sqlview not found. Please check if your app is configured correctly.');
         });
     });
 });
