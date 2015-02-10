@@ -719,6 +719,66 @@ describe('Dedupe directive', function () {
                 expect(eventFunction.calls.argsFor(0)[1]).toBe('2364f5b15e57185fc6564ce64cc9c629');
                 expect(eventFunction.calls.argsFor(0)[2]).toEqual({successCount: 1, errorCount: 0, errors: []});
             });
+
+            it('should emit an event when the record has been rejected', inject(function (dedupeService, $q) {
+                var resolveMaxRadio = element[0].querySelector('.resolve-action-sum input');
+                var resolveButton = element[0].querySelector('.resolve-action-button button');
+                var eventFunction = jasmine.createSpy('eventFunction');
+
+                dedupeService.resolveDuplicates.and.returnValue({
+                    then: function () {
+                        return $q.reject('Duplicate records passed to resolveDuplicates should be an array with at least one element');
+                    }
+                });
+
+                $rootScope.$on('DEDUPE_DIRECTIVE.resolve', eventFunction);
+
+                //Make sure the form is valid
+                resolveMaxRadio.click();
+                $scope.$apply();
+
+                resolveButton.click();
+                $scope.$apply();
+
+                expect(eventFunction.calls.argsFor(0)[1]).toBe(undefined);
+                expect(eventFunction.calls.argsFor(0)[2]).toEqual(
+                    {successCount: 0, errorCount: 0, errors: ['Duplicate records passed to resolveDuplicates should be an array with at least one element']}
+                );
+            }));
+
+            it('should set resolve button to the processing state', inject(function (dedupeService, $q) {
+                var resolveMaxRadio = element[0].querySelector('.resolve-action-sum input');
+                var resolveButton = element[0].querySelector('.resolve-action-button button');
+
+                dedupeService.resolveDuplicates.and.returnValue({
+                    then: function () {
+                        return $q.defer().promise;
+                    }
+                });
+
+                //Make sure the form is valid
+                resolveMaxRadio.click();
+                $scope.$apply();
+
+                resolveButton.click();
+                $scope.$apply();
+
+                expect(resolveButton).toHaveAttribute('disabled');
+            }));
+
+            it('should reset the processing state when the save is completed', function () {
+                var resolveMaxRadio = element[0].querySelector('.resolve-action-sum input');
+                var resolveButton = element[0].querySelector('.resolve-action-button button');
+
+                //Make sure the form is valid
+                resolveMaxRadio.click();
+                $scope.$apply();
+
+                resolveButton.click();
+                $scope.$apply();
+
+                expect(resolveButton).not.toHaveAttribute('disabled');
+            });
         });
     });
 });

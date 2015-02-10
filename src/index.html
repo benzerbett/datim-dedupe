@@ -24,7 +24,7 @@
                 <dedupe dedupe-record="dedupeRecord" ng-repeat="dedupeRecord in app.dedupeRecords"></dedupe>
             </div>
             <div class="resolve-footer">
-                <div class="col-sm-3">
+                <div class="col-sm-4">
                     <span translate>Mark all duplicates as</span>
                     <div class="btn-group">
                         <button class="btn btn-default" ng-click="app.useMax()">Use max</button>
@@ -45,6 +45,11 @@
                 </div>
             </div>
         </form>
+        <div class="loading-mask" ng-show="app.isProcessing">
+            <div class="loading-mask-content">
+                <i class="fa fa-spinner fa-pulse"></i> Loading dedupe mechanisms...
+            </div>
+        </div>
     </div>
 
     <!-- build:js js/vendor.js -->
@@ -73,6 +78,7 @@
     <script src="dedupe/dedupe-service.js"></script>
     <script src="dedupe/deduperecord-service.js"></script>
     <script src="dedupe/dedupesaver-service.js"></script>
+    <script src="validation/positiveinteger-directive.js"></script>
     <!-- endbuild -->
 </body>
 </html>

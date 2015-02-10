@@ -80,13 +80,28 @@
                             <span translate>Use a custom value</span>
                         </label>
                         <span class="value">
-                            <input type="number" min="0" ng-model="dedupeCtrl.dedupeRecord.resolve.value" ng-required="dedupeCtrl.dedupeRecord.resolve.type == 'custom'" ng-change="dedupeCtrl.dedupeRecord.resolve.type = 'custom'" />
+                            <input name="resolveNumber" positive-integer type="number" min="0" ng-model="dedupeCtrl.dedupeRecord.resolve.value" ng-required="dedupeCtrl.dedupeRecord.resolve.type == 'custom'" ng-change="dedupeCtrl.dedupeRecord.resolve.type = 'custom'" />
                         </span>
+                        <div class="error-messages" ng-messages="dedupeRecordForm.resolveNumber.$error">
+                            <div ng-message="required">
+                                When selecting to use a custom value you have to provide a value.
+                            </div>
+                            <div ng-message="number">
+                                This value should be a number.
+                            </div>
+                            <div ng-message="positiveInteger">
+                                This value should be a positive number (not decimal)
+                            </div>
+                        </div>
                     </div>
                 </div>
                 <div class="resolve-actions row">
                     <div class="resolve-action-button col-sm-12">
-                        <button type="button" class="btn btn-primary" ng-click="dedupeCtrl.resolve()" ng-disabled="dedupeRecordForm.$invalid" translate>Resolve</button>
+                        <button type="button"
+                                class="btn btn-primary"
+                                ng-click="dedupeCtrl.resolve()"
+                                ng-disabled="dedupeRecordForm.$invalid || dedupeCtrl.isProcessing"
+                                translate>Resolve</button>
                     </div>
                 </div>
             </div>

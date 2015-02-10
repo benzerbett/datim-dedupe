@@ -11,6 +11,7 @@ var files = [
     //Vendor dependency files
     'vendor/angular/angular.js',
     'vendor/angular-animate/angular-animate.js',
+    'vendor/angular-messages/angular-messages.js',
     'vendor/lodash/dist/lodash.js',
     'vendor/restangular/dist/restangular.js',
     'vendor/notify/notify-service.js',

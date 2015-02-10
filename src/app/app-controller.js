@@ -19,6 +19,8 @@ function appController(dedupeService, $scope, notify) {
     initialise();
 
     $scope.$on('DEDUPE_DIRECTIVE.resolve', function (event, dedupeRecordId, saveStatus) {
+
+        //Remove the resolved record from the list of shown records
         ctrl.dedupeRecords = ctrl.dedupeRecords.filter(function (dedupeRecord) {
             return dedupeRecord.id !== dedupeRecordId;
         });
@@ -67,11 +69,11 @@ function appController(dedupeService, $scope, notify) {
 
         if (saveStatus.errorCount > 0) {
             notify.error(['Unable to save', saveStatus.successCount, 'dedupe(s).'].join(' '));
-
-            saveStatus.errors.forEach(function (error) {
-                notify.warning(error.message);
-            });
         }
+
+        saveStatus.errors.forEach(function (error) {
+            notify.warning(error.message);
+        });
     }
 
     function useMax() {

@@ -12,7 +12,7 @@ function dedupeDirective() {
     };
 }
 
-function dedupeDirectiveController(dedupeService, $scope) {
+function dedupeDirectiveController(dedupeService, $scope, $q) {
     var ctrl = this;
 
     //Controller methods
@@ -21,6 +21,7 @@ function dedupeDirectiveController(dedupeService, $scope) {
     ctrl.resolveWithMax = resolveWithMax;
     ctrl.resolveWithSum = resolveWithSum;
     ctrl.resolve = resolve;
+    ctrl.isProcessing = false;
 
     function getMax() {
         return dedupeService.getMax(ctrl.dedupeRecord.data);
@@ -39,9 +40,22 @@ function dedupeDirectiveController(dedupeService, $scope) {
     }
 
     function resolve() {
+        ctrl.isProcessing = true;
         dedupeService.resolveDuplicates([ctrl.dedupeRecord])
             .then(function (responseStatus) {
                 $scope.$emit('DEDUPE_DIRECTIVE.resolve', ctrl.dedupeRecord.id, responseStatus);
+                return responseStatus;
+            })
+            .catch(function (responseStatus) {
+                if (angular.isString(responseStatus)) {
+                    responseStatus = {successCount: 0, errorCount: 0, errors: [responseStatus]};
+                }
+
+                $scope.$emit('DEDUPE_DIRECTIVE.resolve', undefined, responseStatus);
+                $q.reject(responseStatus);
+            })
+            .finally(function () {
+                ctrl.isProcessing = false;
             });
     }
 }

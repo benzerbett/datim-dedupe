@@ -42,7 +42,6 @@ function dedupeSaverService($q, Restangular, DEDUPE_CATEGORY_OPTION_COMBO_ID, DE
         return Restangular.all('dataValueSets')
             .post(dataValueSet)
             .then(function (importResult) {
-                //TODO: Include the conflicts that failed.
                 return getResponseStructure(
                     importResult.dataValueCount.imported + importResult.dataValueCount.updated,
                     errorCount + importResult.dataValueCount.ignored,
