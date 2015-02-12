@@ -15,6 +15,7 @@ var files = [
     'vendor/lodash/dist/lodash.js',
     'vendor/restangular/dist/restangular.js',
     'vendor/notify/notify-service.js',
+    'vendor/angular-ui-select/dist/select.js',
 
     //Test specific includes
     'test/fixtures/fixtures.js',

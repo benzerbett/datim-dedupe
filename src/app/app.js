@@ -1,10 +1,15 @@
-angular.module('PEPFAR.dedupe', ['ngAnimate', 'ngMessages', 'restangular', 'dhis2.notify']);
+angular.module('PEPFAR.dedupe', ['ngAnimate', 'ngMessages', 'restangular', 'dhis2.notify', 'ui.select']);
 
 angular.module('PEPFAR.dedupe').run(function (Restangular) {
     //TODO: Set the right base url using the manifest
     //var baseUrl = [webappManifest.activities.dhis.href, 'api'].join('/');
     Restangular.setBaseUrl('/dhis/api');
 });
+
+angular.module('PEPFAR.dedupe').config(angularUiSelectConfig);
+function angularUiSelectConfig(uiSelectConfig) {
+    uiSelectConfig.theme = 'bootstrap';
+}
 
 //Config values
 angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_OPTION_COMBO_ID', 'LJ8K9VORX9s');
