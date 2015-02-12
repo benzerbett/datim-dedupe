@@ -6,7 +6,20 @@ describe('App controller', function () {
     var $rootScope;
     var scope;
 
-    beforeEach(module('PEPFAR.dedupe'));
+    beforeEach(module('PEPFAR.dedupe', function ($provide) {
+        $provide.factory('currentUserService', function ($q) {
+            return {
+                getCurrentUser: function () {
+                    return $q.when({
+                        organisationUnits: [
+                            {id: 'currentUserOuId'}
+                        ]
+                    });
+                }
+            };
+        });
+    }));
+
     beforeEach(inject(function ($injector) {
         var $q = $injector.get('$q');
         $controller = $injector.get('$controller');
@@ -91,6 +104,7 @@ describe('App controller', function () {
 
     describe('initialise', function () {
         it('should call the dedupe service for the duplicates', function () {
+            $rootScope.$apply();
             expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalled();
         });
 
