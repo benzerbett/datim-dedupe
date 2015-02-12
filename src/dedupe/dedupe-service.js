@@ -8,8 +8,18 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q) {
         resolveDuplicates: resolveDuplicates
     };
 
-    function getDuplicateRecords() {
-        return dedupeRecordService.getRecords();
+    function getDuplicateRecords(organisationUnitId, periodId) {
+        var filters = {};
+
+        if (organisationUnitId && angular.isString(organisationUnitId)) {
+            filters.ou = organisationUnitId;
+        }
+
+        if (periodId && angular.isString(periodId)) {
+            filters.pe = periodId;
+        }
+
+        return dedupeRecordService.getRecords(filters);
     }
 
     function getMax(dedupeRecordData) {

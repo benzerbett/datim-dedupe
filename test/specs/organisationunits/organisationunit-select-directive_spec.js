@@ -29,7 +29,7 @@ describe('Organisation unit select directive', function () {
         $compile(element)($scope);
         $rootScope.$digest();
 
-        innerScope = element.find('.ui-select-bootstrap').scope();
+        innerScope = angular.element(element[0].querySelector('.ui-select-bootstrap')).scope();
         innerScope.$select.open = true;
         innerScope.$apply();
     }));

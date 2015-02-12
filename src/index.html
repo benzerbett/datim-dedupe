@@ -20,6 +20,14 @@
     <d2-header-bar></d2-header-bar>
 
     <div class="app-content-wrap">
+        <div class="dedupe-filter-settings">
+            <div class="organisation-unit row">
+                <div class="col-sm-12">
+                    <organisation-unit-select on-orgunit-selected="app.changeOrgUnit"></organisation-unit-select>
+                </div>
+            </div>
+        </div>
+
         <form name="deduplication">
             <div class="dedupe-records">
                 <dedupe dedupe-record="dedupeRecord" ng-repeat="dedupeRecord in app.dedupeRecords"></dedupe>

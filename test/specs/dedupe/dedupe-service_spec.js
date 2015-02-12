@@ -99,7 +99,25 @@ describe('Dedupe service', function () {
         it('should call getRecords on the dedupeRecordsService', function () {
             dedupeService.getDuplicateRecords();
 
-            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalled();
+            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({});
+        });
+
+        it('should call the dedupeRecordsService with ou filter when supplied', function () {
+            dedupeService.getDuplicateRecords('myOrgUnitId');
+
+            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({ou: 'myOrgUnitId'});
+        });
+
+        it('should call the dedupeRecordsService with ou and pe filter when supplied', function () {
+            dedupeService.getDuplicateRecords('myOrgUnitId', '2013Oct');
+
+            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({ou: 'myOrgUnitId', pe: '2013Oct'});
+        });
+
+        it('should call the dedupeRecordsService with pe filter when supplied', function () {
+            dedupeService.getDuplicateRecords(undefined, '2013Oct');
+
+            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({pe: '2013Oct'});
         });
     });
 

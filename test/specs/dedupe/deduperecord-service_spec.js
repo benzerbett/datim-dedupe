@@ -146,6 +146,53 @@ describe('Dedupe record service', function () {
         });
     });
 
+    describe('getRecords with filters', function () {
+        beforeEach(function () {
+            $httpBackend.resetExpectations();
+        });
+
+        afterEach(function () {
+            $httpBackend.verifyNoOutstandingRequest();
+            $httpBackend.verifyNoOutstandingExpectation();
+        });
+
+        describe('orgunit filter', function () {
+            beforeEach(function () {
+                $httpBackend.expectGET('/dhis/api/systemSettings/keyDedupeSqlViewId')
+                    .respond(200, {id: 'AuL6zTSLxNc'});
+
+                getRecordsRequest = $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?var=ou:HfiOUYEPgLK')
+                    .respond(200, fixtures.get('smallerDedupe'));
+            });
+
+            it('should call the api with the correct url', function () {
+                dedupeRecordService.getRecords({
+                    ou: 'HfiOUYEPgLK'
+                });
+
+                $httpBackend.flush();
+            });
+        });
+
+        describe('period filter', function () {
+            beforeEach(function () {
+                $httpBackend.expectGET('/dhis/api/systemSettings/keyDedupeSqlViewId')
+                    .respond(200, {id: 'AuL6zTSLxNc'});
+
+                $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?var=pe:2013Oct')
+                    .respond(200, fixtures.get('smallerDedupe'));
+            });
+
+            it('should call the api with the correct url', function () {
+                dedupeRecordService.getRecords({
+                    pe: '2013Oct'
+                });
+
+                $httpBackend.flush();
+            });
+        });
+    });
+
     describe('dedupeSystemSetting error handling', function () {
         it('should reject the promise when the systemsetting could not be found', function () {
             var message;

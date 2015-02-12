@@ -2,6 +2,7 @@ angular.module('PEPFAR.dedupe').controller('appController', appController);
 
 function appController(dedupeService, $scope, notify) {
     var ctrl = this;
+    var dedupeFilters = {};
 
     ctrl.isProcessing = true;
     ctrl.isIncludeResolved = false;
@@ -14,6 +15,7 @@ function appController(dedupeService, $scope, notify) {
     ctrl.resolveDuplicates = resolveDuplicates;
     ctrl.changedIncludeResolved = changedIncludeResolved;
     ctrl.isShowingAll = isShowingAll;
+    ctrl.changeOrgUnit = changeOrgUnit;
 
     //Call init method to get data from services
     initialise();
@@ -29,7 +31,12 @@ function appController(dedupeService, $scope, notify) {
     });
 
     function initialise() {
-        dedupeService.getDuplicateRecords()
+        getDuplicateRecords();
+    }
+
+    function getDuplicateRecords() {
+        ctrl.isProcessing = true;
+        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe)
             .then(function (duplicateRecords) {
                 ctrl.allDedupeRecords = duplicateRecords;
                 return duplicateRecords;
@@ -41,6 +48,13 @@ function appController(dedupeService, $scope, notify) {
                 notify.error(errorMessage);
             })
             .finally(setProcessingToFalse);
+    }
+
+    function changeOrgUnit(newOrgUnit) {
+        if (newOrgUnit && newOrgUnit.id) {
+            dedupeFilters.ou = newOrgUnit.id;
+        }
+        getDuplicateRecords();
     }
 
     function getNonResolvedRecords(dedupeRecords) {

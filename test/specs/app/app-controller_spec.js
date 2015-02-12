@@ -306,4 +306,10 @@ describe('App controller', function () {
             expect(controller.dedupeRecords.length).toBe(2);
         });
     });
+
+    describe('organisationUnitFilter', function () {
+        it('should be called', function () {
+
+        });
+    });
 });

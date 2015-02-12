@@ -7,8 +7,8 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
         getRecords: getRecords
     };
 
-    function getRecords() {
-        return executeSqlViewOnApi()
+    function getRecords(filters) {
+        return executeSqlViewOnApi(filters)
             .then(extractHeaders)
             .then(createDedupeRecords);
     }
@@ -22,7 +22,7 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
         return sqlViewData.rows;
     }
 
-    function executeSqlViewOnApi() {
+    function executeSqlViewOnApi(filters) {
         return Restangular.all('systemSettings').withHttpConfig({cache: true})
             .get('keyDedupeSqlViewId')
             .then(function (settingsObject) {
@@ -32,7 +32,11 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
 
                 return Restangular.all('sqlViews')
                     .all(settingsObject.id)
-                    .get('data');
+                    .get('data', {
+                        var: _.map(filters, function (value, key) {
+                            return [key, value].join(':');
+                        })
+                    });
             });
     }
 

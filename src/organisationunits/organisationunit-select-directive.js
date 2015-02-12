@@ -4,12 +4,18 @@ function organisationUnitSelectDirective(organisationUnitService) {
     return {
         restrict: 'E',
         replace: true,
-        scope: true,
+        scope: {
+            onOrgunitSelected: '='
+        },
         templateUrl: 'organisationunits/organisation-select.html',
         link: function (scope) {
+            scope.organisationUnit = undefined;
             scope.selectbox = {
                 items: [],
-                placeholder: 'Select an organisation unit'
+                placeholder: 'Select an organisation unit',
+                onSelect: function ($item, $model) {
+                    scope.onOrgunitSelected($item, $model);
+                }
             };
 
             organisationUnitService.getOrganisationUnitsForLevel(3)
