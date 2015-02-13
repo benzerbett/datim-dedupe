@@ -16,6 +16,7 @@ function appController(dedupeService, currentUserService, $scope, notify) {
     ctrl.changedIncludeResolved = changedIncludeResolved;
     ctrl.isShowingAll = isShowingAll;
     ctrl.changeOrgUnit = changeOrgUnit;
+    ctrl.changePeriod = changePeriod;
 
     //Call init method to get data from services
     initialise();
@@ -43,7 +44,6 @@ function appController(dedupeService, currentUserService, $scope, notify) {
                 notify.error('Failed to load current user object');
                 setProcessingToFalse();
             });
-
     }
 
     function getDuplicateRecords() {
@@ -66,8 +66,15 @@ function appController(dedupeService, currentUserService, $scope, notify) {
     function changeOrgUnit(newOrgUnit) {
         if (newOrgUnit && newOrgUnit.id) {
             dedupeFilters.ou = newOrgUnit.id;
+            getDuplicateRecords();
         }
-        getDuplicateRecords();
+    }
+
+    function changePeriod(newPeriod) {
+        if (newPeriod && newPeriod.iso && angular.isString(newPeriod.iso)) {
+            dedupeFilters.pe = newPeriod.iso;
+            getDuplicateRecords();
+        }
     }
 
     function getNonResolvedRecords(dedupeRecords) {

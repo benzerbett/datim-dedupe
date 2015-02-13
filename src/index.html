@@ -26,6 +26,11 @@
                     <organisation-unit-select on-orgunit-selected="app.changeOrgUnit"></organisation-unit-select>
                 </div>
             </div>
+            <div class="period-selector row">
+                <div class="col-sm-12">
+                    <period-selector on-period-selected="app.changePeriod"></period-selector>
+                </div>
+            </div>
         </div>
 
         <form name="deduplication">
@@ -92,6 +97,8 @@
     <script src="organisationunits/organisationunit-service.js"></script>
     <script src="organisationunits/organisationunit-select-directive.js"></script>
     <script src="currentuser/currentuser-service.js"></script>
+    <script src="period/period-service.js"></script>
+    <script src="period/periodselector-directive.js"></script>
     <!-- endbuild -->
 </body>
 </html>

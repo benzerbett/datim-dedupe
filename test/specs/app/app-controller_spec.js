@@ -321,9 +321,35 @@ describe('App controller', function () {
         });
     });
 
-    describe('organisationUnitFilter', function () {
-        it('should be called', function () {
+    describe('organisation unit change', function () {
+        it('should call the getDuplicateRecords function on the recordService', function () {
+            controller.changeOrgUnit({id: 'newOuId'});
 
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith('newOuId', undefined);
+        });
+
+        it('should not call the service when the orgunit is undefined', function () {
+            controller.changeOrgUnit({id: undefined});
+
+            expect(dedupeServiceMock.getDuplicateRecords).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('changePeriod', function () {
+        it('should be a function', function () {
+            expect(controller.changePeriod).toBeAFunction();
+        });
+
+        it('should call the service for new records when a period has been selected', function () {
+            controller.changePeriod({iso: '2013April'});
+
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, '2013April');
+        });
+
+        it('should not call the service if the period iso is not defined', function () {
+            controller.changePeriod({iso: undefined});
+
+            expect(dedupeServiceMock.getDuplicateRecords).not.toHaveBeenCalled();
         });
     });
 });
