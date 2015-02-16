@@ -1,6 +1,8 @@
 angular.module('PEPFAR.dedupe').factory('dedupeService', dedupeService);
 
 function dedupeService(dedupeRecordService, dedupeSaverService, $q) {
+    var requiredFilters = ['ou', 'pe'];
+
     return {
         getDuplicateRecords: getDuplicateRecords,
         getMax: getMax,
@@ -19,7 +21,15 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q) {
             filters.pe = periodId;
         }
 
-        return dedupeRecordService.getRecords(filters);
+        if (isRequiredFiltersPresent(filters)) {
+            return dedupeRecordService.getRecords(filters);
+        }
+
+        return $q.when([]);
+    }
+
+    function isRequiredFiltersPresent(filters) {
+        return angular.equals(Object.keys(filters), requiredFilters);
     }
 
     function getMax(dedupeRecordData) {

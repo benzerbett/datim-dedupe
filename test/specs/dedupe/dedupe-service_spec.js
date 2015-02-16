@@ -96,16 +96,16 @@ describe('Dedupe service', function () {
             expect(dedupeService.getDuplicateRecords()).toBeAPromiseLikeObject();
         });
 
-        it('should call getRecords on the dedupeRecordsService', function () {
+        it('should not call getRecords on the dedupeRecordsService without ou and pe filters', function () {
             dedupeService.getDuplicateRecords();
 
-            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({});
+            expect(dedupeRecordServiceMock.getRecords).not.toHaveBeenCalled();
         });
 
-        it('should call the dedupeRecordsService with ou filter when supplied', function () {
+        it('should not call the dedupeRecordsService with only ou filter', function () {
             dedupeService.getDuplicateRecords('myOrgUnitId');
 
-            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({ou: 'myOrgUnitId'});
+            expect(dedupeRecordServiceMock.getRecords).not.toHaveBeenCalled();
         });
 
         it('should call the dedupeRecordsService with ou and pe filter when supplied', function () {
@@ -114,10 +114,10 @@ describe('Dedupe service', function () {
             expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({ou: 'myOrgUnitId', pe: '2013Oct'});
         });
 
-        it('should call the dedupeRecordsService with pe filter when supplied', function () {
+        it('should not call the dedupeRecordsService when only pe filter when supplied', function () {
             dedupeService.getDuplicateRecords(undefined, '2013Oct');
 
-            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({pe: '2013Oct'});
+            expect(dedupeRecordServiceMock.getRecords).not.toHaveBeenCalled();
         });
     });
 
