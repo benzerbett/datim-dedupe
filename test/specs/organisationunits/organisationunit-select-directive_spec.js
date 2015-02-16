@@ -15,6 +15,20 @@ describe('Organisation unit select directive', function () {
                 };
             };
         });
+
+        $provide.factory('currentUserService', function ($q) {
+            return {
+                getCurrentUser: function () {
+                    return $q.when({
+                        organisationUnits: [{
+                            id:'W73PRZcjFIU',
+                            name:'Indonesia',
+                            code:'ID'
+                        }]
+                    });
+                }
+            };
+        });
     }));
 
     beforeEach(inject(function ($injector) {
@@ -22,9 +36,13 @@ describe('Organisation unit select directive', function () {
         var $compile = $injector.get('$compile');
         $rootScope = $injector.get('$rootScope');
 
-        element = angular.element('<organisation-unit-select></organisation-unit-select>');
+        element = angular.element('<organisation-unit-select on-orgunit-selected="ctrl.callbackSpy"></organisation-unit-select>');
 
         $scope = $rootScope.$new();
+
+        $scope.ctrl = {
+            callbackSpy: jasmine.createSpy('callbackSpy')
+        };
 
         $compile(element)($scope);
         $rootScope.$digest();
@@ -42,5 +60,9 @@ describe('Organisation unit select directive', function () {
         var elements = element[0].querySelectorAll('.ui-select-choices-row');
 
         expect(elements.length).toBe(fixtures.get('organisationUnits').organisationUnits.length);
+    });
+
+    it('should call the callback when the users organisation unit is found within the orgunit list', function () {
+        expect($scope.ctrl.callbackSpy.calls.argsFor(0)[0].id).toBe('W73PRZcjFIU');
     });
 });

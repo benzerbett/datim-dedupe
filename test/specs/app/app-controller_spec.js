@@ -6,19 +6,7 @@ describe('App controller', function () {
     var $rootScope;
     var scope;
 
-    beforeEach(module('PEPFAR.dedupe', function ($provide) {
-        $provide.factory('currentUserService', function ($q) {
-            return {
-                getCurrentUser: function () {
-                    return $q.when({
-                        organisationUnits: [
-                            {id: 'currentUserOuId'}
-                        ]
-                    });
-                }
-            };
-        });
-    }));
+    beforeEach(module('PEPFAR.dedupe'));
 
     beforeEach(inject(function ($injector) {
         var $q = $injector.get('$q');
@@ -96,6 +84,83 @@ describe('App controller', function () {
             $scope: scope,
             notify: notifyMock
         });
+
+        controller.allDedupeRecords = [{
+            id: '2364f5b15e57185fc6564ce64cc9c629',
+            details: {
+                orgUnitName: 'Glady\'s clinic',
+                timePeriodName: 'FY 2014'
+            },
+            data: [
+                {agency: 'USAID', partner: 'PartnerA', value: 60},
+                {agency: 'USAID', partner: 'PartnerB', value: 40},
+                {agency: 'USAID', partner: 'PartnerC', value: 20}
+            ],
+            resolve: {
+                type: undefined,
+                value: undefined
+            }
+        }, {
+            details: {
+                orgUnitName: 'Glady\'s clinic',
+                timePeriodName: 'FY 2014'
+            },
+            data: [
+                {agency: 'CDC', partner: 'PartnerA', value: 12},
+                {agency: 'CDC', partner: 'PartnerD', value: 30},
+                {agency: 'CDC', partner: 'PartnerG', value: 10}
+            ],
+            resolve: {
+                type: undefined,
+                value: undefined
+            }
+        }, {
+            details: {
+                orgUnitName: 'Mark\'s clinic',
+                timePeriodName: 'FY 2014'
+            },
+            data: [
+                {agency: 'CDC', partner: 'PartnerD', value: 50},
+                {agency: 'CDC', partner: 'PartnerU', value: 20},
+                {agency: 'CDC', partner: 'PartnerT', value: 17}
+            ],
+            resolve: {
+                type: 'custom',
+                value: -10,
+                isResolved: true
+            }
+        }];
+
+        controller.dedupeRecords = [{
+            id: '2364f5b15e57185fc6564ce64cc9c629',
+            details: {
+                orgUnitName: 'Glady\'s clinic',
+                timePeriodName: 'FY 2014'
+            },
+            data: [
+                {agency: 'USAID', partner: 'PartnerA', value: 60},
+                {agency: 'USAID', partner: 'PartnerB', value: 40},
+                {agency: 'USAID', partner: 'PartnerC', value: 20}
+            ],
+            resolve: {
+                type: undefined,
+                value: undefined
+            }
+        }, {
+            details: {
+                orgUnitName: 'Glady\'s clinic',
+                timePeriodName: 'FY 2014'
+            },
+            data: [
+                {agency: 'CDC', partner: 'PartnerA', value: 12},
+                {agency: 'CDC', partner: 'PartnerD', value: 30},
+                {agency: 'CDC', partner: 'PartnerG', value: 10}
+            ],
+            resolve: {
+                type: undefined,
+                value: undefined
+            }
+        }];
     }));
 
     it('should be an object', function () {
@@ -103,41 +168,9 @@ describe('App controller', function () {
     });
 
     describe('initialise', function () {
-        it('should call the dedupe service for the duplicates', function () {
-            $rootScope.$apply();
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalled();
-        });
-
         it('should set processing to true', function () {
             expect(controller.isProcessing).toBe(true);
         });
-
-        it('should set the non resolved duplicate records onto the controller', inject(function ($rootScope) {
-            $rootScope.$apply();
-
-            expect(controller.dedupeRecords.length).toEqual(2);
-        }));
-
-        it('should set processing to false after duplicate records are loaded', function () {
-            $rootScope.$apply();
-
-            expect(controller.isProcessing).toBe(false);
-        });
-
-        it('should log error when getting the records failed', inject(function ($q) {
-            dedupeServiceMock.getDuplicateRecords
-                .and.returnValue($q.reject('System setting with id of view not found. Please check if your app is configured correctly.'));
-
-            //Recreate controller to re-run the init method with error returning dedupeService
-            controller = $controller('appController', {
-                dedupeService: dedupeServiceMock,
-                $scope: scope,
-                notify: notifyMock
-            });
-            $rootScope.$apply();
-
-            expect(notifyMock.error).toHaveBeenCalled();
-        }));
     });
 
     describe('useMax', function () {
@@ -321,7 +354,68 @@ describe('App controller', function () {
         });
     });
 
-    describe('organisation unit change', function () {
+    describe('getDuplicateRecords', function () {
+        beforeEach(function () {
+            controller.isProcessing = false;
+            controller.dedupeRecords = [];
+            controller.allDedupeRecords = [];
+        });
+
+        it('should set processing to true', function () {
+            controller.getDuplicateRecords('myorgUnit', '2013April');
+
+            expect(controller.isProcessing).toBe(true);
+        });
+
+        it('should set processing to false after duplicate records are loaded', function () {
+            controller.getDuplicateRecords('myorgUnit', '2013April');
+
+            $rootScope.$apply();
+
+            expect(controller.isProcessing).toBe(false);
+        });
+
+        it('should set all the duplicate records onto the controller', function () {
+            controller.getDuplicateRecords('myorgUnit', '2013April');
+
+            $rootScope.$apply();
+
+            expect(controller.allDedupeRecords.length).toBe(3);
+        });
+
+        it('should not include the resolve dedupe records when isIncludeResolved is false', function () {
+            controller.getDuplicateRecords('myorgUnit', '2013April');
+
+            $rootScope.$apply();
+
+            expect(controller.dedupeRecords.length).toBe(2);
+        });
+
+        it('should include the resolved dedupe records when isIncludeResolved is true', function () {
+            controller.isIncludeResolved = true;
+            controller.getDuplicateRecords('myorgUnit', '2013April');
+
+            $rootScope.$apply();
+
+            expect(controller.dedupeRecords.length).toBe(3);
+        });
+
+        it('should log error when getting the records failed', inject(function ($q) {
+            dedupeServiceMock.getDuplicateRecords
+                .and.returnValue($q.reject('System setting with id of view not found. Please check if your app is configured correctly.'));
+            controller.getDuplicateRecords('myorgUnit', '2013April');
+
+            $rootScope.$apply();
+
+            expect(notifyMock.error).toHaveBeenCalled();
+        }));
+    });
+
+    describe('changeOrgUnit', function () {
+        it('should be a function', function () {
+            expect(controller.changeOrgUnit).toBeDefined();
+        });
+
         it('should call the getDuplicateRecords function on the recordService', function () {
             controller.changeOrgUnit({id: 'newOuId'});
 

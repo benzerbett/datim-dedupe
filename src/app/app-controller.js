@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').controller('appController', appController);
 
-function appController(dedupeService, currentUserService, $scope, notify) {
+function appController(dedupeService, $scope, notify) {
     var ctrl = this;
     var dedupeFilters = {};
 
@@ -17,6 +17,7 @@ function appController(dedupeService, currentUserService, $scope, notify) {
     ctrl.isShowingAll = isShowingAll;
     ctrl.changeOrgUnit = changeOrgUnit;
     ctrl.changePeriod = changePeriod;
+    ctrl.getDuplicateRecords = getDuplicateRecords;
 
     //Call init method to get data from services
     initialise();
@@ -32,18 +33,7 @@ function appController(dedupeService, currentUserService, $scope, notify) {
     });
 
     function initialise() {
-        currentUserService.getCurrentUser()
-            .then(function (currentUser) {
-                if (currentUser.organisationUnits && currentUser.organisationUnits[0] && currentUser.organisationUnits[0].id) {
-                    dedupeFilters.ou = currentUser.organisationUnits[0].id;
 
-                    getDuplicateRecords();
-                }
-            })
-            .catch(function () {
-                notify.error('Failed to load current user object');
-                setProcessingToFalse();
-            });
     }
 
     function getDuplicateRecords() {
@@ -52,10 +42,10 @@ function appController(dedupeService, currentUserService, $scope, notify) {
         dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe)
             .then(function (duplicateRecords) {
                 ctrl.allDedupeRecords = duplicateRecords;
+
+                ctrl.dedupeRecords = ctrl.isIncludeResolved ? ctrl.allDedupeRecords : getNonResolvedRecords(duplicateRecords);
+
                 return duplicateRecords;
-            })
-            .then(function (dedupeRecords) {
-                return (ctrl.dedupeRecords = getNonResolvedRecords(dedupeRecords));
             })
             .catch(function (errorMessage) {
                 notify.error(errorMessage);
