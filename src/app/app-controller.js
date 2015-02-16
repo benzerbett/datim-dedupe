@@ -101,24 +101,19 @@ function appController(dedupeService, $scope, notify) {
     }
 
     function useMax() {
-        if (!Array.isArray(ctrl.dedupeRecords)) {
-            return;
-        }
-
-        ctrl.dedupeRecords.forEach(function (item) {
-            item.resolve.type = 'max';
-            item.resolve.value = dedupeService.getMax(item.data);
-        });
+        resolveDedupeRecordsUsingPredefinedType('max', dedupeService.getMax);
     }
 
     function useSum() {
-        if (!Array.isArray(ctrl.dedupeRecords)) {
-            return;
-        }
+        resolveDedupeRecordsUsingPredefinedType('sum', dedupeService.getSum);
+    }
+
+    function resolveDedupeRecordsUsingPredefinedType(typeName, typeFunction) {
+        if (!Array.isArray(ctrl.dedupeRecords)) { return; }
 
         ctrl.dedupeRecords.forEach(function (item) {
-            item.resolve.type = 'sum';
-            item.resolve.value = dedupeService.getSum(item.data);
+            item.resolve.type = typeName;
+            item.resolve.value = typeFunction.apply(dedupeService, [item.data]);
         });
     }
 
