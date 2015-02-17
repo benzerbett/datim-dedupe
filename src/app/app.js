@@ -1,4 +1,4 @@
-angular.module('PEPFAR.dedupe', ['ngAnimate', 'ngMessages', 'restangular', 'dhis2.notify', 'ui.select']);
+angular.module('PEPFAR.dedupe', ['ngAnimate', 'ngMessages', 'restangular', 'dhis2.notify', 'ui.select', 'ui.bootstrap.collapse']);
 
 angular.module('PEPFAR.dedupe').run(function (Restangular) {
     //TODO: Set the right base url using the manifest

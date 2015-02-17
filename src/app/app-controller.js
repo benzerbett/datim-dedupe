@@ -4,6 +4,7 @@ function appController(dedupeService, $scope, notify) {
     var ctrl = this;
     var dedupeFilters = {};
 
+    ctrl.isFilterToggle = false;
     ctrl.isProcessing = true;
     ctrl.isIncludeResolved = false;
     ctrl.dedupeRecords = [];

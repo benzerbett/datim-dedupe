@@ -46,8 +46,26 @@
     line-height: 34px
 
 .dedupe-filter-settings
+  transition: all linear 300ms
+  margin: 0 auto
+
   & > div
     margin-bottom: 30px
 
   .organisation-unit
-    font-size: 1em
+    margin-bottom: 20px
+
+  .filters-cog
+    display: none
+
+  &.filter-dropdown
+    z-index: 14
+
+    .filters-cog
+      display: block
+      min-height: 34px
+      position: relative
+
+      button
+        position: absolute
+        right: 0

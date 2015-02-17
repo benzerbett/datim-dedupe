@@ -20,15 +20,23 @@
     <d2-header-bar></d2-header-bar>
 
     <div class="app-content-wrap">
-        <div class="dedupe-filter-settings">
-            <div class="organisation-unit row">
-                <div class="col-sm-12">
-                    <organisation-unit-select on-orgunit-selected="app.changeOrgUnit"></organisation-unit-select>
-                </div>
+
+        <div class="dedupe-filter-settings" ng-class="{'filter-dropdown': app.dedupeRecords.length}">
+            <div class="filters-cog">
+                <button class="btn btn-default" ng-click="isCollapsed = !isCollapsed"><i class="fa fa-filter"></i> Filters</button>
             </div>
-            <div class="period-selector row">
-                <div class="col-sm-12">
-                    <period-selector on-period-selected="app.changePeriod"></period-selector>
+            <div class="filters-collapse" collapse="isCollapsed">
+                <div class="filters well">
+                    <div class="organisation-unit row">
+                        <div class="col-sm-12">
+                            <organisation-unit-select on-orgunit-selected="app.changeOrgUnit"></organisation-unit-select>
+                        </div>
+                    </div>
+                    <div class="period-selector row">
+                        <div class="col-sm-12">
+                            <period-selector on-period-selected="app.changePeriod"></period-selector>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
