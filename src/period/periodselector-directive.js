@@ -9,16 +9,22 @@ function periodSelectorDirective(periodService) {
         },
         templateUrl: 'period/periodselector.html',
         link: function (scope) {
-            periodService.setPeriodType('FinancialApril');
-
             scope.period = {
                 selectedPeriod: undefined,
-                periodsRecentFirst: periodService.getPastPeriodsRecentFirst()
+                periodsRecentFirst: []
             };
+
+            periodService.setPeriodType('FinancialApril')
+                .then(function () {
+                    scope.period.periodsRecentFirst = periodService.getPastPeriodsRecentFirst();
+                    if (scope.period.periodsRecentFirst.length > 0) {
+                        scope.period.selectedPeriod = scope.period.periodsRecentFirst[0];
+                        scope.changePeriod(scope.period.selectedPeriod);
+                    }
+                });
 
             scope.changePeriod = function ($item) {
                 if ($item === undefined) { return; }
-                window.console.log($item);
                 scope.onPeriodSelected($item);
             };
         }

@@ -9,6 +9,7 @@ var buildDirectory = 'build';
 
 var files = [
     //Vendor dependency files
+    'vendor/jquery/dist/jquery.js',
     'vendor/angular/angular.js',
     'vendor/angular-animate/angular-animate.js',
     'vendor/angular-messages/angular-messages.js',
