@@ -1,9 +1,7 @@
 angular.module('PEPFAR.dedupe', ['ngAnimate', 'ngMessages', 'restangular', 'dhis2.notify', 'ui.select', 'ui.bootstrap.collapse']);
 
-angular.module('PEPFAR.dedupe').run(function (Restangular) {
-    //TODO: Set the right base url using the manifest
-    //var baseUrl = [webappManifest.activities.dhis.href, 'api'].join('/');
-    Restangular.setBaseUrl('/dhis/api');
+angular.module('PEPFAR.dedupe').run(function (Restangular, webappManifest) {
+    Restangular.setBaseUrl([webappManifest.activities.dhis.href, 'api'].join('/'));
 });
 
 angular.module('PEPFAR.dedupe').config(angularUiSelectConfig);
@@ -35,7 +33,6 @@ window.getBootstrapper('PEPFAR.dedupe', document)
     .loadStylesheet('/dhis-web-commons/css/menu.css')
     .loadScript('/dhis-web-commons/javascripts/jQuery/calendars/jquery.calendars.min.js')
     .loadScript('/dhis-web-commons/javascripts/jQuery/calendars/jquery.calendars.plus.min.js')
-    //.loadScript('/dhis-web-commons/javascripts/jQuery/ui/jquery-ui.min.js')
     .loadScript('/dhis-web-commons/javascripts/dhis2/dhis2.util.js')
     .loadScript('/dhis-web-commons/javascripts/dhis2/dhis2.period.js')
     .loadScript('/dhis-web-commons/javascripts/dhis2/dhis2.translate.js')

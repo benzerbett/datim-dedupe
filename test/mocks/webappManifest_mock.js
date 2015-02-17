@@ -14,7 +14,7 @@ angular.module('PEPFAR.dedupe').factory('webappManifest', function () {
         "default_locale": "en",
         "activities": {
             "dhis": {
-                "href": "http://localhost:8080/dhis"
+                "href": "/dhis"
             }
         }
     };
