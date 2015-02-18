@@ -368,7 +368,8 @@
                     "dataElementId": "K6f6jR0NOcZ",
                     "dataElementName": "HTC_TST (N, DSD): HTC received results",
                     "categoryOptionComboId": "HllvX50cXC0",
-                    "categoryOptionComboName": "(default)"
+                    "categoryOptionComboName": "(default)",
+                    "type": "CROSSWALK"
                 },
                 "data": [
                     {
@@ -411,7 +412,8 @@
                     "dataElementId": "H9Q2jDZ76ih",
                     "dataElementName": "TX_CURR (N, DSD, Age/Sex Aggregated): Receiving ART",
                     "categoryOptionComboId": "TbYpjxM5j6w",
-                    "categoryOptionComboName": "(15+, Female)"
+                    "categoryOptionComboName": "(15+, Female)",
+                    "type": "PURE"
                 },
                 "data": [
                     {
@@ -437,7 +439,8 @@
                     "dataElementId": "H9Q2jDZ76ih",
                     "dataElementName": "TX_CURR (N, DSD, Age/Sex Aggregated): Receiving ART",
                     "categoryOptionComboId": "m8x88iYhmwQ",
-                    "categoryOptionComboName": "(15+, Male)"
+                    "categoryOptionComboName": "(15+, Male)",
+                    "type": "PURE"
                 },
                 "data": [
                     {
@@ -489,7 +492,8 @@
                     "dataElementId": "H9Q2jDZ76ih",
                     "dataElementName": "TX_CURR (N, DSD, Age/Sex Aggregated): Receiving ART",
                     "categoryOptionComboId": "NN3gA5T8q1g",
-                    "categoryOptionComboName": "(<15, Male)"
+                    "categoryOptionComboName": "(<15, Male)",
+                    "type": "PURE"
                 },
                 "data": [
                     {
@@ -515,7 +519,8 @@
                     "dataElementId": "ASaP3A4Y416",
                     "dataElementName": "BS_COLL (N, TA): Blood Units Donated",
                     "categoryOptionComboId": "HllvX50cXC0",
-                    "categoryOptionComboName": "(default)"
+                    "categoryOptionComboName": "(default)",
+                    "type": "CROSSWALK"
                 },
                 "data": [
                     {

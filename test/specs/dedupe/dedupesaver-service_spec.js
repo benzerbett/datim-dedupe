@@ -224,7 +224,7 @@ describe('Dedupe saver service', function () {
                         new Error('Did not find a value for "orgUnitId" on passed record. ' +
                         '{"orgUnitName":"Cardinal Site","timePeriodName":"2013Oct","dataElementId":"H9Q2jDZ76ih",' +
                         '"dataElementName":"TX_CURR (N, DSD, Age/Sex Aggregated): Receiving ART",' +
-                        '"categoryOptionComboId":"TbYpjxM5j6w","categoryOptionComboName":"(15+, Female)"}')
+                        '"categoryOptionComboId":"TbYpjxM5j6w","categoryOptionComboName":"(15+, Female)","type":"PURE"}')
                     ]);
                 });
 

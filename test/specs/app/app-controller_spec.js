@@ -1,14 +1,62 @@
 describe('App controller', function () {
     var dedupeServiceMock;
+    var dedupeRecordFiltersMock;
     var notifyMock;
     var $controller;
     var controller;
     var $rootScope;
     var scope;
+    var dedupeRecords;
 
     beforeEach(module('PEPFAR.dedupe'));
 
     beforeEach(inject(function ($injector) {
+        dedupeRecords = [{
+            id: '2364f5b15e57185fc6564ce64cc9c629',
+            details: {
+                orgUnitName: 'Glady\'s clinic',
+                timePeriodName: 'FY 2014'
+            },
+            data: [
+                {agency: 'USAID', partner: 'PartnerA', value: 60},
+                {agency: 'USAID', partner: 'PartnerB', value: 40},
+                {agency: 'USAID', partner: 'PartnerC', value: 20}
+            ],
+            resolve: {
+                type: undefined,
+                value: undefined
+            }
+        }, {
+            details: {
+                orgUnitName: 'Glady\'s clinic',
+                timePeriodName: 'FY 2014',
+                type: 'CROSSWALK'
+            },
+            data: [
+                {agency: 'CDC', partner: 'PartnerA', value: 12},
+                {agency: 'CDC', partner: 'PartnerD', value: 30},
+                {agency: 'CDC', partner: 'PartnerG', value: 10}
+            ],
+            resolve: {
+                type: undefined,
+                value: undefined
+            }
+        }, {
+            details: {
+                orgUnitName: 'Mark\'s clinic',
+                timePeriodName: 'FY 2014'
+            },
+            data: [
+                {agency: 'CDC', partner: 'PartnerD', value: 50},
+                {agency: 'CDC', partner: 'PartnerU', value: 20},
+                {agency: 'CDC', partner: 'PartnerT', value: 17}
+            ],
+            resolve: {
+                type: 'custom',
+                value: -10,
+                isResolved: true
+            }
+        }];
         var $q = $injector.get('$q');
         $controller = $injector.get('$controller');
 
@@ -18,57 +66,24 @@ describe('App controller', function () {
             getMax: jasmine.createSpy('dedupeService.getMax'),
             getSum: jasmine.createSpy('dedupeService.getSum'),
             getDuplicateRecords: jasmine.createSpy('dedupeService.getDuplicateRecords')
-                .and.returnValue($q.when([{
-                    id: '2364f5b15e57185fc6564ce64cc9c629',
-                    details: {
-                        orgUnitName: 'Glady\'s clinic',
-                        timePeriodName: 'FY 2014'
-                    },
-                    data: [
-                        {agency: 'USAID', partner: 'PartnerA', value: 60},
-                        {agency: 'USAID', partner: 'PartnerB', value: 40},
-                        {agency: 'USAID', partner: 'PartnerC', value: 20}
-                    ],
-                    resolve: {
-                        type: undefined,
-                        value: undefined
-                    }
-                }, {
-                    details: {
-                        orgUnitName: 'Glady\'s clinic',
-                        timePeriodName: 'FY 2014'
-                    },
-                    data: [
-                        {agency: 'CDC', partner: 'PartnerA', value: 12},
-                        {agency: 'CDC', partner: 'PartnerD', value: 30},
-                        {agency: 'CDC', partner: 'PartnerG', value: 10}
-                    ],
-                    resolve: {
-                        type: undefined,
-                        value: undefined
-                    }
-                }, {
-                    details: {
-                        orgUnitName: 'Mark\'s clinic',
-                        timePeriodName: 'FY 2014'
-                    },
-                    data: [
-                        {agency: 'CDC', partner: 'PartnerD', value: 50},
-                        {agency: 'CDC', partner: 'PartnerU', value: 20},
-                        {agency: 'CDC', partner: 'PartnerT', value: 17}
-                    ],
-                    resolve: {
-                        type: 'custom',
-                        value: -10,
-                        isResolved: true
-                    }
-                }])),
+                .and.returnValue($q.when(dedupeRecords)),
             resolveDuplicates: jasmine.createSpy('dedupeService.resolveDuplicates')
                 .and.returnValue($q.when({
                     successCount: 1,
                     errorCount: 0,
                     errors: []
                 }))
+        };
+
+        dedupeRecordFiltersMock = {
+            onlyNonResolvedRecords: jasmine.createSpy('dedupeRecordFilters.onlyNonResolvedRecords')
+                .and.returnValue(dedupeRecords.slice(1)),
+            onlyTypeCrosswalk: jasmine.createSpy('dedupeRecordFilters.onlyTypeCrosswalk')
+                .and.callFake(function (records) {
+                    return records.filter(function (dedupeRecord) {
+                        return (dedupeRecord && dedupeRecord.details) && dedupeRecord.details.type === 'CROSSWALK';
+                    });
+                })
         };
 
         scope = $rootScope.$new();
@@ -81,6 +96,7 @@ describe('App controller', function () {
 
         controller = $controller('appController', {
             dedupeService: dedupeServiceMock,
+            dedupeRecordFilters: dedupeRecordFiltersMock,
             $scope: scope,
             notify: notifyMock
         });
@@ -103,7 +119,8 @@ describe('App controller', function () {
         }, {
             details: {
                 orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014'
+                timePeriodName: 'FY 2014',
+                type: 'CROSSWALK'
             },
             data: [
                 {agency: 'CDC', partner: 'PartnerA', value: 12},
@@ -149,7 +166,8 @@ describe('App controller', function () {
         }, {
             details: {
                 orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014'
+                timePeriodName: 'FY 2014',
+                type: 'CROSSWALK'
             },
             data: [
                 {agency: 'CDC', partner: 'PartnerA', value: 12},
@@ -351,6 +369,59 @@ describe('App controller', function () {
             controller.changedIncludeResolved();
 
             expect(controller.dedupeRecords.length).toBe(2);
+        });
+    });
+
+    describe('crosswalk', function () {
+        beforeEach(function () {
+            //Apply rootscope to resolve the mock promise
+            $rootScope.$apply();
+        });
+
+        describe('isAllTypeCrosswalk', function () {
+            it('should be a function', function () {
+                expect(controller.isAllTypeCrosswalk).toBeAFunction();
+            });
+
+            it('should return false', function () {
+                expect(controller.isAllTypeCrosswalk()).toBe(false);
+            });
+
+            it('should return true if only the crosswalk records are visible', function () {
+                controller.dedupeRecords = [controller.dedupeRecords[1]];
+
+                expect(controller.isAllTypeCrosswalk()).toBe(true);
+            });
+        });
+
+        describe('changedOnlyTypeCrosswalk', function () {
+            it('should be a function', function () {
+                expect(controller.changedOnlyTypeCrosswalk).toBeAFunction();
+            });
+
+            it('should call the service with the dedupe records', function () {
+                var dedupeRecords = angular.copy(controller.dedupeRecords);
+                controller.changedOnlyTypeCrosswalk();
+
+                expect(dedupeRecordFiltersMock.onlyTypeCrosswalk).toHaveBeenCalledWith(dedupeRecords);
+            });
+
+            it('should set the deduperecord on the controller to be just the crosswalk records', function () {
+                var expectedDedupeRecord = angular.copy(dedupeRecords[1]);
+
+                controller.changedOnlyTypeCrosswalk();
+
+                expect(controller.dedupeRecords.length).toBe(1);
+                expect(controller.dedupeRecords[0]).toEqual(expectedDedupeRecord);
+            });
+
+            it('should not do anything if the records are already type crosswalk and reset to unresolved', function () {
+                controller.dedupeRecords = [angular.copy(dedupeRecords[1])];
+
+                controller.changedOnlyTypeCrosswalk();
+
+                expect(controller.dedupeRecords.length).toBe(2);
+            });
         });
     });
 
