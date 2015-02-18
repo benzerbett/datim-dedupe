@@ -3,6 +3,9 @@
         <div class="row">
             <div class="dataelement-name col-sm-12">
                 <span ng-bind="::dedupeCtrl.dedupeRecord.details.dataElementName"></span>
+                <div class="crosswalk-notice" ng-if="dedupeCtrl.dedupeRecord.details.type == 'CROSSWALK'">
+                    <i class="fa fa-files-o"></i> DSD/TA dedupe
+                </div>
             </div>
         </div>
         <div class="row">
