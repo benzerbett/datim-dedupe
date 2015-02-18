@@ -93,6 +93,11 @@ describe('Dedupe record service', function () {
                 expect(dedupeRecords[0].id).toBe('2364f5b15e57185fc6564ce64cc9c629');
             });
 
+            it('should set the dedupe type onto the dedupe record', function () {
+                expect(dedupeRecords[0].details.type).toBe('CROSSWALK');
+                expect(dedupeRecords[1].details.type).toBe('PURE');
+            });
+
             describe('data rows', function () {
                 var firstDataRow;
 
