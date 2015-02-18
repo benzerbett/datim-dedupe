@@ -9,9 +9,8 @@ function periodService(Restangular, $q, $timeout) {
 
     var calendarLoaded = $q.defer();
 
-    var currentPeriodType;
     var generatedPeriods;
-    var calendarType;
+
     var dateFormat = 'yyyy-mm-dd';
     var periodTypes = [
         'Daily',
@@ -27,6 +26,7 @@ function periodService(Restangular, $q, $timeout) {
         'FinancialOct'
     ];
 
+    var calendarType;
     var calendarTypes = [
         'coptic',
         'ethiopian',
@@ -55,6 +55,8 @@ function periodService(Restangular, $q, $timeout) {
 
                     if (_(calendarTypes).contains(calendarType)) {
                         loadCalendarScript(calendarType);
+                    } else {
+                        throw new Error('Calendar type "' + calendarType + '" is not supported.');
                     }
                 }
             });
@@ -93,11 +95,8 @@ function periodService(Restangular, $q, $timeout) {
         return calendarLoaded.promise.then(function () {
             if (_(periodTypes).contains(periodType)) {
                 var periods;
-                currentPeriodType = periodType;
-                periods = dhis2.period.generator.generateReversedPeriods(currentPeriodType, 0);
+                periods = dhis2.period.generator.generateReversedPeriods(periodType, 0);
                 generatedPeriods = dhis2.period.generator.filterFuturePeriodsExceptCurrent(periods);
-
-                window.console.log(generatedPeriods);
             }
         });
     }
