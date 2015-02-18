@@ -22,6 +22,7 @@ function basePathResolver(url, injectables) {
     return [injectables.webappManifest.activities.dhis.href, url].join('/');
 }
 
+/* istanbul ignore next */
 window.getBootstrapper('PEPFAR.dedupe', document)
     .setBasePathResolver(basePathResolver)
     .addInjectableFromRemoteLocation('webappManifest', 'manifest.webapp')
