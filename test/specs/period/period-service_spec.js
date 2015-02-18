@@ -5,7 +5,7 @@ describe('Period service', function () {
 
     beforeEach(module('PEPFAR.dedupe'));
     beforeEach(inject(function ($injector) {
-        jQuery.getScript = jasmine.createSpy('jQuery.getScript')
+        jQuery.ajax = jQuery.getScript = jasmine.createSpy('jQuery.getScript')
             .and.callFake(function (url, callback) {
                 callback();
                 return {
