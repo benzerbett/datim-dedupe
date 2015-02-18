@@ -52,6 +52,19 @@ describe('Period service', function () {
         it('should be a function', function () {
             expect(service.getPastPeriodsRecentFirst).toBeAFunction();
         });
+
+        it('should initially return undefined', function () {
+            expect(service.getPastPeriodsRecentFirst()).toEqual(undefined);
+        });
+
+        it('should return the period generator when a periodtype has been set', function () {
+            var generatedPeriods = window.dhis2.period.generator.filterFuturePeriodsExceptCurrent(window.dhis2.period.generator.generateReversedPeriods('Monthly', 0));
+
+            service.setPeriodType('Monthly');
+            $rootScope.$apply();
+
+            expect(service.getPastPeriodsRecentFirst()).toEqual(generatedPeriods);
+        });
     });
 
     describe('setPeriodType', function () {
