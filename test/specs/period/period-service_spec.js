@@ -1,6 +1,7 @@
 describe('Period service', function () {
     var service;
     var $httpBackend;
+    var $rootScope;
     var systemInfoRequest;
 
     beforeEach(module('PEPFAR.dedupe'));
@@ -20,11 +21,15 @@ describe('Period service', function () {
         window.dhis2 = {
             period: {
                 PeriodGenerator: jasmine.createSpy('dhis2.period.periodGenerator')
-                    .and.returnValue([{name: 'period1'}, {name: 'period2'}])
+                    .and.returnValue({
+                        generateReversedPeriods: jasmine.createSpy('dhis2.period.generator.generateReversedPeriods'),
+                        filterFuturePeriodsExceptCurrent: jasmine.createSpy('dhis2.period.generator.filterFuturePeriodsExceptCurrent')
+                    })
             }
         };
 
         $httpBackend = $injector.get('$httpBackend');
+        $rootScope = $injector.get('$rootScope');
 
         systemInfoRequest = $httpBackend.expectGET('/dhis/api/system/info')
             .respond(200, {
@@ -61,6 +66,34 @@ describe('Period service', function () {
         it('should return a promise like object', function () {
             expect(service.setPeriodType('Monthly')).toBeAPromiseLikeObject();
         });
+
+        it('should call the dhis2 period object for the periods to use', function () {
+            service.setPeriodType('Monthly');
+            $rootScope.$apply();
+
+            expect(window.dhis2.period.generator.generateReversedPeriods).toHaveBeenCalled();
+        });
+    });
+
+    it('should reject the set of period when the dependencies have not been loaded', function () {
+        var errorCallback = jasmine.createSpy();
+
+        jQuery.getScript.and.callFake(function () {
+            return {
+                error: function (callback) {
+                    callback();
+                }
+            };
+        });
+        $httpBackend.flush();
+
+        service.setPeriodType('Monthly')
+            .catch(errorCallback);
+
+        $rootScope.$apply();
+
+        expect(jQuery.calendars.instance).not.toHaveBeenCalled();
+        expect(errorCallback).toHaveBeenCalled();
     });
 
     describe('different calendar type', function () {

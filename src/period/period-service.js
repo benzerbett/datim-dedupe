@@ -108,25 +108,13 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify) {
     function prepareCalendar() {
         $q.when(dependenciesLoaded.promise)
             .then(function () {
-                try {
-                    var calendar = jQuery.calendars.instance(getCalendarType());
-                    dhis2.period.generator = new dhis2.period.PeriodGenerator(calendar, getDateFormat());
-                    calendarLoaded.resolve(true);
-                } catch (e) {
-                    prepareCalendar.count += 1;
-
-                    if (prepareCalendar.count > 100) {
-                        calendarLoaded.reject(false);
-                    } else {
-                        $timeout(prepareCalendar, 100);
-                    }
-                }
+                var calendar = jQuery.calendars.instance(getCalendarType());
+                dhis2.period.generator = new dhis2.period.PeriodGenerator(calendar, getDateFormat());
+                calendarLoaded.resolve(true);
             }, function () {
                 calendarLoaded.reject();
             });
     }
-
-    prepareCalendar.count = 0;
 
     function getDateFormat() {
         return dateFormat;
@@ -143,9 +131,8 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify) {
     function setPeriodType(periodType) {
         return calendarLoaded.promise.then(function () {
             if (_(periodTypes).contains(periodType)) {
-                var periods;
-                periods = dhis2.period.generator.generateReversedPeriods(periodType, 0);
-                generatedPeriods = dhis2.period.generator.filterFuturePeriodsExceptCurrent(periods);
+                var d2peGen = dhis2.period.generator;
+                generatedPeriods = d2peGen.filterFuturePeriodsExceptCurrent(d2peGen.generateReversedPeriods(periodType, 0));
             }
         });
     }

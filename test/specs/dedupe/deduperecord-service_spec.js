@@ -119,29 +119,41 @@ describe('Dedupe record service', function () {
         });
 
         describe('resolved', function () {
-            var dedupeRecord;
+            var firstDedupeRecord;
+            var secondDedupeRecord;
+            var thirdDedupeRecord;
 
             beforeEach(function () {
                 getRecordsRequest.respond(200, fixtures.get('resolvedDedupe'));
 
                 dedupeRecordService.getRecords()
                     .then(function (records) {
-                        dedupeRecord = records[0];
+                        firstDedupeRecord = records[0];
+                        secondDedupeRecord = records[1];
+                        thirdDedupeRecord = records[2];
                     });
 
                 $httpBackend.flush();
             });
 
             it('should set resolve.isResolved to true', function () {
-                expect(dedupeRecord.resolve.isResolved).toBe(true);
+                expect(firstDedupeRecord.resolve.isResolved).toBe(true);
             });
 
             it('should set the resolve.value to the actual number', function () {
-                expect(dedupeRecord.resolve.value).toBe(12);
+                expect(firstDedupeRecord.resolve.value).toBe(12);
             });
 
             it('should set the resolved type to custom', function () {
-                expect(dedupeRecord.resolve.type).toBe('custom');
+                expect(firstDedupeRecord.resolve.type).toBe('custom');
+            });
+
+            it('should set resolved type to sum', function () {
+                expect(secondDedupeRecord.resolve.type).toBe('sum');
+            });
+
+            it('should set the resolved type to max', function () {
+                expect(thirdDedupeRecord.resolve.type).toBe('max');
             });
         });
     });

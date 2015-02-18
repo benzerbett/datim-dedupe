@@ -18,7 +18,7 @@ function organisationUnitService(Restangular, notify) {
                 return _.sortBy(organisationUnits, 'name');
             })
             .catch(function (error) {
-                notify.error(error);
+                notify.error(error.data + ' (' + error.status + ')');
             });
     }
 }

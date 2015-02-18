@@ -1,6 +1,7 @@
 describe('Organisation unit select directive', function () {
     var fixtures = window.fixtures;
     var $scope;
+    var innerScope;
     var element;
     var $rootScope;
 
@@ -29,10 +30,15 @@ describe('Organisation unit select directive', function () {
                 }
             };
         });
+
+        $provide.factory('notify', function () {
+            return {
+                error: jasmine.createSpy('notify.error')
+            };
+        });
     }));
 
     beforeEach(inject(function ($injector) {
-        var innerScope;
         var $compile = $injector.get('$compile');
         $rootScope = $injector.get('$rootScope');
 
@@ -64,5 +70,42 @@ describe('Organisation unit select directive', function () {
 
     it('should call the callback when the users organisation unit is found within the orgunit list', function () {
         expect($scope.ctrl.callbackSpy.calls.argsFor(0)[0].id).toBe('W73PRZcjFIU');
+    });
+
+    it('should call the passed callback when the selection is changed', function () {
+        innerScope.selectbox.onSelect();
+
+        expect($scope.ctrl.callbackSpy.calls.count()).toBe(2);
+    });
+
+    describe('failed current user', function () {
+        var notifyMock;
+
+        beforeEach(inject(function ($injector) {
+            var $compile = $injector.get('$compile');
+            var currentUserServiceMock = $injector.get('currentUserService');
+            var $q = $injector.get('$q');
+            $rootScope = $injector.get('$rootScope');
+            notifyMock = $injector.get('notify');
+
+            currentUserServiceMock.getCurrentUser = function () {
+                return $q.reject();
+            };
+
+            element = angular.element('<organisation-unit-select on-orgunit-selected="ctrl.callbackSpy"></organisation-unit-select>');
+
+            $scope = $rootScope.$new();
+
+            $scope.ctrl = {
+                callbackSpy: jasmine.createSpy('callbackSpy')
+            };
+
+            $compile(element)($scope);
+            $rootScope.$digest();
+        }));
+
+        it('should call the notify error on failed getting the current user', function () {
+            expect(notifyMock.error).toHaveBeenCalledWith('Failed to load current user object');
+        });
     });
 });

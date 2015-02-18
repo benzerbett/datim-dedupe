@@ -1,11 +1,19 @@
 describe('Organisation unit service', function () {
     var $httpBackend;
     var service;
+    var notifyMock;
 
-    beforeEach(module('PEPFAR.dedupe'));
+    beforeEach(module('PEPFAR.dedupe', function ($provide) {
+        $provide.factory('notify', function () {
+            return {
+                error: jasmine.createSpy('notify.error')
+            };
+        });
+    }));
     beforeEach(inject(function ($injector) {
         $httpBackend = $injector.get('$httpBackend');
         service = $injector.get('organisationUnitService');
+        notifyMock = $injector.get('notify');
     }));
 
     afterEach(function () {
@@ -71,6 +79,15 @@ describe('Organisation unit service', function () {
             service.getOrganisationUnitsForLevel(3);
 
             $httpBackend.flush();
+        });
+
+        it('should notify the user of the error if the orgunits can not be loaded', function () {
+            orgUnitResponse.respond(409, 'Some error happened');
+            service.getOrganisationUnitsForLevel(3);
+
+            $httpBackend.flush();
+
+            expect(notifyMock.error).toHaveBeenCalledWith('Some error happened (409)');
         });
     });
 });
