@@ -140,7 +140,7 @@ describe('Dedupe saver service', function () {
 
             describe('multiple values', function () {
                 it('should call the api with multiple values when passed multiple', function () {
-                    $httpBackend.expectPOST('/dhis/api/dataValueSets', {
+                    $httpBackend.expectPOST('/dhis/api/dataValueSets?preheatCache=false', {
                         dataValues: [
                             {
                                 dataElement: 'K6f6jR0NOcZ',
@@ -167,7 +167,7 @@ describe('Dedupe saver service', function () {
                 });
 
                 it('should call the api with the resulting values if one of the values was incorrect', function () {
-                    $httpBackend.expectPOST('/dhis/api/dataValueSets', {
+                    $httpBackend.expectPOST('/dhis/api/dataValueSets?preheatCache=false', {
                         dataValues: [
                             {
                                 dataElement: 'K6f6jR0NOcZ',
@@ -192,7 +192,7 @@ describe('Dedupe saver service', function () {
                     var importResponse = fixtures.get('importResponse');
                     importResponse.dataValueCount.imported = 2;
 
-                    $httpBackend.expectPOST('/dhis/api/dataValueSets').respond(200, importResponse);
+                    $httpBackend.expectPOST('/dhis/api/dataValueSets?preheatCache=false').respond(200, importResponse);
 
                     dedupeSaverService.saveDeduplication([dedupeRecordOne, dedupeRecordTwo])
                         .then(function (data) {
@@ -238,7 +238,7 @@ describe('Dedupe saver service', function () {
                     ];
                     delete dedupeRecordOne.resolve.adjustedValue;
 
-                    $httpBackend.expectPOST('/dhis/api/dataValueSets').respond(200, importResponse);
+                    $httpBackend.expectPOST('/dhis/api/dataValueSets?preheatCache=false').respond(200, importResponse);
 
                     dedupeSaverService.saveDeduplication([dedupeRecordOne, dedupeRecordTwo])
                         .then(function (data) {

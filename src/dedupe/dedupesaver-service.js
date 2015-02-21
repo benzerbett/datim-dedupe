@@ -40,7 +40,9 @@ function dedupeSaverService($q, Restangular, DEDUPE_CATEGORY_OPTION_COMBO_ID, DE
         }
 
         return Restangular.all('dataValueSets')
-            .post(dataValueSet)
+            .post(dataValueSet, {
+                preheatCache: false
+            })
             .then(function (importResult) {
                 return getResponseStructure(
                     importResult.dataValueCount.imported + importResult.dataValueCount.updated,
