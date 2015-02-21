@@ -17,7 +17,10 @@ function currentUserService($q, Restangular, notify) {
                 currentUser.authorities = userAuthorities;
 
                 return currentUser;
-            }, notify.error);
+            })
+            .catch(function (response) {
+                notify.error(['(', response.status, ') ', response.data].join(''))
+            });
     }
 
     function requestCurrentUser() {
