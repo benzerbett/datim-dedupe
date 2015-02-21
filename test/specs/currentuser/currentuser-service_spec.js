@@ -1,5 +1,4 @@
 describe('Dedupe service', function () {
-    var fixtures = window.fixtures;
     var currentUserService;
     var $httpBackend;
     var userRequest;

@@ -19,7 +19,7 @@ function currentUserService($q, Restangular, notify) {
                 return currentUser;
             })
             .catch(function (response) {
-                notify.error(['(', response.status, ') ', response.data].join(''))
+                notify.error(['(', response.status, ') ', response.data].join(''));
             });
     }
 
