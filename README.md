@@ -23,6 +23,12 @@ The value for this system setting is as shown below. This is a basic javascript 
 }
 ```
 
+To set the system setting using curl you can do:
+
+```bash
+curl "https://test.datim.org/api/systemSettings/keyDedupeSqlViewId" -d '{"id": "AuL6zTSLxNc"}' -H "Content-Type:text/plain" -X POST -u user:pw -v
+```
+
 ####Step 3: Install the datim-dedupe app
 You will find the latest version of the dedupe app here http://dhis2.github.io/pepfar-releases/. Download the zipfile and install it into dhis2 using the app management app you will find in the app menu. 
 

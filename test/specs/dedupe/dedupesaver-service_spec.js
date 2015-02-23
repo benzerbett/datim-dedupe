@@ -140,14 +140,14 @@ describe('Dedupe saver service', function () {
 
             describe('multiple values', function () {
                 it('should call the api with multiple values when passed multiple', function () {
-                    $httpBackend.expectPOST('/dhis/api/dataValueSets', {
+                    $httpBackend.expectPOST('/dhis/api/dataValueSets?preheatCache=false', {
                         dataValues: [
                             {
                                 dataElement: 'K6f6jR0NOcZ',
                                 period: '2013Oct',
                                 orgUnit: 'HfiOUYEPgLK',
                                 categoryOptionCombo: 'HllvX50cXC0',
-                                attributeOptionCombo: 'LJ8K9VORX9s',
+                                attributeOptionCombo: 'X8hrDf6bLDC',
                                 value: '-400'
                             },
                             {
@@ -155,7 +155,7 @@ describe('Dedupe saver service', function () {
                                 period: '2013Oct',
                                 orgUnit: 'HfiOUYEPgLK',
                                 categoryOptionCombo: 'TbYpjxM5j6w',
-                                attributeOptionCombo: 'LJ8K9VORX9s',
+                                attributeOptionCombo: 'X8hrDf6bLDC',
                                 value: '124'
                             }
                         ]
@@ -167,14 +167,14 @@ describe('Dedupe saver service', function () {
                 });
 
                 it('should call the api with the resulting values if one of the values was incorrect', function () {
-                    $httpBackend.expectPOST('/dhis/api/dataValueSets', {
+                    $httpBackend.expectPOST('/dhis/api/dataValueSets?preheatCache=false', {
                         dataValues: [
                             {
                                 dataElement: 'K6f6jR0NOcZ',
                                 period: '2013Oct',
                                 orgUnit: 'HfiOUYEPgLK',
                                 categoryOptionCombo: 'HllvX50cXC0',
-                                attributeOptionCombo: 'LJ8K9VORX9s',
+                                attributeOptionCombo: 'X8hrDf6bLDC',
                                 value: '-400'
                             }
                         ]
@@ -192,7 +192,7 @@ describe('Dedupe saver service', function () {
                     var importResponse = fixtures.get('importResponse');
                     importResponse.dataValueCount.imported = 2;
 
-                    $httpBackend.expectPOST('/dhis/api/dataValueSets').respond(200, importResponse);
+                    $httpBackend.expectPOST('/dhis/api/dataValueSets?preheatCache=false').respond(200, importResponse);
 
                     dedupeSaverService.saveDeduplication([dedupeRecordOne, dedupeRecordTwo])
                         .then(function (data) {
@@ -224,7 +224,7 @@ describe('Dedupe saver service', function () {
                         new Error('Did not find a value for "orgUnitId" on passed record. ' +
                         '{"orgUnitName":"Cardinal Site","timePeriodName":"2013Oct","dataElementId":"H9Q2jDZ76ih",' +
                         '"dataElementName":"TX_CURR (N, DSD, Age/Sex Aggregated): Receiving ART",' +
-                        '"categoryOptionComboId":"TbYpjxM5j6w","categoryOptionComboName":"(15+, Female)"}')
+                        '"categoryOptionComboId":"TbYpjxM5j6w","categoryOptionComboName":"(15+, Female)","type":"PURE"}')
                     ]);
                 });
 
@@ -238,7 +238,7 @@ describe('Dedupe saver service', function () {
                     ];
                     delete dedupeRecordOne.resolve.adjustedValue;
 
-                    $httpBackend.expectPOST('/dhis/api/dataValueSets').respond(200, importResponse);
+                    $httpBackend.expectPOST('/dhis/api/dataValueSets?preheatCache=false').respond(200, importResponse);
 
                     dedupeSaverService.saveDeduplication([dedupeRecordOne, dedupeRecordTwo])
                         .then(function (data) {

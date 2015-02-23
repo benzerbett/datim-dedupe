@@ -2,7 +2,7 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
-    <title>PEPFAR Deduplication application</title>
+    <title>Data Deduplication</title>
 
     <!-- build:css css/vendor.css -->
     <link href="../vendor/bootstrap/dist/css/bootstrap.css" rel="stylesheet" type="text/css" />
@@ -23,6 +23,7 @@
 
         <div class="dedupe-filter-settings" ng-class="{'filter-dropdown': app.dedupeRecords.length}">
             <div class="filters-cog">
+                <h1 class="app-header">Data de-duplication</h1>
                 <button class="btn btn-default" ng-click="isCollapsed = !isCollapsed"><i class="fa fa-filter"></i> Filters</button>
             </div>
             <div class="filters-collapse" collapse="isCollapsed">
@@ -60,9 +61,15 @@
                     </label>
                 </div>
                 <div class="col-sm-2">
+                    <label>
+                        <span>Only DSD/TS cross:</span>
+                        <input type="checkbox" ng-checked="app.isAllTypeCrosswalk()" ng-click="app.changedOnlyTypeCrosswalk()">
+                    </label>
+                </div>
+                <div class="col-sm-2">
                     <span>Showing <span ng-bind="app.dedupeRecords.length"></span> of <span ng-bind="app.allDedupeRecords.length"></span></span>
                 </div>
-                <div class="col-sm-3">
+                <div class="col-sm-2">
                     <button class="btn btn-primary" ng-disabled="!deduplication.$valid" ng-click="app.resolveDuplicates()" translate>Resolve duplicates</button>
                 </div>
             </div>
@@ -101,12 +108,12 @@
     <script src="dedupe/dedupe-service.js"></script>
     <script src="dedupe/deduperecord-service.js"></script>
     <script src="dedupe/dedupesaver-service.js"></script>
-    <script src="validation/positiveinteger-directive.js"></script>
     <script src="organisationunits/organisationunit-service.js"></script>
     <script src="organisationunits/organisationunit-select-directive.js"></script>
     <script src="currentuser/currentuser-service.js"></script>
     <script src="period/period-service.js"></script>
     <script src="period/periodselector-directive.js"></script>
+    <script src="dedupe/deduperecordfilters-service.js"></script>
     <!-- endbuild -->
 </body>
 </html>

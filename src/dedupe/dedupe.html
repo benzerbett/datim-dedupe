@@ -3,6 +3,9 @@
         <div class="row">
             <div class="dataelement-name col-sm-12">
                 <span ng-bind="::dedupeCtrl.dedupeRecord.details.dataElementName"></span>
+                <div class="crosswalk-notice" ng-if="dedupeCtrl.dedupeRecord.details.type == 'CROSSWALK'">
+                    <i class="fa fa-files-o"></i> DSD/TA dedupe
+                </div>
             </div>
         </div>
         <div class="row">
@@ -80,17 +83,17 @@
                             <span translate>Use a custom value</span>
                         </label>
                         <span class="value">
-                            <input name="resolveNumber" positive-integer type="number" min="0" ng-model="dedupeCtrl.dedupeRecord.resolve.value" ng-required="dedupeCtrl.dedupeRecord.resolve.type == 'custom'" ng-change="dedupeCtrl.dedupeRecord.resolve.type = 'custom'" />
+                            <input name="resolveNumber" type="number" min="0" ng-model="dedupeCtrl.dedupeRecord.resolve.value" ng-required="dedupeCtrl.dedupeRecord.resolve.type == 'custom'" ng-change="dedupeCtrl.dedupeRecord.resolve.type = 'custom'" />
                         </span>
                         <div class="error-messages" ng-messages="dedupeRecordForm.resolveNumber.$error">
                             <div ng-message="required">
                                 When selecting to use a custom value you have to provide a value.
                             </div>
+                            <div ng-message="min">
+                                This value should be a positive number (not decimal)
+                            </div>
                             <div ng-message="number">
                                 This value should be a number.
-                            </div>
-                            <div ng-message="positiveInteger">
-                                This value should be a positive number (not decimal)
                             </div>
                         </div>
                     </div>

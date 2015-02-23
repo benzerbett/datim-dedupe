@@ -8,4 +8,19 @@ describe('App', function () {
 
         expect(getModule).not.toThrow();
     });
+
+    it('should have a correct basePathResolver', function () {
+        var injectables = {
+            webappManifest: {
+                activities: {
+                    dhis: {
+                        href: 'http://prefix'
+                    }
+                }
+            }
+        };
+        var url = 'urlname';
+
+        expect(window.basePathResolver(url, injectables)).toBe('http://prefix/urlname');
+    });
 });

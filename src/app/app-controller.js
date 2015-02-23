@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').controller('appController', appController);
 
-function appController(dedupeService, $scope, notify) {
+function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     var ctrl = this;
     var dedupeFilters = {};
 
@@ -19,6 +19,8 @@ function appController(dedupeService, $scope, notify) {
     ctrl.changeOrgUnit = changeOrgUnit;
     ctrl.changePeriod = changePeriod;
     ctrl.getDuplicateRecords = getDuplicateRecords;
+    ctrl.isAllTypeCrosswalk = isAllTypeCrosswalk;
+    ctrl.changedOnlyTypeCrosswalk = changedOnlyTypeCrosswalk;
 
     //Call init method to get data from services
     initialise();
@@ -69,9 +71,7 @@ function appController(dedupeService, $scope, notify) {
     }
 
     function getNonResolvedRecords(dedupeRecords) {
-        return dedupeRecords.filter(function (dedupeRecord) {
-            return (dedupeRecord && dedupeRecord.resolve) && !dedupeRecord.resolve.isResolved;
-        });
+        return dedupeRecordFilters.onlyNonResolvedRecords(dedupeRecords);
     }
 
     function changedIncludeResolved() {
@@ -82,8 +82,22 @@ function appController(dedupeService, $scope, notify) {
         }
     }
 
+    function changedOnlyTypeCrosswalk() {
+        if (isAllTypeCrosswalk()) {
+            ctrl.dedupeRecords = getNonResolvedRecords(ctrl.allDedupeRecords);
+        } else {
+            ctrl.dedupeRecords = dedupeRecordFilters.onlyTypeCrosswalk(ctrl.dedupeRecords);
+        }
+    }
+
     function isShowingAll() {
         return ctrl.allDedupeRecords.length === ctrl.dedupeRecords.length;
+    }
+
+    function isAllTypeCrosswalk() {
+        return ctrl.dedupeRecords.every(function (dedupeRecord) {
+            return (dedupeRecord && dedupeRecord.details) && dedupeRecord.details.type === 'CROSSWALK';
+        });
     }
 
     //TODO: Write tests for this
