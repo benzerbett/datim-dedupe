@@ -147,7 +147,7 @@ describe('Dedupe saver service', function () {
                                 period: '2013Oct',
                                 orgUnit: 'HfiOUYEPgLK',
                                 categoryOptionCombo: 'HllvX50cXC0',
-                                attributeOptionCombo: 'LJ8K9VORX9s',
+                                attributeOptionCombo: 'X8hrDf6bLDC',
                                 value: '-400'
                             },
                             {
@@ -155,7 +155,7 @@ describe('Dedupe saver service', function () {
                                 period: '2013Oct',
                                 orgUnit: 'HfiOUYEPgLK',
                                 categoryOptionCombo: 'TbYpjxM5j6w',
-                                attributeOptionCombo: 'LJ8K9VORX9s',
+                                attributeOptionCombo: 'X8hrDf6bLDC',
                                 value: '124'
                             }
                         ]
@@ -174,7 +174,7 @@ describe('Dedupe saver service', function () {
                                 period: '2013Oct',
                                 orgUnit: 'HfiOUYEPgLK',
                                 categoryOptionCombo: 'HllvX50cXC0',
-                                attributeOptionCombo: 'LJ8K9VORX9s',
+                                attributeOptionCombo: 'X8hrDf6bLDC',
                                 value: '-400'
                             }
                         ]

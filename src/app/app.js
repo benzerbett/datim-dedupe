@@ -10,7 +10,7 @@ function angularUiSelectConfig(uiSelectConfig) {
 }
 
 //Config values
-angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_OPTION_COMBO_ID', 'LJ8K9VORX9s');
+angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_OPTION_COMBO_ID', 'X8hrDf6bLDC');
 angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_COMBO_ID', 'wUpfppgjEza');
 angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_OPTION_ID', 'xEzelmtHWPn');
 angular.module('PEPFAR.dedupe').value('DEDUPE_MECHANISM_NAME', '(00000 De-duplication adjustment)');
