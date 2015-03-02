@@ -490,7 +490,7 @@ describe('App controller', function () {
         it('should call the getDuplicateRecords function on the recordService', function () {
             controller.changeOrgUnit({id: 'newOuId'});
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith('newOuId', undefined);
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith('newOuId', undefined, false, undefined);
         });
 
         it('should not call the service when the orgunit is undefined', function () {
@@ -508,13 +508,38 @@ describe('App controller', function () {
         it('should call the service for new records when a period has been selected', function () {
             controller.changePeriod({iso: '2013April'});
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, '2013April');
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, '2013April', false, undefined);
         });
 
         it('should not call the service if the period iso is not defined', function () {
             controller.changePeriod({iso: undefined});
 
             expect(dedupeServiceMock.getDuplicateRecords).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('changeFilterResultsTargets', function () {
+        it('should be a function', function () {
+            expect(controller.changePeriod).toBeAFunction();
+        });
+
+        it('should call the service for records when a filter has been set to empty', function () {
+            controller.changeFilterResultsTargets({name: 'Targets'});
+            controller.changeFilterResultsTargets(undefined);
+
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined);
+        });
+
+        it('should call the service for records when a filter has been set to targets', function () {
+            controller.changeFilterResultsTargets({name: 'Targets'});
+
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, 'targets');
+        });
+
+        it('should call the service for records when a filter has been set to results', function () {
+            controller.changeFilterResultsTargets({name: 'Results'});
+
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, 'results');
         });
     });
 });

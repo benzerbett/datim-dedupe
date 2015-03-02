@@ -38,6 +38,11 @@
                             <period-selector on-period-selected="app.changePeriod"></period-selector>
                         </div>
                     </div>
+                    <div class="results-targets row">
+                        <div class="col-sm-12">
+                            <results-targets-select on-results-targets-selected="app.changeFilterResultsTargets"></results-targets-select>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -114,6 +119,7 @@
     <script src="period/period-service.js"></script>
     <script src="period/periodselector-directive.js"></script>
     <script src="dedupe/deduperecordfilters-service.js"></script>
+    <script src="resultstargets/resultstargets-directive.js"></script>
     <!-- endbuild -->
 </body>
 </html>

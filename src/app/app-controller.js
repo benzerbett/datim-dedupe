@@ -18,6 +18,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     ctrl.isShowingAll = isShowingAll;
     ctrl.changeOrgUnit = changeOrgUnit;
     ctrl.changePeriod = changePeriod;
+    ctrl.changeFilterResultsTargets = changeFilterResultsTargets;
     ctrl.getDuplicateRecords = getDuplicateRecords;
     ctrl.isAllTypeCrosswalk = isAllTypeCrosswalk;
     ctrl.changedOnlyTypeCrosswalk = changedOnlyTypeCrosswalk;
@@ -42,7 +43,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     function getDuplicateRecords() {
         ctrl.isProcessing = true;
 
-        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe)
+        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved || false, dedupeFilters.tr)
             .then(function (duplicateRecords) {
                 ctrl.allDedupeRecords = duplicateRecords;
 
@@ -66,6 +67,13 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     function changePeriod(newPeriod) {
         if (newPeriod && newPeriod.iso && angular.isString(newPeriod.iso)) {
             dedupeFilters.pe = newPeriod.iso;
+            getDuplicateRecords();
+        }
+    }
+
+    function changeFilterResultsTargets(newResultsTargets) {
+        if ((!dedupeFilters.tr || !newResultsTargets || dedupeFilters.tr !== newResultsTargets.name)) {
+            dedupeFilters.tr = newResultsTargets && angular.isString(newResultsTargets.name) ? newResultsTargets.name.toLowerCase() : undefined;
             getDuplicateRecords();
         }
     }

@@ -77,6 +77,10 @@ describe('Dedupe record service', function () {
                 expect(dedupeRecords[0].details.dataElementName).toBe('HTC_TST (N, DSD): HTC received results');
             });
 
+            it('should set the disaggregation', function () {
+                expect(dedupeRecords[0].details.disaggregation).toBe('(default)');
+            });
+
             it('should set the data element id', function () {
                 expect(dedupeRecords[0].details.dataElementId).toBe('K6f6jR0NOcZ');
             });
