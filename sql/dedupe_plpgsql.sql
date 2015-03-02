@@ -67,6 +67,8 @@ RETURNS setof duplicate_records AS  $$
  and ous.uidlevel3 = ''' ||  $1 || '''
  WHERE dv1.dataelementid IN (
  SELECT DISTINCT dataelementid from datasetmembers where datasetid in (1485502, 2193018 ) ) 
+ AND dv1.periodid IN (SELECT DISTINCT periodid from _periodstructure
+ where financialoct = ''' || $2 || ''' )
  UNION
  SELECT DISTINCT ta.sourceid,
  ta.periodid,
@@ -94,6 +96,8 @@ RETURNS setof duplicate_records AS  $$
  and ta.dataelementid = dsd.ta_id
  and ta.categoryoptioncomboid = dsd.categoryoptioncomboid
  and ta.attributeoptioncomboid != dsd.attributeoptioncomboid
+ WHERE ta.periodid IN (SELECT DISTINCT periodid from _periodstructure
+ where financialoct = ''' || $2 || ''' )
  UNION
  SELECT DISTINCT ta.sourceid,
  ta.periodid,
@@ -120,7 +124,9 @@ RETURNS setof duplicate_records AS  $$
  AND ta.periodid = dsd.periodid
  and ta.dataelementid = dsd.dsd_id
  and ta.categoryoptioncomboid = dsd.categoryoptioncomboid
- and ta.attributeoptioncomboid != dsd.attributeoptioncomboid';
+ and ta.attributeoptioncomboid != dsd.attributeoptioncomboid
+ WHERE ta.periodid IN (SELECT DISTINCT periodid from _periodstructure
+ where financialoct = ''' || $2 || ''' )';
   
  /*Data element names*/
  
