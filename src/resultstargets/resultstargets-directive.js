@@ -17,7 +17,6 @@ function resultsTargetsDirectiveLink(scope) {
         items: [{name: '-- No Filter --'}, {name: 'Results'}, {name: 'Targets'}],
         placeholder: 'Filter between Results and Targets',
         onSelect: function ($model, $item) {
-            window.console.log($item);
             if ($item === scope.selectbox.items[0]) {
                 $item = scope.selectbox.resultsTargets = undefined;
             }
