@@ -1,9 +1,16 @@
-CREATE  OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),showresolved boolean default false) 
+CREATE  OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
+ps integer default 100,pg integer default 1 ) 
 RETURNS setof duplicate_records AS  $$
  DECLARE
  returnrec duplicate_records;
+ dup_groups RECORD;
+ this_group integer;
+ start_group integer;
+ end_group integer;
  BEGIN
  
+ start_group := pg * ps - ps + 1;
+ end_group := pg * ps;
  
  CREATE  TEMP TABLE  dsd_ta_map 
  (dsd_id integer,
@@ -66,7 +73,7 @@ RETURNS setof duplicate_records AS  $$
  INNER JOIN _orgunitstructure ous on dv1.sourceid = ous.organisationunitid
  and ous.uidlevel3 = ''' ||  $1 || '''
  WHERE dv1.dataelementid IN (
- SELECT DISTINCT dataelementid from datasetmembers where datasetid in (2193022,2193024,2193026,2193020,2193016,2193018 ) ) 
+ SELECT DISTINCT dataelementid from datasetmembers where datasetid in (2193022,2193024,2193026,2193020,2193016,2193018,2212172 ) ) 
  AND dv1.periodid IN (SELECT DISTINCT periodid from _periodstructure
  where financialoct = ''' || $2 || ''' )
  UNION
@@ -222,9 +229,22 @@ RETURNS setof duplicate_records AS  $$
  WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
   FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment'')))';
  
- IF showresolved = FALSE THEN 
+ IF rs = FALSE THEN 
  EXECUTE 'DELETE FROM temp1 where duplication_status =''RESOLVED''';
  END IF;
+ 
+ /*Paging*/
+ EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_count integer;
+ ALTER TABLE temp1 ADD COLUMN total_groups integer';
+ /* Init the group count*/
+ this_group := 0;
+FOR dup_groups IN SELECT DISTINCT group_id FROM temp1 BY LOOP
+this_group := this_group + 1;
+ EXECUTE 'UPDATE temp1 SET group_count = $1 where group_id = $2'
+ USING this_group,dup_groups.group_id;
+ END LOOP;
+ 
+ EXECUTE 'UPDATE temp1 set total_groups = $1' USING this_group;
  
  
  CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
@@ -248,14 +268,18 @@ RETURNS setof duplicate_records AS  $$
  ou_uid,
  de_uid,
  coc_uid,
- group_id  
+ group_id,
+ group_count,
+total_groups 
  FROM temp1
- ORDER by oulevel2_name,oulevel3_name,orgunit_name,iso_period,dataelement,
- disaggregation,partner,mechanism';
+ WHERE group_count >= $1
+ and group_count <= $2
+ ORDER BY group_id
+ ' USING start_group, end_group;
   
   
    /*Return the records*/
-   FOR returnrec IN SELECT * FROM temp2 LOOP
+   FOR returnrec IN SELECT * FROM temp2 ORDER BY group_id LOOP
      RETURN NEXT returnrec;
      END LOOP;
  

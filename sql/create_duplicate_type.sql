@@ -17,6 +17,6 @@ duplicate_status character varying(50),
 ou_uid character varying (11),
 de_uid character varying (11),
 coc_uid character varying (11),
-group_id character (32)
-
- );
+group_id character (32),
+group_count integer,
+total_groups integer );
