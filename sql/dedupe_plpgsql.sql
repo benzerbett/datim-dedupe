@@ -1,5 +1,8 @@
+/*DROP FUNCTION view_duplicates(character,character varying,
+boolean,integer,integer );*/
+
 CREATE  OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
-ps integer default 100,pg integer default 1 ) 
+ps integer default 100,pg integer default 1,dt character varying(50) default NULL ) 
 RETURNS setof duplicate_records AS  $$
  DECLARE
  returnrec duplicate_records;
@@ -73,7 +76,7 @@ RETURNS setof duplicate_records AS  $$
  INNER JOIN _orgunitstructure ous on dv1.sourceid = ous.organisationunitid
  and ous.uidlevel3 = ''' ||  $1 || '''
  WHERE dv1.dataelementid IN (
- SELECT DISTINCT dataelementid from datasetmembers where datasetid in (2193022,2193024,2193026,2193020,2193016,2193018,2212172 ) ) 
+ SELECT DISTINCT dataelementid from datasetmembers where datasetid in (2193022,2193024,2193026,2193020,2193016,2193018,2212172,2072193 ) ) 
  AND dv1.periodid IN (SELECT DISTINCT periodid from _periodstructure
  where financialoct = ''' || $2 || ''' )
  UNION
@@ -233,6 +236,16 @@ RETURNS setof duplicate_records AS  $$
  EXECUTE 'DELETE FROM temp1 where duplication_status =''RESOLVED''';
  END IF;
  
+  /*Targets and results*/
+  EXECUTE 'ALTER TABLE temp1 ADD COLUMN dataset_type character varying(50) DEFAULT ''RESULTS'';
+  UPDATE temp1 SET dataset_type = ''TARGETS'' where 
+  dataelement ~(''TARGET'')';
+ 
+ IF dt IS NOT NULL THEN 
+ EXECUTE 'DELETE FROM temp1 where dataset_type != ' || quote_literal(dt);
+ END IF;
+ 
+ 
  /*Paging*/
  EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_count integer;
  ALTER TABLE temp1 ADD COLUMN total_groups integer';
@@ -243,9 +256,8 @@ this_group := this_group + 1;
  EXECUTE 'UPDATE temp1 SET group_count = $1 where group_id = $2'
  USING this_group,dup_groups.group_id;
  END LOOP;
- 
+  /*Provide the total number of groups*/
  EXECUTE 'UPDATE temp1 set total_groups = $1' USING this_group;
- 
  
  CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
  
@@ -270,7 +282,8 @@ this_group := this_group + 1;
  coc_uid,
  group_id,
  group_count,
-total_groups 
+total_groups,
+dataset_type
  FROM temp1
  WHERE group_count >= $1
  and group_count <= $2
