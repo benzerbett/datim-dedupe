@@ -34,7 +34,8 @@ describe('Dedupe directive', function () {
                 orgUnitName: 'Glady\'s clinic',
                 timePeriodName: 'FY 2014',
                 dataElementId: 'K6f6jR0NOcZ',
-                dataElementName: 'HTC_TST (N, DSD): HTC received results'
+                dataElementName: 'HTC_TST (N, DSD): HTC received results',
+                disaggregation: '(default)'
             },
             data: [
                 {agency: 'USAID', partner: 'PartnerA', value: 60},
@@ -84,6 +85,10 @@ describe('Dedupe directive', function () {
 
         it('should have a span for the value of data element', function () {
             expect(dedupeDetailsElementFirstRow.querySelector('.dataelement-name').querySelector('span')).toEqual(jasmine.any(HTMLElement));
+        });
+
+        it('should have a span for the value of disaggregation', function () {
+            expect(dedupeDetailsElementFirstRow.querySelector('.disaggregation-name').querySelector('span')).toEqual(jasmine.any(HTMLElement));
         });
 
         it('should have a column for the org unit label', function () {
@@ -140,6 +145,12 @@ describe('Dedupe directive', function () {
             var textElement = dedupeDetailsElementFirstRow.querySelector('.dataelement-name').querySelector('span');
 
             expect(textElement.textContent).toEqual('HTC_TST (N, DSD): HTC received results');
+        });
+
+        it('should add the disaggregation value', function () {
+            var textElement = dedupeDetailsElementFirstRow.querySelector('.disaggregation-name').querySelector('span');
+
+            expect(textElement.textContent).toEqual('(default)');
         });
 
         it('should set the org unit name to Glady\'s clinic', function () {

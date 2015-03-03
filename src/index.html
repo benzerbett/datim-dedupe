@@ -23,7 +23,7 @@
 
         <div class="dedupe-filter-settings" ng-class="{'filter-dropdown': app.dedupeRecords.length}">
             <div class="filters-cog">
-                <h1 class="app-header">Data de-duplication</h1>
+                <h1 class="app-header">Data Deduplication</h1>
                 <button class="btn btn-default" ng-click="isCollapsed = !isCollapsed"><i class="fa fa-filter"></i> Filters</button>
             </div>
             <div class="filters-collapse" collapse="isCollapsed">
@@ -36,6 +36,11 @@
                     <div class="period-selector row">
                         <div class="col-sm-12">
                             <period-selector on-period-selected="app.changePeriod"></period-selector>
+                        </div>
+                    </div>
+                    <div class="results-targets row">
+                        <div class="col-sm-12">
+                            <results-targets-select on-results-targets-selected="app.changeFilterResultsTargets"></results-targets-select>
                         </div>
                     </div>
                 </div>
@@ -114,6 +119,7 @@
     <script src="period/period-service.js"></script>
     <script src="period/periodselector-directive.js"></script>
     <script src="dedupe/deduperecordfilters-service.js"></script>
+    <script src="resultstargets/resultstargets-directive.js"></script>
     <!-- endbuild -->
 </body>
 </html>

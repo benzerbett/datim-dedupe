@@ -18,6 +18,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     ctrl.isShowingAll = isShowingAll;
     ctrl.changeOrgUnit = changeOrgUnit;
     ctrl.changePeriod = changePeriod;
+    ctrl.changeFilterResultsTargets = changeFilterResultsTargets;
     ctrl.getDuplicateRecords = getDuplicateRecords;
     ctrl.isAllTypeCrosswalk = isAllTypeCrosswalk;
     ctrl.changedOnlyTypeCrosswalk = changedOnlyTypeCrosswalk;
@@ -42,7 +43,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     function getDuplicateRecords() {
         ctrl.isProcessing = true;
 
-        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe)
+        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved || false, dedupeFilters.tr)
             .then(function (duplicateRecords) {
                 ctrl.allDedupeRecords = duplicateRecords;
 
@@ -66,6 +67,13 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     function changePeriod(newPeriod) {
         if (newPeriod && newPeriod.iso && angular.isString(newPeriod.iso)) {
             dedupeFilters.pe = newPeriod.iso;
+            getDuplicateRecords();
+        }
+    }
+
+    function changeFilterResultsTargets(newResultsTargets) {
+        if ((!dedupeFilters.tr || !newResultsTargets || dedupeFilters.tr !== newResultsTargets.name)) {
+            dedupeFilters.tr = newResultsTargets && angular.isString(newResultsTargets.name) ? newResultsTargets.name.toLowerCase() : undefined;
             getDuplicateRecords();
         }
     }
@@ -100,14 +108,13 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
         });
     }
 
-    //TODO: Write tests for this
     function reportStatusToUser(saveStatus) {
         if (saveStatus.successCount > 0) {
-            notify.success(['Successfully saved', saveStatus.successCount, 'dedupe(s).'].join(' '));
+            notify.success(saveStatus.successCount === 1 ? 'Deduplication resolved.' : [saveStatus.successCount, ' deduplication(s) resolved.'].join(' '));
         }
 
         if (saveStatus.errorCount > 0) {
-            notify.error(['Unable to save', saveStatus.successCount, 'dedupe(s).'].join(' '));
+            notify.error(['Unable to resolve', saveStatus.successCount, 'dedupe(s).'].join(' '));
         }
 
         (saveStatus.errors || []).forEach(function (error) {
@@ -137,7 +144,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
 
         dedupeService.resolveDuplicates(ctrl.dedupeRecords)
             .then(function (saveStatus) {
-                reportStatusToUser(saveStatus); //TODO: Write tests for this
+                reportStatusToUser(saveStatus);
             })
             .catch(function (errorMessage) {
                 notify.error(errorMessage);

@@ -14,7 +14,7 @@ function periodSelectorDirective(periodService) {
                 periodsRecentFirst: []
             };
 
-            periodService.setPeriodType('FinancialApril')
+            periodService.setPeriodType('FinancialOct')
                 .then(function () {
                     scope.period.periodsRecentFirst = periodService.getPastPeriodsRecentFirst();
                     if (scope.period.periodsRecentFirst.length > 0) {

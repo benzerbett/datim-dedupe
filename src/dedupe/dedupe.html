@@ -1,11 +1,14 @@
 <div class="dedupe-wrap well" ng-form name="dedupeRecordForm">
     <div class="dedupe-details">
         <div class="row">
-            <div class="dataelement-name col-sm-12">
+            <div class="dataelement-name col-sm-8">
                 <span ng-bind="::dedupeCtrl.dedupeRecord.details.dataElementName"></span>
                 <div class="crosswalk-notice" ng-if="dedupeCtrl.dedupeRecord.details.type == 'CROSSWALK'">
                     <i class="fa fa-files-o"></i> DSD/TA dedupe
                 </div>
+            </div>
+            <div class="disaggregation-name col-sm-4">
+                <span ng-bind="::dedupeCtrl.dedupeRecord.details.disaggregation"></span>
             </div>
         </div>
         <div class="row">

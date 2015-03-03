@@ -10,7 +10,7 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q) {
         resolveDuplicates: resolveDuplicates
     };
 
-    function getDuplicateRecords(organisationUnitId, periodId) {
+    function getDuplicateRecords(organisationUnitId, periodId, includeResolved, targetsResults) {
         var filters = {};
 
         if (organisationUnitId && angular.isString(organisationUnitId)) {
@@ -21,6 +21,10 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q) {
             filters.pe = periodId;
         }
 
+        if (targetsResults) {
+            filters.tr = targetsResults;
+        }
+
         if (isRequiredFiltersPresent(filters)) {
             return dedupeRecordService.getRecords(filters);
         }
@@ -29,7 +33,9 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q) {
     }
 
     function isRequiredFiltersPresent(filters) {
-        return angular.equals(Object.keys(filters), requiredFilters);
+        return requiredFilters.every(function (requiredFilter) {
+            return _.contains(Object.keys(filters), requiredFilter);
+        });
     }
 
     function getMax(dedupeRecordData) {
