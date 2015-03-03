@@ -31,7 +31,7 @@ RETURNS setof duplicate_records AS  $$
  (SELECT categorycomboid FROM categorycombo WHERE name = ''default'')';
  
  
- CREATE  TEMP TABLE  temp1
+ CREATE TEMP TABLE  temp1
  (sourceid integer,
  periodid integer,
  dataelementid integer,
@@ -39,8 +39,8 @@ RETURNS setof duplicate_records AS  $$
  attributeoptioncomboid integer,
  value character varying (500000),
  duplicate_type character varying(20)
- )
- ON COMMIT DROP;
+ ) 
+ ON COMMIT DROP; 
  
  
  
@@ -66,7 +66,7 @@ RETURNS setof duplicate_records AS  $$
  INNER JOIN _orgunitstructure ous on dv1.sourceid = ous.organisationunitid
  and ous.uidlevel3 = ''' ||  $1 || '''
  WHERE dv1.dataelementid IN (
- SELECT DISTINCT dataelementid from datasetmembers where datasetid in (1485502, 2193018 ) ) 
+ SELECT DISTINCT dataelementid from datasetmembers where datasetid in (2193022,2193024,2193026,2193020,2193016,2193018 ) ) 
  AND dv1.periodid IN (SELECT DISTINCT periodid from _periodstructure
  where financialoct = ''' || $2 || ''' )
  UNION
@@ -194,7 +194,7 @@ RETURNS setof duplicate_records AS  $$
  where temp1.sourceid = b.sourceid';
   
   /*Periods*/
- EXECUTE 'ALTER TABLE temp1 ADD COLUMN iso_period character varying;
+ EXECUTE 'ALTER TABLE temp1 ADD COLUMN iso_period character varying(15);
  UPDATE temp1 SET iso_period = p.iso from _periodstructure p where p.periodid = temp1.periodid';
  
   /*Partner*/
@@ -211,7 +211,7 @@ RETURNS setof duplicate_records AS  $$
    /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
   
   EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
- UPDATE temp1 SET group_id = md5( COALESCE(orgunit_name,'') || COALESCE(dataelement,'') || COALESCE(disaggregation,'') || COALESCE(iso_period,'') )';
+ UPDATE temp1 SET group_id = md5(COALESCE(de_uid,'') || COALESCE(ou_uid,'') || COALESCE(coc_uid,'') || COALESCE(iso_period,'')) ';
  
  /*Duplication status*/
  
