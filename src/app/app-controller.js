@@ -52,10 +52,8 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
 
         dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current)
             .then(function (duplicateRecords) {
-                ctrl.allDedupeRecords = duplicateRecords;
+                ctrl.allDedupeRecords = ctrl.dedupeRecords = duplicateRecords;
                 adjustPager(duplicateRecords.totalNumber, duplicateRecords.pageNumber);
-
-                ctrl.dedupeRecords = ctrl.isIncludeResolved ? ctrl.allDedupeRecords : getNonResolvedRecords(duplicateRecords);
 
                 return duplicateRecords;
             })
@@ -93,10 +91,6 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
         }
     }
 
-    function getNonResolvedRecords(dedupeRecords) {
-        return dedupeRecordFilters.onlyNonResolvedRecords(dedupeRecords);
-    }
-
     function changedIncludeResolved() {
         dedupeFilters.includeResolved = !dedupeFilters.includeResolved;
 
@@ -109,7 +103,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
 
     function changedOnlyTypeCrosswalk() {
         if (isAllTypeCrosswalk()) {
-            ctrl.dedupeRecords = getNonResolvedRecords(ctrl.allDedupeRecords);
+            ctrl.dedupeRecords = ctrl.allDedupeRecords;
         } else {
             ctrl.dedupeRecords = dedupeRecordFilters.onlyTypeCrosswalk(ctrl.dedupeRecords);
         }
