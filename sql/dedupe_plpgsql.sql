@@ -222,7 +222,7 @@ RETURNS setof duplicate_records AS  $$
    /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
   
   EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
- UPDATE temp1 SET group_id = md5(COALESCE(de_uid,'') || COALESCE(ou_uid,'') || COALESCE(coc_uid,'') || COALESCE(iso_period,'')) ';
+ UPDATE temp1 SET group_id = md5( de_uid || ou_uid  || coc_uid || iso_period ) ';
  
  /*Duplication status*/
  
