@@ -2,7 +2,7 @@
 boolean,integer,integer );*/
 
 CREATE  OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
-ps integer default 100,pg integer default 1,dt character varying(50) default NULL ) 
+ps integer default 100,pg integer default 1,dt character varying(50) default 'ALL' ) 
 RETURNS setof duplicate_records AS  $$
  DECLARE
  returnrec duplicate_records;
@@ -222,7 +222,7 @@ RETURNS setof duplicate_records AS  $$
    /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
   
   EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
- UPDATE temp1 SET group_id = md5(COALESCE(de_uid,'') || COALESCE(ou_uid,'') || COALESCE(coc_uid,'') || COALESCE(iso_period,'')) ';
+ UPDATE temp1 SET group_id = md5( de_uid || ou_uid  || coc_uid || iso_period ) ';
  
  /*Duplication status*/
  
@@ -242,8 +242,10 @@ RETURNS setof duplicate_records AS  $$
   UPDATE temp1 SET dataset_type = ''TARGETS'' where 
   dataelement ~(''TARGET'')';
  
- IF dt IS NOT NULL THEN 
- EXECUTE 'DELETE FROM temp1 where dataset_type != ' || quote_literal(dt);
+ IF dt = 'RESULTS' THEN
+ EXECUTE 'DELETE FROM temp1 where dataset_type != ''RESULTS''';
+ ELSEIF dt = 'TARGETS' THEN 
+ EXECUTE 'DELETE FROM temp1 where dataset_type != ''TARGETS''';
  END IF;
  
  
