@@ -34,7 +34,7 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         filters.rs = includeResolved || false;
         filters.ps = DEDUPE_PAGE_SIZE;
         filters.pg = pageNumber || 1;
-        filters.dt = (angular.isString(targetsResults) && targetsResults.toUpperCase()) || 'NULL';
+        filters.dt = (angular.isString(targetsResults) && targetsResults.toUpperCase()) || 'ALL';
 
         return filters;
     }
