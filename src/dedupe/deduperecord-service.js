@@ -23,21 +23,32 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
     }
 
     function executeSqlViewOnApi(filters) {
+        var queryParameters = {var: getFilterArrayFromFilters(filters)};
+
+        return getSqlViewIdFromSystemSettings()
+            .then(function (sqlViewId) {
+                return Restangular.all('sqlViews')
+                    .all(sqlViewId)
+                    .get('data', queryParameters);
+            });
+    }
+
+    function getSqlViewIdFromSystemSettings() {
         return Restangular.all('systemSettings').withHttpConfig({cache: true})
             .get('keyDedupeSqlViewId')
             .then(function (settingsObject) {
-                if (!settingsObject || !settingsObject.id) {
-                    return $q.reject('System setting with id of sqlview not found. Please check if your app is configured correctly.');
+                if (settingsObject && angular.isString(settingsObject.id)) {
+                    return settingsObject.id;
                 }
 
-                return Restangular.all('sqlViews')
-                    .all(settingsObject.id)
-                    .get('data', {
-                        var: _.map(filters, function (value, key) {
-                            return [key, value].join(':');
-                        })
-                    });
+                return $q.reject('System setting with id of sqlview not found. Please check if your app is configured correctly.');
             });
+    }
+
+    function getFilterArrayFromFilters(filters) {
+        return _.map(filters, function (value, key) {
+            return [key, value].join(':');
+        });
     }
 
     function createDedupeRecords(rows) {

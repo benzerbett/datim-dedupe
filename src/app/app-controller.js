@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').controller('appController', appController);
 
-function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
+function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUPE_PAGE_SIZE) {
     var ctrl = this;
     var dedupeFilters = {
         includeResolved: false
@@ -11,8 +11,9 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     ctrl.dedupeRecords = [];
     ctrl.allDedupeRecords = [];
     ctrl.pager = {
-        current: 0,
-        total: 0
+        current: 1,
+        total: 0,
+        pageSize: DEDUPE_PAGE_SIZE
     };
 
     //Controller methods
@@ -27,6 +28,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     ctrl.getDuplicateRecords = getDuplicateRecords;
     ctrl.isAllTypeCrosswalk = isAllTypeCrosswalk;
     ctrl.changedOnlyTypeCrosswalk = changedOnlyTypeCrosswalk;
+    ctrl.pageChanged = pageChanged;
 
     //Call init method to get data from services
     initialise();
@@ -48,7 +50,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     function getDuplicateRecords() {
         ctrl.isProcessing = true;
 
-        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr)
+        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current)
             .then(function (duplicateRecords) {
                 ctrl.allDedupeRecords = duplicateRecords;
                 adjustPager(duplicateRecords.totalNumber, duplicateRecords.pageNumber);
@@ -99,6 +101,10 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
         dedupeFilters.includeResolved = !dedupeFilters.includeResolved;
 
         getDuplicateRecords();
+    }
+
+    function pageChanged() {
+        return getDuplicateRecords();
     }
 
     function changedOnlyTypeCrosswalk() {

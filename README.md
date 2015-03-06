@@ -11,7 +11,32 @@ Deduplication app for DATIM
 ##Installing the app into your DHIS2
 
 ####Step 1: Create the sql view
-The sql query to install the function needed to get de-dedupe data from the server can be found here https://raw.githubusercontent.com/dhis2/datim-dedupe/master/sql/dedupe_plpgsql.sql
+Installing and preparing the sql view has two steps.
+
+Firstly you will need to install the duplication_record type into your database. The sql to do this can be found on the following url.
+https://raw.githubusercontent.com/dhis2/datim-dedupe/master/sql/create_duplicate_type.sql
+
+Following that you will have to run the query that will add the function to get the duplicates. This one can be found here https://raw.githubusercontent.com/dhis2/datim-dedupe/master/sql/dedupe_plpgsql.sql
+
+When both of those are installed correctly you can create the SQLView in DHIS2. This you can find by navigating to `Apps` in the top menu followed by the `Data administration` app. Then on the left side menu you click `SQL View`.
+Click the `Add` button on the top right to create a new SQL View.
+
+Select `SQL query (allows for variables)` as an Sql type
+You can use the SQL below to get the duplicates from the server using the added sql function in the previous step.
+```sql
+SELECT * FROM view_duplicates('${ou}', '${pe}', ${rs}, ${ps}, ${pg}, '${dt}');
+```
+Note that when creating the view the `ou`, `pe` and `dt` variables are surrounded by single quotes to indicate that they are strings.
+
+The parameters specified represent the following:
++ ou: Organisation Unit Uid {String}
++ pe: Period to use (formatted in iso format like `2013Oct`) {String}
++ rs: Include resolved records {Boolean}
++ ps: Page size {Integer} Defaults to 100
++ pg: Current page number to be requested
++ dt: Data type to be selected {String} that is one of the following values `RESULTS`, `TARGETS`, `NULL`
+
+Lastly when you added the SQL View you can find it in the list and click on it, then select `Show Details` to make the details show up where you will find the `id` to use in the next step.
 
 ####Step 2: Create a system setting
 In order for the app to know which SQL view to ask for the data you need to add a system setting. The system setting should have the following name `keyDedupeSqlViewId`

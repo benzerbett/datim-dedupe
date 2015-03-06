@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').factory('dedupeService', dedupeService);
 
-function dedupeService(dedupeRecordService, dedupeSaverService, $q) {
+function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_SIZE) {
     var requiredFilters = ['ou', 'pe', 'rs', 'ps', 'pg', 'dt'];
 
     return {
@@ -32,7 +32,7 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q) {
         }
 
         filters.rs = includeResolved || false;
-        filters.ps = 100;
+        filters.ps = DEDUPE_PAGE_SIZE;
         filters.pg = pageNumber || 1;
         filters.dt = (angular.isString(targetsResults) && targetsResults.toUpperCase()) || 'NULL';
 
