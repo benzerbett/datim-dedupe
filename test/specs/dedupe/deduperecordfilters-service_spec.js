@@ -11,20 +11,6 @@ describe('Dedupefilter service', function () {
         expect(service).toBeAnObject();
     });
 
-    describe('onlyNonResolvedRecords', function () {
-        it('should be a function', function () {
-            expect(service.onlyNonResolvedRecords).toBeAFunction();
-        });
-
-        it('should return only records that are marked as resolved', function () {
-            var expectedRecords = fixtures.get('dedupeRecords');
-            expectedRecords.shift();
-
-            expect(service.onlyNonResolvedRecords(fixtures.get('dedupeRecords')).length).toBe(5);
-            expect(service.onlyNonResolvedRecords(fixtures.get('dedupeRecords'))).toEqual(expectedRecords);
-        });
-    });
-
     describe('onlyTypeCrosswalk', function () {
         it('should be a function', function () {
             expect(service.onlyTypeCrosswalk).toBeAFunction();

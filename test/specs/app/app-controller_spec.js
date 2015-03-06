@@ -354,10 +354,6 @@ describe('App controller', function () {
             spyOn(controller, 'getDuplicateRecords');
         });
 
-        it('isIncludeResolved should be a property', function () {
-            expect(controller.isShowingAll()).toBe(false);
-        });
-
         it('should update the records when calling changedIncludeResolved', function () {
             controller.changedIncludeResolved();
 
@@ -423,7 +419,7 @@ describe('App controller', function () {
 
                 controller.changedOnlyTypeCrosswalk();
 
-                expect(controller.dedupeRecords.length).toBe(2);
+                expect(controller.dedupeRecords.length).toBe(3);
             });
         });
     });
@@ -457,23 +453,6 @@ describe('App controller', function () {
             expect(controller.allDedupeRecords.length).toBe(3);
         });
 
-        it('should not include the resolve dedupe records when isIncludeResolved is false', function () {
-            controller.getDuplicateRecords('myorgUnit', '2013April');
-
-            $rootScope.$apply();
-
-            expect(controller.dedupeRecords.length).toBe(2);
-        });
-
-        it('should include the resolved dedupe records when isIncludeResolved is true', function () {
-            controller.isIncludeResolved = true;
-            controller.getDuplicateRecords('myorgUnit', '2013April');
-
-            $rootScope.$apply();
-
-            expect(controller.dedupeRecords.length).toBe(3);
-        });
-
         it('should log error when getting the records failed', inject(function ($q) {
             dedupeServiceMock.getDuplicateRecords
                 .and.returnValue($q.reject('System setting with id of view not found. Please check if your app is configured correctly.'));
@@ -485,7 +464,6 @@ describe('App controller', function () {
         }));
 
         it('should add the paging to the controller', function () {
-            controller.isIncludeResolved = true;
             controller.getDuplicateRecords('myorgUnit', '2013April');
 
             $rootScope.$apply();
