@@ -53,13 +53,11 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
 
     function createDedupeRecords(rows) {
         var totalNumber;
-        var pageNumber;
 
         var dedupeRecords = _.chain(rows)
             .tap(function (rows) {
                 if (rows.length > 0) {
                     totalNumber = getColumnValue('total_groups', rows[0]);
-                    pageNumber = getColumnValue('group_count', rows[0]);
                 }
             })
             .groupBy(recordGroupIdentifier)
@@ -67,7 +65,6 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
             .map(createDedupeRecord)
             .value();
 
-        dedupeRecords.pageNumber = parseInt(pageNumber, 10);
         dedupeRecords.totalNumber = parseInt(totalNumber, 10);
 
         return dedupeRecords;

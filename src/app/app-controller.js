@@ -53,7 +53,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
         dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current)
             .then(function (duplicateRecords) {
                 ctrl.allDedupeRecords = ctrl.dedupeRecords = duplicateRecords;
-                adjustPager(duplicateRecords.totalNumber, duplicateRecords.pageNumber);
+                adjustPager(duplicateRecords.totalNumber);
 
                 return duplicateRecords;
             })
@@ -63,10 +63,9 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
             .finally(setProcessingToFalse);
     }
 
-    function adjustPager(total, current) {
-        if (total && current) {
+    function adjustPager(total) {
+        if (total) {
             ctrl.pager.total = total;
-            ctrl.pager.current = current;
         }
     }
 

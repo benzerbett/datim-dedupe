@@ -102,10 +102,6 @@ describe('Dedupe record service', function () {
                 expect(dedupeRecords[1].details.type).toBe('PURE');
             });
 
-            it('should set the page number onto the result', function () {
-                expect(dedupeRecords.pageNumber).toBe(1);
-            });
-
             it('should set the total number of pages onto the result', function () {
                 expect(dedupeRecords.totalNumber).toBe(243);
             });
