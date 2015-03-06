@@ -2,13 +2,18 @@ angular.module('PEPFAR.dedupe').controller('appController', appController);
 
 function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     var ctrl = this;
-    var dedupeFilters = {};
+    var dedupeFilters = {
+        includeResolved: false
+    };
 
     ctrl.isFilterToggle = false;
     ctrl.isProcessing = true;
-    ctrl.isIncludeResolved = false;
     ctrl.dedupeRecords = [];
     ctrl.allDedupeRecords = [];
+    ctrl.pager = {
+        current: 0,
+        total: 0
+    };
 
     //Controller methods
     ctrl.useMax = useMax;
@@ -43,9 +48,10 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     function getDuplicateRecords() {
         ctrl.isProcessing = true;
 
-        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved || false, dedupeFilters.tr)
+        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr)
             .then(function (duplicateRecords) {
                 ctrl.allDedupeRecords = duplicateRecords;
+                adjustPager(duplicateRecords.totalNumber, duplicateRecords.pageNumber);
 
                 ctrl.dedupeRecords = ctrl.isIncludeResolved ? ctrl.allDedupeRecords : getNonResolvedRecords(duplicateRecords);
 
@@ -55,6 +61,13 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
                 notify.error(errorMessage);
             })
             .finally(setProcessingToFalse);
+    }
+
+    function adjustPager(total, current) {
+        if (total && current) {
+            ctrl.pager.total = total;
+            ctrl.pager.current = current;
+        }
     }
 
     function changeOrgUnit(newOrgUnit) {
@@ -83,11 +96,9 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     }
 
     function changedIncludeResolved() {
-        if (isShowingAll()) {
-            ctrl.dedupeRecords = getNonResolvedRecords(ctrl.allDedupeRecords);
-        } else {
-            ctrl.dedupeRecords = ctrl.allDedupeRecords;
-        }
+        dedupeFilters.includeResolved = !dedupeFilters.includeResolved;
+
+        getDuplicateRecords();
     }
 
     function changedOnlyTypeCrosswalk() {
@@ -99,7 +110,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify) {
     }
 
     function isShowingAll() {
-        return ctrl.allDedupeRecords.length === ctrl.dedupeRecords.length;
+        return dedupeFilters.includeResolved;
     }
 
     function isAllTypeCrosswalk() {

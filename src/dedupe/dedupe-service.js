@@ -1,7 +1,7 @@
 angular.module('PEPFAR.dedupe').factory('dedupeService', dedupeService);
 
 function dedupeService(dedupeRecordService, dedupeSaverService, $q) {
-    var requiredFilters = ['ou', 'pe'];
+    var requiredFilters = ['ou', 'pe', 'rs', 'ps', 'pg', 'dt'];
 
     return {
         getDuplicateRecords: getDuplicateRecords,
@@ -10,7 +10,17 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q) {
         resolveDuplicates: resolveDuplicates
     };
 
-    function getDuplicateRecords(organisationUnitId, periodId, includeResolved, targetsResults) {
+    function getDuplicateRecords(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber) {
+        var filters = getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber);
+
+        if (isRequiredFiltersPresent(filters)) {
+            return dedupeRecordService.getRecords(filters);
+        }
+
+        return $q.when([]);
+    }
+
+    function getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber) {
         var filters = {};
 
         if (organisationUnitId && angular.isString(organisationUnitId)) {
@@ -21,15 +31,12 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q) {
             filters.pe = periodId;
         }
 
-        if (targetsResults) {
-            filters.tr = targetsResults;
-        }
+        filters.rs = includeResolved || false;
+        filters.ps = 100;
+        filters.pg = pageNumber || 1;
+        filters.dt = (angular.isString(targetsResults) && targetsResults.toUpperCase()) || 'NULL';
 
-        if (isRequiredFiltersPresent(filters)) {
-            return dedupeRecordService.getRecords(filters);
-        }
-
-        return $q.when([]);
+        return filters;
     }
 
     function isRequiredFiltersPresent(filters) {

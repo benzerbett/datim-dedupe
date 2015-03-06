@@ -57,6 +57,10 @@ describe('App controller', function () {
                 isResolved: true
             }
         }];
+
+        dedupeRecords.totalNumber = 10;
+        dedupeRecords.pageNumber = 1;
+
         var $q = $injector.get('$q');
         $controller = $injector.get('$controller');
 
@@ -346,29 +350,28 @@ describe('App controller', function () {
         beforeEach(function () {
             //Apply rootscope to resolve the mock promise
             $rootScope.$apply();
+
+            spyOn(controller, 'getDuplicateRecords');
         });
 
         it('isIncludeResolved should be a property', function () {
-            expect(controller.isIncludeResolved).toBe(false);
+            expect(controller.isShowingAll()).toBe(false);
         });
 
         it('should update the records when calling changedIncludeResolved', function () {
-            controller.isIncludeResolved = true;
             controller.changedIncludeResolved();
 
-            expect(controller.dedupeRecords.length).toBe(3);
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, true, undefined);
         });
 
         it('should return to only showing the resolved ones', function () {
-            controller.isIncludeResolved = true;
             controller.changedIncludeResolved();
 
-            expect(controller.dedupeRecords.length).toBe(3);
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, true, undefined);
 
-            controller.isIncludeResolved = false;
             controller.changedIncludeResolved();
 
-            expect(controller.dedupeRecords.length).toBe(2);
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined);
         });
     });
 
@@ -480,6 +483,15 @@ describe('App controller', function () {
 
             expect(notifyMock.error).toHaveBeenCalled();
         }));
+
+        it('should add the paging to the controller', function () {
+            controller.isIncludeResolved = true;
+            controller.getDuplicateRecords('myorgUnit', '2013April');
+
+            $rootScope.$apply();
+
+            expect(controller.pager).toEqual({total: 10, current: 1});
+        });
     });
 
     describe('changeOrgUnit', function () {

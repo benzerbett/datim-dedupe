@@ -50,6 +50,7 @@
         <form name="deduplication">
             <div class="dedupe-records">
                 <dedupe dedupe-record="dedupeRecord" ng-repeat="dedupeRecord in app.dedupeRecords"></dedupe>
+                <pagination total-items="app.pager.total" ng-model="app.pager.current" ng-change="app.pageChanged()"></pagination>
             </div>
             <div class="resolve-footer">
                 <div class="col-sm-4">

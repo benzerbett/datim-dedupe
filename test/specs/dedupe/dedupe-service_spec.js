@@ -111,13 +111,31 @@ describe('Dedupe service', function () {
         it('should call the dedupeRecordsService with ou and pe filter when supplied', function () {
             dedupeService.getDuplicateRecords('myOrgUnitId', '2013Oct');
 
-            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({ou: 'myOrgUnitId', pe: '2013Oct'});
+            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({ou: 'myOrgUnitId', pe: '2013Oct', rs: false, ps: 100, pg: 1, dt: 'NULL'});
         });
 
         it('should not call the dedupeRecordsService when only pe filter when supplied', function () {
             dedupeService.getDuplicateRecords(undefined, '2013Oct');
 
             expect(dedupeRecordServiceMock.getRecords).not.toHaveBeenCalled();
+        });
+
+        it('should call the dedupeRecordsService with the second page parameter', function () {
+            dedupeService.getDuplicateRecords('myOrgUnitId', '2013Oct', false, undefined, 2);
+
+            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({ou: 'myOrgUnitId', pe: '2013Oct', rs: false, ps: 100, pg: 2, dt: 'NULL'});
+        });
+
+        it('should call the dedupeRecordsService with the results filter', function () {
+            dedupeService.getDuplicateRecords('myOrgUnitId', '2013Oct', false, 'RESULTS');
+
+            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({ou: 'myOrgUnitId', pe: '2013Oct', rs: false, ps: 100, pg: 1, dt: 'RESULTS'});
+        });
+
+        it('should call the dedupe service with the include resolved filter set to true', function () {
+            dedupeService.getDuplicateRecords('myOrgUnitId', '2013Oct', true);
+
+            expect(dedupeRecordServiceMock.getRecords).toHaveBeenCalledWith({ou: 'myOrgUnitId', pe: '2013Oct', rs: true, ps: 100, pg: 1, dt: 'NULL'});
         });
     });
 

@@ -1,4 +1,4 @@
-angular.module('PEPFAR.dedupe', ['ngAnimate', 'ngMessages', 'restangular', 'dhis2.notify', 'ui.select', 'ui.bootstrap.collapse']);
+angular.module('PEPFAR.dedupe', ['ngAnimate', 'ngMessages', 'restangular', 'dhis2.notify', 'ui.select', 'ui.bootstrap.collapse', 'ui.bootstrap.pagination', 'ui.bootstrap.tpls']);
 
 angular.module('PEPFAR.dedupe').run(function (Restangular, webappManifest) {
     Restangular.setBaseUrl([webappManifest.activities.dhis.href, 'api'].join('/'));
