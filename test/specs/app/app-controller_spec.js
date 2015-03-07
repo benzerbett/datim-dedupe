@@ -469,7 +469,7 @@ describe('App controller', function () {
 
             $rootScope.$apply();
 
-            expect(controller.pager).toEqual({total: 10, current: 1, pageSize: 100});
+            expect(controller.pager).toEqual({total: 10, current: 1, pageSize: 50});
         });
     });
 

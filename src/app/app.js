@@ -14,7 +14,7 @@ angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_OPTION_COMBO_ID', 'X8hrDf
 angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_COMBO_ID', 'wUpfppgjEza');
 angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_OPTION_ID', 'xEzelmtHWPn');
 angular.module('PEPFAR.dedupe').value('DEDUPE_MECHANISM_NAME', '(00000 De-duplication adjustment)');
-angular.module('PEPFAR.dedupe').value('DEDUPE_PAGE_SIZE', 100);
+angular.module('PEPFAR.dedupe').value('DEDUPE_PAGE_SIZE', 50);
 
 //==================================================================================
 // Bootstrap the app manually
