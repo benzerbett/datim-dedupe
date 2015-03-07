@@ -53,7 +53,9 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
         dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current)
             .then(function (duplicateRecords) {
                 ctrl.allDedupeRecords = ctrl.dedupeRecords = duplicateRecords;
+
                 adjustPager(duplicateRecords.totalNumber);
+                notifyUserIfNoRecordsWereFound();
 
                 return duplicateRecords;
             })
@@ -67,6 +69,10 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
         if (total) {
             ctrl.pager.total = total;
         }
+    }
+
+    function notifyUserIfNoRecordsWereFound() {
+        notify.warning('No records were found for the given criteria');
     }
 
     function changeOrgUnit(newOrgUnit) {

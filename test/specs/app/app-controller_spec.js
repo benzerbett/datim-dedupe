@@ -540,5 +540,14 @@ describe('App controller', function () {
 
             expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined, 2);
         });
+
+        it('should notify the user if no results have been found', function () {
+            controller.pageChanged();
+
+            dedupeServiceMock.getDuplicateRecords.and.returnValue([]);
+            $rootScope.$apply();
+
+            expect(notifyMock.warning).toHaveBeenCalled();
+        });
     });
 });
