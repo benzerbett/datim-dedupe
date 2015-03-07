@@ -7,6 +7,7 @@ describe('App controller', function () {
     var $rootScope;
     var scope;
     var dedupeRecords;
+    var $q;
 
     beforeEach(module('PEPFAR.dedupe'));
 
@@ -61,7 +62,7 @@ describe('App controller', function () {
         dedupeRecords.totalNumber = 10;
         dedupeRecords.pageNumber = 1;
 
-        var $q = $injector.get('$q');
+        $q = $injector.get('$q');
         $controller = $injector.get('$controller');
 
         $rootScope = $injector.get('$rootScope');
@@ -542,19 +543,20 @@ describe('App controller', function () {
         });
 
         it('should notify the user if no results have been found', function () {
+            dedupeServiceMock.getDuplicateRecords.and.returnValue($q.when([]));
+
             controller.changeOrgUnit({id: 'myid'});
             controller.changePeriod({iso: 'myid'});
 
-            dedupeServiceMock.getDuplicateRecords.and.returnValue([]);
             $rootScope.$apply();
 
             expect(notifyMock.warning).toHaveBeenCalled();
         });
 
         it('should not notify the user if one of the required filters has not been set', function () {
+            dedupeServiceMock.getDuplicateRecords.and.returnValue($q.when([]));
             controller.changeOrgUnit({id: 'myid'});
 
-            dedupeServiceMock.getDuplicateRecords.and.returnValue([]);
             $rootScope.$apply();
 
             expect(notifyMock.warning).not.toHaveBeenCalled();
