@@ -5,16 +5,16 @@
   transition: all linear 200ms
 
   &.ng-enter
-    animation: bounceInLeft 400ms
-    -webkit-animation: fadeIn 400ms
+    animation: fadeIn 300ms
+    -webkit-animation: fadeIn 300ms
 
   &.ng-leave
-    animation: bounceOutRight 400ms
-    -webkit-animation: bounceOutRight 400ms
+    //animation: fadeOut 400ms
+    //-webkit-animation: fadeOut 400ms
 
   &.ng-enter-stagger, &.ng-leave-stagger
-    animation-delay: 100ms
-    -webkit-animation-delay: 100ms
+    animation-delay: 50ms
+    -webkit-animation-delay: 50ms
 
   .error-messages
     color: #CA0000
