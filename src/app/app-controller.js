@@ -55,7 +55,10 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
                 ctrl.allDedupeRecords = ctrl.dedupeRecords = duplicateRecords;
 
                 adjustPager(duplicateRecords.totalNumber);
-                notifyUserIfNoRecordsWereFound();
+
+                if (dedupeFilters.ou && dedupeFilters.pe) {
+                    notifyUserIfNoRecordsWereFound();
+                }
 
                 return duplicateRecords;
             })

@@ -542,12 +542,22 @@ describe('App controller', function () {
         });
 
         it('should notify the user if no results have been found', function () {
-            controller.pageChanged();
+            controller.changeOrgUnit({id: 'myid'});
+            controller.changePeriod({iso: 'myid'});
 
             dedupeServiceMock.getDuplicateRecords.and.returnValue([]);
             $rootScope.$apply();
 
             expect(notifyMock.warning).toHaveBeenCalled();
+        });
+
+        it('should not notify the user if one of the required filters has not been set', function () {
+            controller.changeOrgUnit({id: 'myid'});
+
+            dedupeServiceMock.getDuplicateRecords.and.returnValue([]);
+            $rootScope.$apply();
+
+            expect(notifyMock.warning).not.toHaveBeenCalled();
         });
     });
 });
