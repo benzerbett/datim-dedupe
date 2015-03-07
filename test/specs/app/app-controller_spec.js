@@ -464,6 +464,16 @@ describe('App controller', function () {
             expect(notifyMock.error).toHaveBeenCalled();
         }));
 
+        it('should log a default error when there is no error message present', function () {
+            dedupeServiceMock.getDuplicateRecords
+                .and.returnValue($q.reject(undefined));
+            controller.getDuplicateRecords('myorgUnit', '2013April');
+
+            $rootScope.$apply();
+
+            expect(notifyMock.error).toHaveBeenCalledWith('An error occurred when loading the dedupe records.');
+        });
+
         it('should add the paging to the controller', function () {
             controller.getDuplicateRecords('myorgUnit', '2013April');
 

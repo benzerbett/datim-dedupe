@@ -63,7 +63,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
                 return duplicateRecords;
             })
             .catch(function (errorMessage) {
-                notify.error(errorMessage);
+                notify.error(errorMessage || 'An error occurred when loading the dedupe records.');
             })
             .finally(setProcessingToFalse);
     }
