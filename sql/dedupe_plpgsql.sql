@@ -15,33 +15,8 @@ RETURNS setof duplicate_records AS  $$
  start_group := pg * ps - ps + 1;
  end_group := pg * ps;
  
- CREATE  TEMP TABLE  dsd_ta_map 
- (dsd_id integer,
- ta_id integer)
- ON COMMIT DROP;
  
- EXECUTE '
- INSERT INTO dsd_ta_map
- SELECT a.dataelementid as dsd_id,b.dataelementid as ta_id
- FROM dataelement a
- INNER JOIN  (
- SELECT dataelementid,substring(name from ''^.+\(.+,'') as name FROM dataelement 
- where name ~(''TARGET'')
- AND name ~(''TA\)'') 
- and name !~(''NARRATIVE'')
- and categorycomboid = 
- (SELECT categorycomboid FROM categorycombo WHERE name = ''default'') ) b
- ON substring(a.name from ''^.+\(.+,'') = b.name
- 
- where a.name ~(''TARGET'')
- AND a.name ~(''DSD'')
- and a.name !~(''NARRATIVE'')
- and a.categorycomboid = 
- 
- (SELECT categorycomboid FROM categorycombo WHERE name = ''default'')';
- 
- 
- CREATE TEMP TABLE  temp1
+ CREATE TEMP TABLE temp1
  (sourceid integer,
  periodid integer,
  dataelementid integer,
@@ -49,9 +24,7 @@ RETURNS setof duplicate_records AS  $$
  attributeoptioncomboid integer,
  value character varying (500000),
  duplicate_type character varying(20)
- ) 
- ON COMMIT DROP; 
- 
+ ) ON COMMIT DROP;
  
  
  EXECUTE 'INSERT INTO temp1
@@ -96,15 +69,15 @@ RETURNS setof duplicate_records AS  $$
  dv1.sourceid,
  dv1.periodid,
  dv1.dataelementid,
- map.ta_id,
+ map.ta_dataelementid,
  dv1.categoryoptioncomboid,
  dv1.attributeoptioncomboid
  from datavalue dv1
- INNER JOIN dsd_ta_map map
- on dv1.dataelementid = map.dsd_id ) dsd
+ INNER JOIN  _table_dsd_ta_crosswalk_map map
+ on dv1.dataelementid = map.dsd_dataelementid  ) dsd
  on ta.sourceid = dsd.sourceid
  AND ta.periodid = dsd.periodid
- and ta.dataelementid = dsd.ta_id
+ and ta.dataelementid = dsd.ta_dataelementid
  and ta.categoryoptioncomboid = dsd.categoryoptioncomboid
  and ta.attributeoptioncomboid != dsd.attributeoptioncomboid
  WHERE ta.periodid IN (SELECT DISTINCT periodid from _periodstructure
@@ -125,19 +98,47 @@ RETURNS setof duplicate_records AS  $$
  dv1.sourceid,
  dv1.periodid,
  dv1.dataelementid,
- map.dsd_id,
+ map.dsd_dataelementid,
  dv1.categoryoptioncomboid,
  dv1.attributeoptioncomboid
  from datavalue dv1
- INNER JOIN dsd_ta_map map
- on dv1.dataelementid = map.ta_id ) dsd
+ INNER JOIN _table_dsd_ta_crosswalk_map map
+ on dv1.dataelementid = map.ta_dataelementid ) dsd
  on ta.sourceid = dsd.sourceid
  AND ta.periodid = dsd.periodid
- and ta.dataelementid = dsd.dsd_id
+ and ta.dataelementid = dsd.dsd_dataelementid
  and ta.categoryoptioncomboid = dsd.categoryoptioncomboid
  and ta.attributeoptioncomboid != dsd.attributeoptioncomboid
  WHERE ta.periodid IN (SELECT DISTINCT periodid from _periodstructure
  where financialoct = ''' || $2 || ''' )';
+  
+/*Special handling of DSD-TA cases. TA receives the dedup.*/
+EXECUTE 'UPDATE temp1 a set dataelementid = b.ta_dataelementid from _table_dsd_ta_crosswalk_map b
+where a.dataelementid = b.dsd_dataelementid and a.duplicate_type = ''CROSSWALK''';  
+  
+/*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
+  
+EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
+ UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || periodid::text ) ';
+ 
+  /*Paging*/
+ EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_count integer;
+ ALTER TABLE temp1 ADD COLUMN total_groups integer';
+ /* Init the group count*/
+ this_group := 0;
+FOR dup_groups IN SELECT * FROM (SELECT DISTINCT group_id FROM temp1 ORDER BY group_id) BY LOOP
+this_group := this_group + 1;
+ EXECUTE 'UPDATE temp1 SET group_count = $1 where group_id = $2'
+ USING this_group,dup_groups.group_id;
+ END LOOP;
+  /*Provide the total number of groups*/
+ EXECUTE 'UPDATE temp1 set total_groups = $1' USING this_group;
+  
+  /*Paging. Get rid of the records now.*/
+   EXECUTE 'DELETE FROM temp1 
+   WHERE group_count < $1
+   OR group_count > $2
+   ' USING start_group, end_group;
   
  /*Data element names*/
  
@@ -149,7 +150,10 @@ RETURNS setof duplicate_records AS  $$
  
  UPDATE temp1 set de_uid = b.uid from dataelement b
  where temp1.dataelementid = b.dataelementid';
-  
+ 
+/*Special handling of DSD-TA cases. TA receives the dedup.*/
+EXECUTE 'UPDATE temp1 a set de_uid = b.ta_de_uid from _table_dsd_ta_crosswalk_map b
+where a.dataelementid = b.dsd_dataelementid and a.duplicate_type = ''CROSSWALK''';
   
   /*Disagg*/
  EXECUTE 'ALTER TABLE temp1 ADD COLUMN disaggregation character varying(250);
@@ -201,7 +205,6 @@ RETURNS setof duplicate_records AS  $$
  LEFT JOIN organisationunit oulevel3 on ous.idlevel5 = oulevel3.organisationunitid
  LEFT JOIN  organisationunit oulevel4 on ous.idlevel6 = oulevel4.organisationunitid
  LEFT JOIN  organisationunit oulevel5 on ous.idlevel7 = oulevel5.organisationunitid ) b
- 
  where temp1.sourceid = b.sourceid';
   
   /*Periods*/
@@ -218,11 +221,6 @@ RETURNS setof duplicate_records AS  $$
  INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=_cocg.categoryoptionid
   WHERE _cogsm.categoryoptiongroupsetid= 481662 ) b
   where temp1.attributeoptioncomboid = b.categoryoptioncomboid';
- 
-   /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
-  
-  EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
- UPDATE temp1 SET group_id = md5( de_uid || ou_uid  || coc_uid || iso_period ) ';
  
  /*Duplication status*/
  
@@ -247,20 +245,6 @@ RETURNS setof duplicate_records AS  $$
  ELSEIF dt = 'TARGETS' THEN 
  EXECUTE 'DELETE FROM temp1 where dataset_type != ''TARGETS''';
  END IF;
- 
- 
- /*Paging*/
- EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_count integer;
- ALTER TABLE temp1 ADD COLUMN total_groups integer';
- /* Init the group count*/
- this_group := 0;
-FOR dup_groups IN SELECT DISTINCT group_id FROM temp1 BY LOOP
-this_group := this_group + 1;
- EXECUTE 'UPDATE temp1 SET group_count = $1 where group_id = $2'
- USING this_group,dup_groups.group_id;
- END LOOP;
-  /*Provide the total number of groups*/
- EXECUTE 'UPDATE temp1 set total_groups = $1' USING this_group;
  
  CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
  
@@ -288,11 +272,7 @@ this_group := this_group + 1;
 total_groups,
 dataset_type
  FROM temp1
- WHERE group_count >= $1
- and group_count <= $2
- ORDER BY group_id
- ' USING start_group, end_group;
-  
+ ORDER BY group_id';
   
    /*Return the records*/
    FOR returnrec IN SELECT * FROM temp2 ORDER BY group_id LOOP
