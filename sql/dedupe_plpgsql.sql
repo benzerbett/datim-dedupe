@@ -1,5 +1,5 @@
 /*DROP FUNCTION view_duplicates(character,character varying,
-boolean,integer,integer );*/
+boolean,integer,integer,character varying );*/
 
 CREATE  OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
 ps integer default 50,pg integer default 1,dt character varying(50) default 'ALL' ) 
@@ -52,69 +52,8 @@ RETURNS setof duplicate_records AS  $$
  SELECT DISTINCT dataelementid from datasetmembers where datasetid in (SELECT datasetid from dataset where uid IN (''qRvKHvlzNdv'',''ovYEbELCknv'',''tCIW2VFd8uu'',
  ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'') ) ) 
  AND dv1.periodid IN (SELECT DISTINCT periodid from _periodstructure
- where financialoct = ''' || $2 || ''' )
- UNION
- SELECT DISTINCT ta.sourceid,
- ta.periodid,
- ta.dataelementid,
- ta.categoryoptioncomboid,
- ta.attributeoptioncomboid,
- ta.value,
- ''CROSSWALK''::character varying(20) as duplicate_type
- from datavalue ta
- INNER JOIN _orgunitstructure ous on ta.sourceid = ous.organisationunitid
- and ous.uidlevel3 = ''' ||  $1 || '''
- INNER JOIN 
- (SELECT DISTINCT
- dv1.sourceid,
- dv1.periodid,
- dv1.dataelementid,
- map.ta_dataelementid,
- dv1.categoryoptioncomboid,
- dv1.attributeoptioncomboid
- from datavalue dv1
- INNER JOIN  _table_dsd_ta_crosswalk_map map
- on dv1.dataelementid = map.dsd_dataelementid  ) dsd
- on ta.sourceid = dsd.sourceid
- AND ta.periodid = dsd.periodid
- and ta.dataelementid = dsd.ta_dataelementid
- and ta.categoryoptioncomboid = dsd.categoryoptioncomboid
- and ta.attributeoptioncomboid != dsd.attributeoptioncomboid
- WHERE ta.periodid IN (SELECT DISTINCT periodid from _periodstructure
- where financialoct = ''' || $2 || ''' )
- UNION
- SELECT DISTINCT ta.sourceid,
- ta.periodid,
- ta.dataelementid,
- ta.categoryoptioncomboid,
- ta.attributeoptioncomboid,
- ta.value,
- ''CROSSWALK''::character varying(20) as duplicate_type
- from datavalue ta
- INNER JOIN _orgunitstructure ous on ta.sourceid = ous.organisationunitid
- and ous.uidlevel3 = ''' ||  $1 || '''
- INNER JOIN 
- (SELECT DISTINCT
- dv1.sourceid,
- dv1.periodid,
- dv1.dataelementid,
- map.dsd_dataelementid,
- dv1.categoryoptioncomboid,
- dv1.attributeoptioncomboid
- from datavalue dv1
- INNER JOIN _table_dsd_ta_crosswalk_map map
- on dv1.dataelementid = map.ta_dataelementid ) dsd
- on ta.sourceid = dsd.sourceid
- AND ta.periodid = dsd.periodid
- and ta.dataelementid = dsd.dsd_dataelementid
- and ta.categoryoptioncomboid = dsd.categoryoptioncomboid
- and ta.attributeoptioncomboid != dsd.attributeoptioncomboid
- WHERE ta.periodid IN (SELECT DISTINCT periodid from _periodstructure
  where financialoct = ''' || $2 || ''' )';
   
-/*Special handling of DSD-TA cases. TA receives the dedup.*/
-EXECUTE 'UPDATE temp1 a set dataelementid = b.ta_dataelementid from _table_dsd_ta_crosswalk_map b
-where a.dataelementid = b.dsd_dataelementid and a.duplicate_type = ''CROSSWALK''';  
   
 /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
   
@@ -151,9 +90,6 @@ this_group := this_group + 1;
  UPDATE temp1 set de_uid = b.uid from dataelement b
  where temp1.dataelementid = b.dataelementid';
  
-/*Special handling of DSD-TA cases. TA receives the dedup.*/
-EXECUTE 'UPDATE temp1 a set de_uid = b.ta_de_uid from _table_dsd_ta_crosswalk_map b
-where a.dataelementid = b.dsd_dataelementid and a.duplicate_type = ''CROSSWALK''';
   
   /*Disagg*/
  EXECUTE 'ALTER TABLE temp1 ADD COLUMN disaggregation character varying(250);
@@ -262,7 +198,6 @@ where a.dataelementid = b.dsd_dataelementid and a.duplicate_type = ''CROSSWALK''
   mechanism   ,
   partner  ,
   value ,
- duplicate_type,
  duplication_status,
  ou_uid,
  de_uid,

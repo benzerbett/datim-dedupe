@@ -1,3 +1,5 @@
+
+SELECT * FROM (
 select 'NYXJu5vwbhN' as dsd_de_uid, (
 		select dataelementid
 		from dataelement
@@ -2374,4 +2376,4 @@ select 'qeS0bazg6IW' as dsd_de_uid, (
 		where uid = 'myiCwzqRxSt'
 		) as ta_dataelementid
 from dataelement
-where uid = 'qeS0bazg6IW';
+where uid = 'qeS0bazg6IW');

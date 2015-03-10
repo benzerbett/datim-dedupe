@@ -12,7 +12,6 @@ CREATE TYPE duplicate_records AS
  mechanism character varying(250)   ,
  partner character varying(230)   ,
  value character varying(50000),
-duplicate_type character varying(50),
 duplicate_status character varying(50),
 ou_uid character varying (11),
 de_uid character varying (11),
