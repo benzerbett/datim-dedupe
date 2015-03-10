@@ -36,7 +36,14 @@ names(des.ta)<-paste0("ta_",names(des.ta))
 dsd.ta.crosswalk<-merge(des.dsd,des.ta,by.x="dsd_match_name",by.y="ta_match_name")
 dsd.ta.crosswalk<-unique(select(dsd.ta.crosswalk,dsd_de_uid,dsd_dataelement_name,ta_de_uid,ta_dataelement_name))
 
-sql<-"CREATE TABLE _table_dsd_ta_crosswalk_map (dsd_de_uid character varying(11),ta_de_uid character varying(11)); "
+sql<-"DROP TABLE IF EXISTS _table_dsd_ta_crosswalk_map;
+CREATE TABLE _table_dsd_ta_crosswalk_map (dsd_de_uid character varying(11),ta_de_uid character varying(11)); "
 foo<-paste("INSERT INTO _table_dsd_ta_crosswalk_map VALUES('", dsd.ta.crosswalk$dsd_de_uid, "','",dsd.ta.crosswalk$ta_de_uid,"');",sep="",collapse="\r\n")
 sql<-paste0(sql,foo)
-cat(sql,file="create_dsd_ta_crosswalk.sql")
+sql<-cat(sql,"
+ALTER TABLE _table_dsd_ta_crosswalk_map ADD COLUMN dsd_dataelementid integer;
+UPDATE _table_dsd_ta_crosswalk_map a set dsd_dataelementid = b.dataelementid from dataelement b where a.dsd_de_uid = b.uid;
+ALTER TABLE _table_dsd_ta_crosswalk_map ADD COLUMN ta_dataelementid integer;
+UPDATE _table_dsd_ta_crosswalk_map a set ta_dataelementid = b.dataelementid from dataelement b where a.ta_de_uid = b.uid;",file="create_dsd_ta_crosswalk.sql")
+
+cat(sql,)

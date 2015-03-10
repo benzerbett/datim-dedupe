@@ -1,3 +1,4 @@
+DROP TABLE IF EXISTS _table_dsd_ta_crosswalk_map;
 CREATE TABLE _table_dsd_ta_crosswalk_map (dsd_de_uid character varying(11),ta_de_uid character varying(11)); INSERT INTO _table_dsd_ta_crosswalk_map VALUES('NYXJu5vwbhN','ASaP3A4Y416');
 INSERT INTO _table_dsd_ta_crosswalk_map VALUES('K6s8m8peXb1','wDWEsNyP9Cx');
 INSERT INTO _table_dsd_ta_crosswalk_map VALUES('PxOshPbqvcS','jKmPaNuQHk8');
@@ -167,4 +168,8 @@ INSERT INTO _table_dsd_ta_crosswalk_map VALUES('GadNikBdxQH','BowUhmOPNUQ');
 INSERT INTO _table_dsd_ta_crosswalk_map VALUES('WwVUJwXZqyO','HJ8DsVs2wWP');
 INSERT INTO _table_dsd_ta_crosswalk_map VALUES('mymnc4IZT9O','eab8ObZpMvb');
 INSERT INTO _table_dsd_ta_crosswalk_map VALUES('UossaY2RAd4','io1hfUu6Hbf');
-INSERT INTO _table_dsd_ta_crosswalk_map VALUES('qeS0bazg6IW','myiCwzqRxSt');
+INSERT INTO _table_dsd_ta_crosswalk_map VALUES('qeS0bazg6IW','myiCwzqRxSt'); 
+ALTER TABLE _table_dsd_ta_crosswalk_map ADD COLUMN dsd_dataelementid integer;
+UPDATE _table_dsd_ta_crosswalk_map a set dsd_dataelementid = b.dataelementid from dataelement b where a.dsd_de_uid = b.uid;
+ALTER TABLE _table_dsd_ta_crosswalk_map ADD COLUMN ta_dataelementid integer;
+UPDATE _table_dsd_ta_crosswalk_map a set ta_dataelementid = b.dataelementid from dataelement b where a.ta_de_uid = b.uid;
