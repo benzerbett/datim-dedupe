@@ -792,17 +792,4 @@ describe('Dedupe directive', function () {
             });
         });
     });
-
-    describe('dedupe crosswalk notice', function () {
-        it('should not show the crosswalk icon for a non crosswalk dedupe', function () {
-            expect(element[0].querySelector('.crosswalk-notice')).toEqual(null);
-        });
-
-        it('should show the crosswalk icon for a crosswalk type dedupe', function () {
-            $scope.firstDedupeRecord.details.type = 'CROSSWALK';
-            $scope.$apply();
-
-            expect(element[0].querySelector('.crosswalk-notice')).toEqual(jasmine.any(HTMLElement));
-        });
-    });
 });
