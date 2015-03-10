@@ -26,8 +26,6 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
     ctrl.changePeriod = changePeriod;
     ctrl.changeFilterResultsTargets = changeFilterResultsTargets;
     ctrl.getDuplicateRecords = getDuplicateRecords;
-    ctrl.isAllTypeCrosswalk = isAllTypeCrosswalk;
-    ctrl.changedOnlyTypeCrosswalk = changedOnlyTypeCrosswalk;
     ctrl.pageChanged = pageChanged;
 
     //Call init method to get data from services
@@ -109,22 +107,8 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
         return getDuplicateRecords();
     }
 
-    function changedOnlyTypeCrosswalk() {
-        if (isAllTypeCrosswalk()) {
-            ctrl.dedupeRecords = ctrl.allDedupeRecords;
-        } else {
-            ctrl.dedupeRecords = dedupeRecordFilters.onlyTypeCrosswalk(ctrl.dedupeRecords);
-        }
-    }
-
     function isShowingAll() {
         return dedupeFilters.includeResolved;
-    }
-
-    function isAllTypeCrosswalk() {
-        return ctrl.dedupeRecords.every(function (dedupeRecord) {
-            return (dedupeRecord && dedupeRecord.details) && dedupeRecord.details.type === 'CROSSWALK';
-        });
     }
 
     function reportStatusToUser(saveStatus) {

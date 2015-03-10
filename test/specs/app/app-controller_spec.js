@@ -30,8 +30,7 @@ describe('App controller', function () {
         }, {
             details: {
                 orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014',
-                type: 'CROSSWALK'
+                timePeriodName: 'FY 2014'
             },
             data: [
                 {agency: 'CDC', partner: 'PartnerA', value: 12},
@@ -82,13 +81,7 @@ describe('App controller', function () {
 
         dedupeRecordFiltersMock = {
             onlyNonResolvedRecords: jasmine.createSpy('dedupeRecordFilters.onlyNonResolvedRecords')
-                .and.returnValue(dedupeRecords.slice(1)),
-            onlyTypeCrosswalk: jasmine.createSpy('dedupeRecordFilters.onlyTypeCrosswalk')
-                .and.callFake(function (records) {
-                    return records.filter(function (dedupeRecord) {
-                        return (dedupeRecord && dedupeRecord.details) && dedupeRecord.details.type === 'CROSSWALK';
-                    });
-                })
+                .and.returnValue(dedupeRecords.slice(1))
         };
 
         scope = $rootScope.$new();
@@ -124,8 +117,7 @@ describe('App controller', function () {
         }, {
             details: {
                 orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014',
-                type: 'CROSSWALK'
+                timePeriodName: 'FY 2014'
             },
             data: [
                 {agency: 'CDC', partner: 'PartnerA', value: 12},
@@ -171,8 +163,7 @@ describe('App controller', function () {
         }, {
             details: {
                 orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014',
-                type: 'CROSSWALK'
+                timePeriodName: 'FY 2014'
             },
             data: [
                 {agency: 'CDC', partner: 'PartnerA', value: 12},
@@ -369,59 +360,6 @@ describe('App controller', function () {
             controller.changedIncludeResolved();
 
             expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined, 1);
-        });
-    });
-
-    describe('crosswalk', function () {
-        beforeEach(function () {
-            //Apply rootscope to resolve the mock promise
-            $rootScope.$apply();
-        });
-
-        describe('isAllTypeCrosswalk', function () {
-            it('should be a function', function () {
-                expect(controller.isAllTypeCrosswalk).toBeAFunction();
-            });
-
-            it('should return false', function () {
-                expect(controller.isAllTypeCrosswalk()).toBe(false);
-            });
-
-            it('should return true if only the crosswalk records are visible', function () {
-                controller.dedupeRecords = [controller.dedupeRecords[1]];
-
-                expect(controller.isAllTypeCrosswalk()).toBe(true);
-            });
-        });
-
-        describe('changedOnlyTypeCrosswalk', function () {
-            it('should be a function', function () {
-                expect(controller.changedOnlyTypeCrosswalk).toBeAFunction();
-            });
-
-            it('should call the service with the dedupe records', function () {
-                var dedupeRecords = angular.copy(controller.dedupeRecords);
-                controller.changedOnlyTypeCrosswalk();
-
-                expect(dedupeRecordFiltersMock.onlyTypeCrosswalk).toHaveBeenCalledWith(dedupeRecords);
-            });
-
-            it('should set the deduperecord on the controller to be just the crosswalk records', function () {
-                var expectedDedupeRecord = angular.copy(dedupeRecords[1]);
-
-                controller.changedOnlyTypeCrosswalk();
-
-                expect(controller.dedupeRecords.length).toBe(1);
-                expect(controller.dedupeRecords[0]).toEqual(expectedDedupeRecord);
-            });
-
-            it('should not do anything if the records are already type crosswalk and reset to unresolved', function () {
-                controller.dedupeRecords = [angular.copy(dedupeRecords[1])];
-
-                controller.changedOnlyTypeCrosswalk();
-
-                expect(controller.dedupeRecords.length).toBe(3);
-            });
         });
     });
 
