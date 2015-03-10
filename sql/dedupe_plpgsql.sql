@@ -15,31 +15,6 @@ RETURNS setof duplicate_records AS  $$
  start_group := pg * ps - ps + 1;
  end_group := pg * ps;
  
- CREATE  TEMP TABLE  dsd_ta_map 
- (dsd_id integer,
- ta_id integer)
- ON COMMIT DROP;
- 
- EXECUTE '
- INSERT INTO dsd_ta_map
- SELECT a.dataelementid as dsd_id,b.dataelementid as ta_id
- FROM dataelement a
- INNER JOIN  (
- SELECT dataelementid,substring(name from ''^.+\(.+,'') as name FROM dataelement 
- where name ~(''TARGET'')
- AND name ~(''TA\)'') 
- and name !~(''NARRATIVE'')
- and categorycomboid = 
- (SELECT categorycomboid FROM categorycombo WHERE name = ''default'') ) b
- ON substring(a.name from ''^.+\(.+,'') = b.name
- 
- where a.name ~(''TARGET'')
- AND a.name ~(''DSD'')
- and a.name !~(''NARRATIVE'')
- and a.categorycomboid = 
- 
- (SELECT categorycomboid FROM categorycombo WHERE name = ''default'')';
- 
  
  CREATE TEMP TABLE   temp1
  (sourceid integer,
@@ -50,7 +25,6 @@ RETURNS setof duplicate_records AS  $$
  value character varying (500000),
  duplicate_type character varying(20)
  ) ON COMMIT DROP;
- 
  
  
  EXECUTE 'INSERT INTO temp1
@@ -95,15 +69,15 @@ RETURNS setof duplicate_records AS  $$
  dv1.sourceid,
  dv1.periodid,
  dv1.dataelementid,
- map.ta_id,
+ map.ta_dataelementid,
  dv1.categoryoptioncomboid,
  dv1.attributeoptioncomboid
  from datavalue dv1
- INNER JOIN dsd_ta_map map
- on dv1.dataelementid = map.dsd_id ) dsd
+ INNER JOIN  _table_dsd_ta_crosswalk_map map
+ on dv1.dataelementid = map.dsd_dataelementid  ) dsd
  on ta.sourceid = dsd.sourceid
  AND ta.periodid = dsd.periodid
- and ta.dataelementid = dsd.ta_id
+ and ta.dataelementid = dsd.ta_dataelementid
  and ta.categoryoptioncomboid = dsd.categoryoptioncomboid
  and ta.attributeoptioncomboid != dsd.attributeoptioncomboid
  WHERE ta.periodid IN (SELECT DISTINCT periodid from _periodstructure
@@ -124,15 +98,15 @@ RETURNS setof duplicate_records AS  $$
  dv1.sourceid,
  dv1.periodid,
  dv1.dataelementid,
- map.dsd_id,
+ map.dsd_dataelementid,
  dv1.categoryoptioncomboid,
  dv1.attributeoptioncomboid
  from datavalue dv1
- INNER JOIN dsd_ta_map map
- on dv1.dataelementid = map.ta_id ) dsd
+ INNER JOIN _table_dsd_ta_crosswalk_map map
+ on dv1.dataelementid = map.ta_dataelementid ) dsd
  on ta.sourceid = dsd.sourceid
  AND ta.periodid = dsd.periodid
- and ta.dataelementid = dsd.dsd_id
+ and ta.dataelementid = dsd.dsd_dataelementid
  and ta.categoryoptioncomboid = dsd.categoryoptioncomboid
  and ta.attributeoptioncomboid != dsd.attributeoptioncomboid
  WHERE ta.periodid IN (SELECT DISTINCT periodid from _periodstructure
