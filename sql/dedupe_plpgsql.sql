@@ -41,7 +41,7 @@ RETURNS setof duplicate_records AS  $$
  (SELECT categorycomboid FROM categorycombo WHERE name = ''default'')';
  
  
- CREATE TEMP TABLE  temp1
+ CREATE TEMP TABLE   temp1
  (sourceid integer,
  periodid integer,
  dataelementid integer,
@@ -49,8 +49,7 @@ RETURNS setof duplicate_records AS  $$
  attributeoptioncomboid integer,
  value character varying (500000),
  duplicate_type character varying(20)
- ) 
- ON COMMIT DROP; 
+ ) ON COMMIT DROP;
  
  
  
@@ -139,6 +138,30 @@ RETURNS setof duplicate_records AS  $$
  WHERE ta.periodid IN (SELECT DISTINCT periodid from _periodstructure
  where financialoct = ''' || $2 || ''' )';
   
+/*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
+  
+EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
+ UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || periodid::text ) ';
+ 
+  /*Paging*/
+ EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_count integer;
+ ALTER TABLE temp1 ADD COLUMN total_groups integer';
+ /* Init the group count*/
+ this_group := 0;
+FOR dup_groups IN SELECT * FROM (SELECT DISTINCT group_id FROM temp1 ORDER BY group_id) BY LOOP
+this_group := this_group + 1;
+ EXECUTE 'UPDATE temp1 SET group_count = $1 where group_id = $2'
+ USING this_group,dup_groups.group_id;
+ END LOOP;
+  /*Provide the total number of groups*/
+ EXECUTE 'UPDATE temp1 set total_groups = $1' USING this_group;
+  
+  /*Paging. Get rid of the records now.*/
+   EXECUTE 'DELETE FROM temp1 
+   WHERE group_count < $1
+   OR group_count > $2
+   ' USING start_group, end_group;
+  
  /*Data element names*/
  
  EXECUTE 'ALTER TABLE temp1 ADD COLUMN dataelement character varying(230);
@@ -219,10 +242,7 @@ RETURNS setof duplicate_records AS  $$
   WHERE _cogsm.categoryoptiongroupsetid= 481662 ) b
   where temp1.attributeoptioncomboid = b.categoryoptioncomboid';
  
-   /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
-  
-  EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
- UPDATE temp1 SET group_id = md5( de_uid || ou_uid  || coc_uid || iso_period ) ';
+
  
  /*Duplication status*/
  
@@ -249,18 +269,7 @@ RETURNS setof duplicate_records AS  $$
  END IF;
  
  
- /*Paging*/
- EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_count integer;
- ALTER TABLE temp1 ADD COLUMN total_groups integer';
- /* Init the group count*/
- this_group := 0;
-FOR dup_groups IN SELECT DISTINCT group_id FROM temp1 BY LOOP
-this_group := this_group + 1;
- EXECUTE 'UPDATE temp1 SET group_count = $1 where group_id = $2'
- USING this_group,dup_groups.group_id;
- END LOOP;
-  /*Provide the total number of groups*/
- EXECUTE 'UPDATE temp1 set total_groups = $1' USING this_group;
+
  
  CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
  
@@ -288,10 +297,7 @@ this_group := this_group + 1;
 total_groups,
 dataset_type
  FROM temp1
- WHERE group_count >= $1
- and group_count <= $2
- ORDER BY group_id
- ' USING start_group, end_group;
+ ORDER BY group_id';
   
   
    /*Return the records*/
