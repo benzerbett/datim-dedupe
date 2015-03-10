@@ -16,8 +16,6 @@ Installing and preparing the sql view has two steps.
 Firstly you will need to install the duplication_record type into your database. The sql to do this can be found on the following url.
 https://raw.githubusercontent.com/dhis2/datim-dedupe/master/sql/create_duplicate_type.sql
 
-Next, you must install the TA/DSD Crosswalk table, used to support the identification of DSD/TA duplicates
-https://raw.githubusercontent.com/dhis2/datim-dedupe/master/sql/create_duplicate_typecreate_dsd_ta_crosswalk.sql
 
 Following that you will have to run the query that will add the function to get the duplicates. This one can be found here https://raw.githubusercontent.com/dhis2/datim-dedupe/master/sql/dedupe_plpgsql.sql
 
