@@ -16,7 +16,7 @@ RETURNS setof duplicate_records AS  $$
  end_group := pg * ps;
  
  
- CREATE TEMP TABLE   temp1
+ CREATE TEMP TABLE temp1
  (sourceid integer,
  periodid integer,
  dataelementid integer,
@@ -112,6 +112,10 @@ RETURNS setof duplicate_records AS  $$
  WHERE ta.periodid IN (SELECT DISTINCT periodid from _periodstructure
  where financialoct = ''' || $2 || ''' )';
   
+/*Special handling of DSD-TA cases. TA receives the dedup.*/
+EXECUTE 'UPDATE temp1 a set dataelementid = b.ta_dataelementid from _table_dsd_ta_crosswalk_map b
+where a.dataelementid = b.dsd_dataelementid and a.duplicate_type = ''CROSSWALK''';  
+  
 /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
   
 EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
@@ -146,7 +150,10 @@ this_group := this_group + 1;
  
  UPDATE temp1 set de_uid = b.uid from dataelement b
  where temp1.dataelementid = b.dataelementid';
-  
+ 
+/*Special handling of DSD-TA cases. TA receives the dedup.*/
+EXECUTE 'UPDATE temp1 a set de_uid = b.ta_de_uid from _table_dsd_ta_crosswalk_map b
+where a.dataelementid = b.dsd_dataelementid and a.duplicate_type = ''CROSSWALK''';
   
   /*Disagg*/
  EXECUTE 'ALTER TABLE temp1 ADD COLUMN disaggregation character varying(250);
@@ -198,7 +205,6 @@ this_group := this_group + 1;
  LEFT JOIN organisationunit oulevel3 on ous.idlevel5 = oulevel3.organisationunitid
  LEFT JOIN  organisationunit oulevel4 on ous.idlevel6 = oulevel4.organisationunitid
  LEFT JOIN  organisationunit oulevel5 on ous.idlevel7 = oulevel5.organisationunitid ) b
- 
  where temp1.sourceid = b.sourceid';
   
   /*Periods*/
@@ -215,8 +221,6 @@ this_group := this_group + 1;
  INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=_cocg.categoryoptionid
   WHERE _cogsm.categoryoptiongroupsetid= 481662 ) b
   where temp1.attributeoptioncomboid = b.categoryoptioncomboid';
- 
-
  
  /*Duplication status*/
  
@@ -241,9 +245,6 @@ this_group := this_group + 1;
  ELSEIF dt = 'TARGETS' THEN 
  EXECUTE 'DELETE FROM temp1 where dataset_type != ''TARGETS''';
  END IF;
- 
- 
-
  
  CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
  
@@ -272,7 +273,6 @@ total_groups,
 dataset_type
  FROM temp1
  ORDER BY group_id';
-  
   
    /*Return the records*/
    FOR returnrec IN SELECT * FROM temp2 ORDER BY group_id LOOP
