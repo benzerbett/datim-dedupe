@@ -133,6 +133,14 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify) {
             if (_(periodTypes).contains(periodType)) {
                 var d2peGen = dhis2.period.generator;
                 generatedPeriods = d2peGen.filterFuturePeriodsExceptCurrent(d2peGen.generateReversedPeriods(periodType, 0));
+
+                if (/Quarterly/.test(periodType)) {
+                    var additionalYearsToGenerate = 3;
+                    var i;
+                    for (i = 0; i >= (0 - additionalYearsToGenerate); i -= 1) {
+                        generatedPeriods = generatedPeriods.concat(d2peGen.generateReversedPeriods(periodType, i));
+                    }
+                }
             }
         });
     }

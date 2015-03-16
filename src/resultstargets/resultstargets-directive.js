@@ -1,26 +1,21 @@
 angular.module('PEPFAR.dedupe').directive('resultsTargetsSelect', resultsTargetsSelectDirective);
 
-function resultsTargetsSelectDirective() {
+function resultsTargetsSelectDirective(dedupeRecordFilters) {
     return {
         replace: true,
         restrict: 'E',
-        scope: {
-            onResultsTargetsSelected: '='
-        },
+        scope: {},
         templateUrl: 'resultstargets/resultstargets.html',
         link: resultsTargetsDirectiveLink
     };
-}
 
-function resultsTargetsDirectiveLink(scope) {
-    scope.selectbox = {
-        items: [{name: '-- No Filter --'}, {name: 'Results'}, {name: 'Targets'}],
-        placeholder: 'Filter between Results and Targets',
-        onSelect: function ($model, $item) {
-            if ($item === scope.selectbox.items[0]) {
-                $item = scope.selectbox.resultsTargets = undefined;
+    function resultsTargetsDirectiveLink(scope) {
+        scope.selectbox = {
+            items: [{name: 'Results'}, {name: 'Targets'}],
+            placeholder: 'Filter between Results and Targets',
+            onSelect: function ($model, $item) {
+                dedupeRecordFilters.changeFilterResultsTargets($item);
             }
-            scope.onResultsTargetsSelected($item);
-        }
-    };
+        };
+    }
 }

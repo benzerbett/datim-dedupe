@@ -33,14 +33,14 @@
                             <organisation-unit-select on-orgunit-selected="app.changeOrgUnit"></organisation-unit-select>
                         </div>
                     </div>
-                    <div class="period-selector row">
-                        <div class="col-sm-12">
-                            <period-selector on-period-selected="app.changePeriod"></period-selector>
-                        </div>
-                    </div>
                     <div class="results-targets row">
                         <div class="col-sm-12">
-                            <results-targets-select on-results-targets-selected="app.changeFilterResultsTargets"></results-targets-select>
+                            <results-targets-select></results-targets-select>
+                        </div>
+                    </div>
+                    <div ng-show="app.filters.getResultsTargetsFilter()" class="period-selector row">
+                        <div class="col-sm-12">
+                            <period-selector></period-selector>
                         </div>
                     </div>
                 </div>
@@ -50,14 +50,14 @@
         <form name="deduplication">
             <div class="dedupe-records">
                 <dedupe dedupe-record="dedupeRecord" ng-repeat="dedupeRecord in app.dedupeRecords"></dedupe>
-                <pagination total-items="app.pager.total" ng-model="app.pager.current" items-per-page="app.pager.pageSize" ng-change="app.pageChanged()"></pagination>
+                <pagination ng-show="app.dedupeRecords.length" total-items="app.pager.total" ng-model="app.pager.current" items-per-page="app.pager.pageSize" ng-change="app.pageChanged()"></pagination>
             </div>
             <div class="resolve-footer">
                 <div class="col-sm-4">
                     <span translate>Mark all duplicates as</span>
                     <div class="btn-group">
-                        <button class="btn btn-default" ng-click="app.useMax()">Use max</button>
-                        <button class="btn btn-default" ng-click="app.useSum()">Use sum</button>
+                        <button ng-disabled="!app.dedupeRecords.length" class="btn btn-default" ng-click="app.useMax()">Use max</button>
+                        <button ng-disabled="!app.dedupeRecords.length" class="btn btn-default" ng-click="app.useSum()">Use sum</button>
                     </div>
                 </div>
                 <div class="col-sm-2">
@@ -71,7 +71,7 @@
                     <span>Showing <span ng-bind="app.dedupeRecords.length"></span> of <span ng-bind="app.pager.total"></span></span>
                 </div>
                 <div class="col-sm-2">
-                    <button class="btn btn-primary" ng-disabled="!deduplication.$valid" ng-click="app.resolveDuplicates()" translate>Resolve duplicates</button>
+                    <button class="btn btn-primary" ng-disabled="!deduplication.$valid || !app.dedupeRecords.length" ng-click="app.resolveDuplicates()" translate>Resolve duplicates</button>
                 </div>
             </div>
         </form>

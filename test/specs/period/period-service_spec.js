@@ -3,6 +3,7 @@ describe('Period service', function () {
     var $httpBackend;
     var $rootScope;
     var systemInfoRequest;
+    var periodGeneratorMock;
 
     beforeEach(module('PEPFAR.dedupe'));
     beforeEach(inject(function ($injector) {
@@ -18,13 +19,16 @@ describe('Period service', function () {
             instance: jasmine.createSpy('jquery.calendars.instance')
         };
 
+        periodGeneratorMock = {
+            generateReversedPeriods: jasmine.createSpy('dhis2.period.generator.generateReversedPeriods')
+                .and.returnValue([]),
+            filterFuturePeriodsExceptCurrent: jasmine.createSpy('dhis2.period.generator.filterFuturePeriodsExceptCurrent')
+                .and.returnValue([])
+        };
         window.dhis2 = {
             period: {
                 PeriodGenerator: jasmine.createSpy('dhis2.period.periodGenerator')
-                    .and.returnValue({
-                        generateReversedPeriods: jasmine.createSpy('dhis2.period.generator.generateReversedPeriods'),
-                        filterFuturePeriodsExceptCurrent: jasmine.createSpy('dhis2.period.generator.filterFuturePeriodsExceptCurrent')
-                    })
+                    .and.returnValue(periodGeneratorMock)
             }
         };
 
@@ -57,13 +61,24 @@ describe('Period service', function () {
             expect(service.getPastPeriodsRecentFirst()).toEqual(undefined);
         });
 
-        it('should return the period generator when a periodtype has been set', function () {
-            var generatedPeriods = window.dhis2.period.generator.filterFuturePeriodsExceptCurrent(window.dhis2.period.generator.generateReversedPeriods('Monthly', 0));
-
-            service.setPeriodType('Monthly');
+        it('should return the correct generated periods for FinancialOct', function () {
+            service.setPeriodType('FinancialOct');
             $rootScope.$apply();
 
-            expect(service.getPastPeriodsRecentFirst()).toEqual(generatedPeriods);
+            expect(periodGeneratorMock.generateReversedPeriods).toHaveBeenCalledWith('FinancialOct', 0);
+            expect(periodGeneratorMock.filterFuturePeriodsExceptCurrent.calls.count()).toEqual(1);
+        });
+
+        it('should return the correct generated periods for Quarterly', function () {
+            service.setPeriodType('Quarterly');
+            $rootScope.$apply();
+
+            expect(periodGeneratorMock.generateReversedPeriods).toHaveBeenCalledWith('Quarterly', 0);
+            expect(periodGeneratorMock.generateReversedPeriods).toHaveBeenCalledWith('Quarterly', -1);
+            expect(periodGeneratorMock.generateReversedPeriods).toHaveBeenCalledWith('Quarterly', -2);
+            expect(periodGeneratorMock.generateReversedPeriods).toHaveBeenCalledWith('Quarterly', -3);
+
+            expect(periodGeneratorMock.filterFuturePeriodsExceptCurrent.calls.count()).toEqual(1);
         });
     });
 

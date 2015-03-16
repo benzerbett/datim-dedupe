@@ -7,7 +7,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
     };
 
     ctrl.isFilterToggle = false;
-    ctrl.isProcessing = true;
+    ctrl.isProcessing = false;
     ctrl.dedupeRecords = [];
     ctrl.allDedupeRecords = [];
     ctrl.pager = {
@@ -22,14 +22,9 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
     ctrl.resolveDuplicates = resolveDuplicates;
     ctrl.changedIncludeResolved = changedIncludeResolved;
     ctrl.isShowingAll = isShowingAll;
-    ctrl.changeOrgUnit = changeOrgUnit;
-    ctrl.changePeriod = changePeriod;
-    ctrl.changeFilterResultsTargets = changeFilterResultsTargets;
     ctrl.getDuplicateRecords = getDuplicateRecords;
     ctrl.pageChanged = pageChanged;
-
-    //Call init method to get data from services
-    initialise();
+    ctrl.filters = dedupeRecordFilters;
 
     $scope.$on('DEDUPE_DIRECTIVE.resolve', function (event, dedupeRecordId, saveStatus) {
 
@@ -41,9 +36,13 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
         reportStatusToUser(saveStatus);
     });
 
-    function initialise() {
+    $scope.$on('DEDUPE_RECORDFILTER_SERVICE.updated', function (event, dedupeRecordFilters) {
+        dedupeFilters.ou = dedupeRecordFilters.ou;
+        dedupeFilters.pe = dedupeRecordFilters.pe;
+        dedupeFilters.tr = dedupeRecordFilters.tr;
 
-    }
+        ctrl.getDuplicateRecords();
+    });
 
     function getDuplicateRecords() {
         ctrl.isProcessing = true;
@@ -74,27 +73,6 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
 
     function notifyUserIfNoRecordsWereFound() {
         notify.warning('No records were found for the given criteria');
-    }
-
-    function changeOrgUnit(newOrgUnit) {
-        if (newOrgUnit && newOrgUnit.id) {
-            dedupeFilters.ou = newOrgUnit.id;
-            getDuplicateRecords();
-        }
-    }
-
-    function changePeriod(newPeriod) {
-        if (newPeriod && newPeriod.iso && angular.isString(newPeriod.iso)) {
-            dedupeFilters.pe = newPeriod.iso;
-            getDuplicateRecords();
-        }
-    }
-
-    function changeFilterResultsTargets(newResultsTargets) {
-        if ((!dedupeFilters.tr || !newResultsTargets || dedupeFilters.tr !== newResultsTargets.name)) {
-            dedupeFilters.tr = newResultsTargets && angular.isString(newResultsTargets.name) ? newResultsTargets.name.toLowerCase() : undefined;
-            getDuplicateRecords();
-        }
     }
 
     function changedIncludeResolved() {

@@ -3,9 +3,20 @@ describe('Organisation unit select directive', function () {
     var $scope;
     var element;
     var $rootScope;
+    var innerScope;
+    var dedupeRecordFiltersMock;
+    var periodServiceMock;
 
     beforeEach(module('period/periodselector.html'));
     beforeEach(module('PEPFAR.dedupe', function ($provide) {
+        $provide.factory('dedupeRecordFilters', function () {
+            return {
+                changePeriodFilter: jasmine.createSpy('dedupeRecordFilters.changePeriodFilter'),
+                getResultsTargetsFilter: jasmine.createSpy('dedupeRecordFilters.getResultsTargetsFilter')
+                    .and.returnValue(undefined)
+            };
+        });
+
         $provide.factory('periodService', function ($q) {
             return {
                 getPastPeriodsRecentFirst: jasmine.createSpy('periodService.getPastPeriodsRecentFirst')
@@ -17,20 +28,19 @@ describe('Organisation unit select directive', function () {
     }));
 
     beforeEach(inject(function ($injector) {
-        var innerScope;
         var $compile = $injector.get('$compile');
         $rootScope = $injector.get('$rootScope');
+        dedupeRecordFiltersMock = $injector.get('dedupeRecordFilters');
+        periodServiceMock = $injector.get('periodService');
 
-        element = angular.element('<period-selector on-period-selected="ctrl.callbackSpy"></period-selector>');
+        element = angular.element('<period-selector></period-selector>');
 
         $scope = $rootScope.$new();
 
-        $scope.ctrl = {
-            callbackSpy: jasmine.createSpy('callbackSpy')
-        };
-
         $compile(element)($scope);
         $rootScope.$digest();
+
+        dedupeRecordFiltersMock.getResultsTargetsFilter.and.returnValue('Targets');
 
         innerScope = angular.element(element[0].querySelector('.ui-select-bootstrap')).scope();
         innerScope.$select.open = true;
@@ -47,7 +57,39 @@ describe('Organisation unit select directive', function () {
         expect(elements.length).toBe(fixtures.get('generatedPeriods').length);
     });
 
-    it('should call the period change when more than 1 period is found', function () {
-        expect($scope.ctrl.callbackSpy.calls.argsFor(0)[0]).toEqual(jasmine.objectContaining(fixtures.get('generatedPeriods')[0]));
+    describe('changePeriod', function () {
+        beforeEach(function () {
+            //Reset spy as it is called once on initialise
+            dedupeRecordFiltersMock.changePeriodFilter.calls.reset();
+        });
+
+        it('should call the changePeriod method on the dedupeRecord', function () {
+            innerScope.changePeriod({});
+
+            expect(dedupeRecordFiltersMock.changePeriodFilter).toHaveBeenCalled();
+        });
+
+        it('should not call the changePeriod method when the period is undefined', function () {
+            innerScope.changePeriod(undefined);
+
+            expect(dedupeRecordFiltersMock.changePeriodFilter).not.toHaveBeenCalled();
+        });
+
+        it('should call the changePeriod method with the correct period', function () {
+            var myPeriod = {iso: '2014Oct'};
+
+            innerScope.changePeriod(myPeriod);
+
+            expect(dedupeRecordFiltersMock.changePeriodFilter).toHaveBeenCalledWith(myPeriod);
+        });
+    });
+
+    describe('changed period type', function () {
+        it('should update the values when the getResultsTargetsFilter changes', function () {
+            dedupeRecordFiltersMock.getResultsTargetsFilter.and.returnValue('Results');
+            $scope.$apply();
+
+            expect(periodServiceMock.setPeriodType).toHaveBeenCalledWith('Quarterly');
+        });
     });
 });

@@ -182,8 +182,8 @@ describe('App controller', function () {
     });
 
     describe('initialise', function () {
-        it('should set processing to true', function () {
-            expect(controller.isProcessing).toBe(true);
+        it('should set isProcessing to its initial state', function () {
+            expect(controller.isProcessing).toBe(false);
         });
     });
 
@@ -371,13 +371,13 @@ describe('App controller', function () {
         });
 
         it('should set processing to true', function () {
-            controller.getDuplicateRecords('myorgUnit', '2013April');
+            controller.getDuplicateRecords();
 
             expect(controller.isProcessing).toBe(true);
         });
 
         it('should set processing to false after duplicate records are loaded', function () {
-            controller.getDuplicateRecords('myorgUnit', '2013April');
+            controller.getDuplicateRecords();
 
             $rootScope.$apply();
 
@@ -385,7 +385,7 @@ describe('App controller', function () {
         });
 
         it('should set all the duplicate records onto the controller', function () {
-            controller.getDuplicateRecords('myorgUnit', '2013April');
+            controller.getDuplicateRecords();
 
             $rootScope.$apply();
 
@@ -395,7 +395,7 @@ describe('App controller', function () {
         it('should log error when getting the records failed', inject(function ($q) {
             dedupeServiceMock.getDuplicateRecords
                 .and.returnValue($q.reject('System setting with id of view not found. Please check if your app is configured correctly.'));
-            controller.getDuplicateRecords('myorgUnit', '2013April');
+            controller.getDuplicateRecords();
 
             $rootScope.$apply();
 
@@ -405,7 +405,7 @@ describe('App controller', function () {
         it('should log a default error when there is no error message present', function () {
             dedupeServiceMock.getDuplicateRecords
                 .and.returnValue($q.reject(undefined));
-            controller.getDuplicateRecords('myorgUnit', '2013April');
+            controller.getDuplicateRecords();
 
             $rootScope.$apply();
 
@@ -421,64 +421,19 @@ describe('App controller', function () {
         });
     });
 
-    describe('changeOrgUnit', function () {
-        it('should be a function', function () {
-            expect(controller.changeOrgUnit).toBeDefined();
+    describe('update on filter changed', function () {
+        it('should call getDuplicateRecords on the DEDUPE_RECORDFILTER_SERVICE.updated event', function () {
+            spyOn(controller, 'getDuplicateRecords');
+
+            $rootScope.$broadcast('DEDUPE_RECORDFILTER_SERVICE.updated', {ou: 'myOrgUnit'});
+
+            expect(controller.getDuplicateRecords).toHaveBeenCalled();
         });
 
-        it('should call the getDuplicateRecords function on the recordService', function () {
-            controller.changeOrgUnit({id: 'newOuId'});
+        it('should set the correct filters onto the controller', function () {
+            $rootScope.$broadcast('DEDUPE_RECORDFILTER_SERVICE.updated', {ou: 'myOrgUnit', pe: '2013Oct', tr: 'Results'});
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith('newOuId', undefined, false, undefined, 1);
-        });
-
-        it('should not call the service when the orgunit is undefined', function () {
-            controller.changeOrgUnit({id: undefined});
-
-            expect(dedupeServiceMock.getDuplicateRecords).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('changePeriod', function () {
-        it('should be a function', function () {
-            expect(controller.changePeriod).toBeAFunction();
-        });
-
-        it('should call the service for new records when a period has been selected', function () {
-            controller.changePeriod({iso: '2013April'});
-
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, '2013April', false, undefined, 1);
-        });
-
-        it('should not call the service if the period iso is not defined', function () {
-            controller.changePeriod({iso: undefined});
-
-            expect(dedupeServiceMock.getDuplicateRecords).not.toHaveBeenCalled();
-        });
-    });
-
-    describe('changeFilterResultsTargets', function () {
-        it('should be a function', function () {
-            expect(controller.changePeriod).toBeAFunction();
-        });
-
-        it('should call the service for records when a filter has been set to empty', function () {
-            controller.changeFilterResultsTargets({name: 'Targets'});
-            controller.changeFilterResultsTargets(undefined);
-
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined, 1);
-        });
-
-        it('should call the service for records when a filter has been set to targets', function () {
-            controller.changeFilterResultsTargets({name: 'Targets'});
-
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, 'targets', 1);
-        });
-
-        it('should call the service for records when a filter has been set to results', function () {
-            controller.changeFilterResultsTargets({name: 'Results'});
-
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, 'results', 1);
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith('myOrgUnit', '2013Oct', false, 'Results', 1);
         });
     });
 
@@ -493,8 +448,7 @@ describe('App controller', function () {
         it('should notify the user if no results have been found', function () {
             dedupeServiceMock.getDuplicateRecords.and.returnValue($q.when([]));
 
-            controller.changeOrgUnit({id: 'myid'});
-            controller.changePeriod({iso: 'myid'});
+            $rootScope.$broadcast('DEDUPE_RECORDFILTER_SERVICE.updated', {ou: 'myOrgUnit', pe: '2013Oct', tr: 'Results'});
 
             $rootScope.$apply();
 
@@ -503,7 +457,7 @@ describe('App controller', function () {
 
         it('should not notify the user if one of the required filters has not been set', function () {
             dedupeServiceMock.getDuplicateRecords.and.returnValue($q.when([]));
-            controller.changeOrgUnit({id: 'myid'});
+            $rootScope.$broadcast('DEDUPE_RECORDFILTER_SERVICE.updated', {ou: 'myOrgUnit', tr: 'Results'});
 
             $rootScope.$apply();
 

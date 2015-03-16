@@ -1,12 +1,10 @@
 angular.module('PEPFAR.dedupe').directive('organisationUnitSelect', organisationUnitSelectDirective);
 
-function organisationUnitSelectDirective(organisationUnitService, currentUserService, notify) {
+function organisationUnitSelectDirective(organisationUnitService, currentUserService, dedupeRecordFilters, notify) {
     return {
         restrict: 'E',
         replace: true,
-        scope: {
-            onOrgunitSelected: '='
-        },
+        scope: {},
         templateUrl: 'organisationunits/organisation-select.html',
         link: function (scope) {
             scope.organisationUnit = undefined;
@@ -14,7 +12,7 @@ function organisationUnitSelectDirective(organisationUnitService, currentUserSer
                 items: [],
                 placeholder: 'Select an organisation unit',
                 onSelect: function ($item, $model) {
-                    scope.onOrgunitSelected($item, $model);
+                    dedupeRecordFilters.changeOrganisationUnit($item, $model);
                 }
             };
 
@@ -27,9 +25,7 @@ function organisationUnitSelectDirective(organisationUnitService, currentUserSer
                             if (isUserHasAnOrgUnit(currentUser)) {
                                 scope.organisationUnit = findItemInListById(currentUser.organisationUnits[0].id, scope.selectbox.items);
 
-                                if (angular.isFunction(scope.onOrgunitSelected)) {
-                                    scope.onOrgunitSelected(scope.organisationUnit);
-                                }
+                                dedupeRecordFilters.changeOrganisationUnit(scope.organisationUnit);
                             }
                         })
                         .catch(function () {

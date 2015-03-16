@@ -4,9 +4,16 @@ describe('Organisation unit select directive', function () {
     var innerScope;
     var element;
     var $rootScope;
+    var dedupeRecordFiltersMock;
 
     beforeEach(module('organisationunits/organisation-select.html'));
     beforeEach(module('PEPFAR.dedupe', function ($provide) {
+        $provide.service('dedupeRecordFilters', function () {
+            return {
+                changeOrganisationUnit: jasmine.createSpy('dedupeRecordFilters.changeOrganisationUnit')
+            };
+        });
+
         $provide.service('organisationUnitService', function () {
             this.getOrganisationUnitsForLevel = function () {
                 return {
@@ -41,14 +48,11 @@ describe('Organisation unit select directive', function () {
     beforeEach(inject(function ($injector) {
         var $compile = $injector.get('$compile');
         $rootScope = $injector.get('$rootScope');
+        dedupeRecordFiltersMock = $injector.get('dedupeRecordFilters');
 
-        element = angular.element('<organisation-unit-select on-orgunit-selected="ctrl.callbackSpy"></organisation-unit-select>');
+        element = angular.element('<organisation-unit-select></organisation-unit-select>');
 
         $scope = $rootScope.$new();
-
-        $scope.ctrl = {
-            callbackSpy: jasmine.createSpy('callbackSpy')
-        };
 
         $compile(element)($scope);
         $rootScope.$digest();
@@ -69,13 +73,13 @@ describe('Organisation unit select directive', function () {
     });
 
     it('should call the callback when the users organisation unit is found within the orgunit list', function () {
-        expect($scope.ctrl.callbackSpy.calls.argsFor(0)[0].id).toBe('W73PRZcjFIU');
+        expect(dedupeRecordFiltersMock.changeOrganisationUnit.calls.argsFor(0)[0].id).toBe('W73PRZcjFIU');
     });
 
     it('should call the passed callback when the selection is changed', function () {
         innerScope.selectbox.onSelect();
 
-        expect($scope.ctrl.callbackSpy.calls.count()).toBe(2);
+        expect(dedupeRecordFiltersMock.changeOrganisationUnit.calls.count()).toBe(2);
     });
 
     describe('failed current user', function () {
