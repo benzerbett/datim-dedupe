@@ -87,6 +87,8 @@ gulp.task('min', ['sass'], function () {
     var ngAnnotate = require('gulp-ng-annotate');
     var uglify = require('gulp-uglify');
     var minifyCss = require('gulp-minify-css');
+    var rev = require('gulp-rev');
+    var revReplace = require('gulp-rev-replace');
 
     var assets = useref.assets();
 
@@ -104,6 +106,8 @@ gulp.task('min', ['sass'], function () {
         .pipe(gulpif('*.js', uglify({
             mangle: mangleJS
         })))
+        .pipe(gulpif('!**/index.html', rev()))
+        .pipe(revReplace())
         .pipe(gulp.dest(buildDirectory));
 });
 
