@@ -75,7 +75,12 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
             id: getColumnValue('group_id', rows[0]),
             details: {
                 orgUnitId: getColumnValue('ou_uid', rows[0]),
-                orgUnitName: getColumnValue('orgunit_name', rows[0]),
+                orgUnitName: [
+                    getColumnValue('oulevel2_name', rows[0]),
+                    getColumnValue('oulevel3_name', rows[0]),
+                    getColumnValue('oulevel4_name', rows[0]),
+                    getColumnValue('oulevel5_name', rows[0])
+                ].filter(function (ouName) { return ouName.length > 0; }).join(' / '),
                 timePeriodName: getColumnValue('iso_period', rows[0]),
                 dataElementId: getColumnValue('de_uid', rows[0]),
                 dataElementName: getColumnValue('dataelement', rows[0]),

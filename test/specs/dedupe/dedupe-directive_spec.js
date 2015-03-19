@@ -91,17 +91,12 @@ describe('Dedupe directive', function () {
             expect(dedupeDetailsElementFirstRow.querySelector('.disaggregation-name').querySelector('span')).toEqual(jasmine.any(HTMLElement));
         });
 
-        it('should have a column for the org unit label', function () {
-            expect(dedupeDetailsElementSecondRow.querySelector('.organisation-unit-label')).toEqual(jasmine.any(HTMLElement));
-        });
-
         it('should have a column for the org unit name', function () {
             expect(dedupeDetailsElementSecondRow.querySelector('.organisation-unit-name')).toEqual(jasmine.any(HTMLElement));
         });
 
         it('should set the appropriate column width for the org unit fields', function () {
-            expect(dedupeDetailsElementSecondRow.querySelector('.organisation-unit-label')).toHaveClass('col-sm-2');
-            expect(dedupeDetailsElementSecondRow.querySelector('.organisation-unit-name')).toHaveClass('col-sm-4');
+            expect(dedupeDetailsElementSecondRow.querySelector('.organisation-unit-name')).toHaveClass('col-sm-6');
         });
 
         it('should have a column for the period label', function () {
@@ -115,18 +110,6 @@ describe('Dedupe directive', function () {
         it('should set the appropriate column width for the period fields', function () {
             expect(dedupeDetailsElementSecondRow.querySelector('.period-label')).toHaveClass('col-sm-2');
             expect(dedupeDetailsElementSecondRow.querySelector('.period-name')).toHaveClass('col-sm-4');
-        });
-
-        it('should place the text "Org unit:" in the org unit label', function () {
-            var textElement = dedupeDetailsElementSecondRow.querySelector('.organisation-unit-label').querySelector('span');
-
-            expect(textElement.textContent).toEqual('Org unit:');
-        });
-
-        it('should add the translate directive onto the org unit label', function () {
-            var textElement = dedupeDetailsElementSecondRow.querySelector('.organisation-unit-label').querySelector('span');
-
-            expect(textElement).toHaveAttribute('translate');
         });
 
         it('should place the text "Time period:" into the period label', function () {

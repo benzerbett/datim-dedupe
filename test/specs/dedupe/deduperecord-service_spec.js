@@ -55,7 +55,7 @@ describe('Dedupe record service', function () {
             });
 
             it('should set the orgunit onto the dedupe record object', function () {
-                expect(dedupeRecords[0].details.orgUnitName).toBe('Cardinal Site');
+                expect(dedupeRecords[0].details.orgUnitName).toBe('Animal Region / Bird District / Cardinal Site');
                 expect(dedupeRecords[5].details.orgUnitName).toBe('Demoland');
             });
 
