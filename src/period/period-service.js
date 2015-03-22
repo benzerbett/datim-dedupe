@@ -134,10 +134,14 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify) {
                 var d2peGen = dhis2.period.generator;
                 generatedPeriods = d2peGen.filterFuturePeriodsExceptCurrent(d2peGen.generateReversedPeriods(periodType, 0));
 
+                if (/FinancialOct/.test(periodType)) {
+                    generatedPeriods = d2peGen.generateReversedPeriods(periodType, 0).slice(5);
+                }
+
                 if (/Quarterly/.test(periodType)) {
                     var additionalYearsToGenerate = 3;
                     var i;
-                    for (i = 0; i >= (0 - additionalYearsToGenerate); i -= 1) {
+                    for (i = -1; i >= (0 - additionalYearsToGenerate); i -= 1) {
                         generatedPeriods = generatedPeriods.concat(d2peGen.generateReversedPeriods(periodType, i));
                     }
                 }

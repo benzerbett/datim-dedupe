@@ -27,7 +27,12 @@ function periodSelectorDirective(periodService, dedupeRecordFilters) {
                     .then(function () {
                         scope.period.periodsRecentFirst = periodService.getPastPeriodsRecentFirst();
                         if (scope.period.periodsRecentFirst.length > 0) {
-                            scope.period.selectedPeriod = scope.period.periodsRecentFirst[0];
+
+                            if (newVal.toLowerCase() === 'targets') {
+                                scope.period.selectedPeriod = scope.period.periodsRecentFirst[1];
+                            } else {
+                                scope.period.selectedPeriod = scope.period.periodsRecentFirst[0];
+                            }
                             scope.changePeriod(scope.period.selectedPeriod);
                         }
                     });
