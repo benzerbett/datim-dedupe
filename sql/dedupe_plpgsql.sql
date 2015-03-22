@@ -51,8 +51,8 @@ RETURNS setof duplicate_records AS  $$
  WHERE dv1.dataelementid IN (
  SELECT DISTINCT dataelementid from datasetmembers where datasetid in (SELECT datasetid from dataset where uid IN (''qRvKHvlzNdv'',''ovYEbELCknv'',''tCIW2VFd8uu'',
  ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'') ) ) 
- AND dv1.periodid IN (SELECT DISTINCT periodid from _periodstructure
- where financialoct = ''' || $2 || ''' )';
+ AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
+ where iso = ''' || $2 || ''' LIMIT 1)';
   
   
 /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
