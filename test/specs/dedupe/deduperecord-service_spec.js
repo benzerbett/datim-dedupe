@@ -64,11 +64,6 @@ describe('Dedupe record service', function () {
                 expect(dedupeRecords[5].details.orgUnitId).toBe('KKFzPM8LoXs');
             });
 
-            it('should set the timePeriod onto the dedupe record object', function () {
-                expect(dedupeRecords[0].details.timePeriodName).toBe('2013Oct');
-                expect(dedupeRecords[5].details.timePeriodName).toBe('2013Oct');
-            });
-
             it('should set isResolved to false for the first dedupe record', function () {
                 expect(dedupeRecords[0].resolve.isResolved).toBe(false);
             });

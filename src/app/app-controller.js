@@ -48,6 +48,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
         ctrl.isProcessing = true;
 
         dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current)
+            .then(addPeriodInformationToRecords)
             .then(function (duplicateRecords) {
                 ctrl.allDedupeRecords = ctrl.dedupeRecords = duplicateRecords;
 
@@ -63,6 +64,15 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
                 notify.error(errorMessage || 'An error occurred when loading the dedupe records.');
             })
             .finally(setProcessingToFalse);
+    }
+
+    function addPeriodInformationToRecords(duplicateRecords) {
+        duplicateRecords.forEach(function (duplicateRecord) {
+            duplicateRecord.details.timePeriodName = dedupeRecordFilters.getPeriodName();
+            duplicateRecord.details.timePeriodDisplayName = dedupeRecordFilters.getPeriodDisplayName();
+        });
+
+        return duplicateRecords;
     }
 
     function adjustPager(total) {

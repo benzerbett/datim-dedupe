@@ -81,7 +81,6 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
                     getColumnValue('oulevel4_name', rows[0]),
                     getColumnValue('oulevel5_name', rows[0])
                 ].filter(function (ouName) { return ouName.length > 0; }).join(' / '),
-                timePeriodName: getColumnValue('iso_period', rows[0]),
                 dataElementId: getColumnValue('de_uid', rows[0]),
                 dataElementName: getColumnValue('dataelement', rows[0]),
                 disaggregation: getColumnValue('disaggregation',  rows[0]),

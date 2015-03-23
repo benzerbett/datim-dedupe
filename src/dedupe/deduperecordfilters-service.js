@@ -1,6 +1,7 @@
 angular.module('PEPFAR.dedupe').factory('dedupeRecordFilters', dedupeRecordFilters);
 
 function dedupeRecordFilters($rootScope) {
+    var periodDisplayName;
     var dedupeFilters = {
 
     };
@@ -10,7 +11,9 @@ function dedupeRecordFilters($rootScope) {
         changeFilterResultsTargets: changeFilterResultsTargets,
         changePeriodFilter: changePeriodFilter,
         getResultsTargetsFilter: getResultsTargetsFilter,
-        getFilters: getFilters
+        getFilters: getFilters,
+        getPeriodName: getPeriodName,
+        getPeriodDisplayName: getPeriodDisplayName
     };
 
     function changeFilterResultsTargets(newResultsTargets) {
@@ -30,9 +33,18 @@ function dedupeRecordFilters($rootScope) {
 
     function changePeriodFilter(period) {
         if (period) {
+            periodDisplayName = period.name;
             dedupeFilters.pe = period.iso;
             fireUpdateEvent();
         }
+    }
+
+    function getPeriodName() {
+        return dedupeFilters.pe;
+    }
+
+    function getPeriodDisplayName() {
+        return periodDisplayName;
     }
 
     function getResultsTargetsFilter() {

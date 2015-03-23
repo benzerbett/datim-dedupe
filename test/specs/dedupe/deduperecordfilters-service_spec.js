@@ -60,6 +60,18 @@ describe('Dedupefilter service', function () {
 
             expect(shouldNotThrow).not.toThrow();
         });
+
+        it('should set the period name onto the filter service', function () {
+            service.changePeriodFilter({iso: '2013Oct', name: 'October 2013'});
+
+            expect(service.getPeriodDisplayName()).toEqual('October 2013');
+        });
+
+        it('should return the period iso name', function () {
+            service.changePeriodFilter({iso: '2013Oct', name: 'October 2013'});
+
+            expect(service.getPeriodName()).toEqual('2013Oct');
+        });
     });
 
     describe('getResultsTargetsFilter', function () {

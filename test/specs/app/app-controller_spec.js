@@ -15,8 +15,7 @@ describe('App controller', function () {
         dedupeRecords = [{
             id: '2364f5b15e57185fc6564ce64cc9c629',
             details: {
-                orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014'
+                orgUnitName: 'Glady\'s clinic'
             },
             data: [
                 {agency: 'USAID', partner: 'PartnerA', value: 60},
@@ -29,8 +28,7 @@ describe('App controller', function () {
             }
         }, {
             details: {
-                orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014'
+                orgUnitName: 'Glady\'s clinic'
             },
             data: [
                 {agency: 'CDC', partner: 'PartnerA', value: 12},
@@ -80,8 +78,10 @@ describe('App controller', function () {
         };
 
         dedupeRecordFiltersMock = {
-            onlyNonResolvedRecords: jasmine.createSpy('dedupeRecordFilters.onlyNonResolvedRecords')
-                .and.returnValue(dedupeRecords.slice(1))
+            getPeriodName: jasmine.createSpy('dedupeRecordFiltersService.getPeriodName')
+                .and.returnValue('2013Oct'),
+            getPeriodDisplayName: jasmine.createSpy('dedupeRecordFiltersService.getPeriodDisplayName')
+                .and.returnValue('October 2013')
         };
 
         scope = $rootScope.$new();
@@ -418,6 +418,15 @@ describe('App controller', function () {
             $rootScope.$apply();
 
             expect(controller.pager).toEqual({total: 10, current: 1, pageSize: 50});
+        });
+
+        it('should set the period name and period display name onto the record objects', function () {
+            controller.getDuplicateRecords();
+
+            $rootScope.$apply();
+
+            expect(controller.dedupeRecords[0].details.timePeriodName).toEqual('2013Oct');
+            expect(controller.dedupeRecords[0].details.timePeriodDisplayName).toEqual('October 2013');
         });
     });
 

@@ -32,7 +32,8 @@ describe('Dedupe directive', function () {
             id: '2364f5b15e57185fc6564ce64cc9c629',
             details: {
                 orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014',
+                timePeriodName: 'FY2014',
+                timePeriodDisplayName: 'FY 2014',
                 dataElementId: 'K6f6jR0NOcZ',
                 dataElementName: 'HTC_TST (N, DSD): HTC received results',
                 disaggregation: '(default)'
