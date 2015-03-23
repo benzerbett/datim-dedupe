@@ -1,7 +1,7 @@
 /*DROP FUNCTION view_duplicates(character,character varying,
 boolean,integer,integer,character varying );*/
 
-CREATE  OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
+CREATE OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
 ps integer default 50,pg integer default 1,dt character varying(50) default 'ALL' ) 
 RETURNS setof duplicate_records AS  $$
  DECLARE
@@ -51,8 +51,8 @@ RETURNS setof duplicate_records AS  $$
  WHERE dv1.dataelementid IN (
  SELECT DISTINCT dataelementid from datasetmembers where datasetid in (SELECT datasetid from dataset where uid IN (''qRvKHvlzNdv'',''ovYEbELCknv'',''tCIW2VFd8uu'',
  ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'') ) ) 
- AND dv1.periodid IN (SELECT DISTINCT periodid from _periodstructure
- where financialoct = ''' || $2 || ''' )';
+ AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
+ where iso = ''' || $2 || ''' LIMIT 1)';
   
   
 /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
@@ -143,10 +143,7 @@ this_group := this_group + 1;
  LEFT JOIN  organisationunit oulevel5 on ous.idlevel7 = oulevel5.organisationunitid ) b
  where temp1.sourceid = b.sourceid';
   
-  /*Periods*/
- EXECUTE 'ALTER TABLE temp1 ADD COLUMN iso_period character varying(15);
- UPDATE temp1 SET iso_period = p.iso from _periodstructure p where p.periodid = temp1.periodid';
- 
+
   /*Partner*/
   
   EXECUTE 'ALTER TABLE temp1 ADD COLUMN partner character varying(230);
@@ -184,30 +181,29 @@ this_group := this_group + 1;
  
  CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
  
-  EXECUTE 'INSERT INTO temp2 SELECT 
-  oulevel2_name ,
-  oulevel3_name,
-  oulevel4_name,
-  oulevel5_name,
-  orgunit_name,
-  orgunit_level,
-  iso_period,
-  dataelement ,
-  disaggregation,
-  agency,
-  mechanism   ,
-  partner  ,
-  value ,
- duplication_status,
- ou_uid,
- de_uid,
- coc_uid,
- group_id,
- group_count,
+EXECUTE 'INSERT INTO temp2 SELECT 
+oulevel2_name ,
+oulevel3_name,
+oulevel4_name,
+oulevel5_name,
+orgunit_name,
+orgunit_level,
+dataelement ,
+disaggregation,
+agency,
+mechanism   ,
+partner  ,
+value ,
+duplication_status,
+ou_uid,
+de_uid,
+coc_uid,
+group_id,
+group_count,
 total_groups,
 dataset_type
- FROM temp1
- ORDER BY group_id';
+FROM temp1
+ORDER BY group_id';
   
    /*Return the records*/
    FOR returnrec IN SELECT * FROM temp2 ORDER BY group_id LOOP

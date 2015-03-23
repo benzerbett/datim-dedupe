@@ -1,3 +1,5 @@
+DROP TYPE IF EXISTS duplicate_records;
+
 CREATE TYPE duplicate_records AS 
 (oulevel2_name character varying(230)   ,
  oulevel3_name character varying(230)   ,
@@ -5,10 +7,9 @@ CREATE TYPE duplicate_records AS
  oulevel5_name character varying(230)   ,
  orgunit_name  character varying(230)   ,
  orgunit_level integer                  ,
- iso_period character varying(20)       , 
  dataelement   character varying(230)   ,
  disaggregation character varying(250)   ,
- agency character varying (250),
+ agency character varying (250) ,
  mechanism character varying(250)   ,
  partner character varying(230)   ,
  value character varying(50000),
