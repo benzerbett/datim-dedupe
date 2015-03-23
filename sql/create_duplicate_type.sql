@@ -1,3 +1,5 @@
+DROP TYPE IF EXISTS duplicate_records;
+
 CREATE TYPE duplicate_records AS 
 (oulevel2_name character varying(230)   ,
  oulevel3_name character varying(230)   ,

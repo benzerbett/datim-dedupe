@@ -1,7 +1,7 @@
 /*DROP FUNCTION view_duplicates(character,character varying,
 boolean,integer,integer,character varying );*/
 
-CREATE  OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
+CREATE OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
 ps integer default 50,pg integer default 1,dt character varying(50) default 'ALL' ) 
 RETURNS setof duplicate_records AS  $$
  DECLARE
