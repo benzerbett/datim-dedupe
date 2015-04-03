@@ -60,6 +60,20 @@ RETURNS setof duplicate_records AS  $$
 EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
  UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || periodid::text ) ';
  
+ /*Duplication status*/
+ 
+ EXECUTE 'ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT ''UNRESOLVED'';
+ 
+ UPDATE temp1 set duplication_status = ''RESOLVED''
+ where group_id IN (SELECT DISTINCT group_id FROM temp1
+ WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment'')))';
+ 
+ IF rs = FALSE THEN 
+ EXECUTE 'DELETE FROM temp1 where duplication_status =''RESOLVED''';
+ END IF;
+
+ 
   /*Paging*/
  EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_count integer;
  ALTER TABLE temp1 ADD COLUMN total_groups integer';
@@ -155,18 +169,7 @@ this_group := this_group + 1;
   WHERE _cogsm.categoryoptiongroupsetid= 481662 ) b
   where temp1.attributeoptioncomboid = b.categoryoptioncomboid';
  
- /*Duplication status*/
- 
- EXECUTE 'ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT ''UNRESOLVED'';
- 
- UPDATE temp1 set duplication_status = ''RESOLVED''
- where group_id IN (SELECT DISTINCT group_id FROM temp1
- WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
-  FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment'')))';
- 
- IF rs = FALSE THEN 
- EXECUTE 'DELETE FROM temp1 where duplication_status =''RESOLVED''';
- END IF;
+
  
   /*Targets and results*/
   EXECUTE 'ALTER TABLE temp1 ADD COLUMN dataset_type character varying(50) DEFAULT ''RESULTS'';
