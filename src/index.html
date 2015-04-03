@@ -2,6 +2,8 @@
 <html>
 <head lang="en">
     <meta charset="UTF-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    
     <title>Data Deduplication</title>
 
     <!-- build:css css/vendor.css -->
@@ -50,7 +52,15 @@
         <form name="deduplication">
             <div class="dedupe-records">
                 <dedupe dedupe-record="dedupeRecord" ng-repeat="dedupeRecord in app.dedupeRecords"></dedupe>
-                <pagination ng-show="app.dedupeRecords.length" total-items="app.pager.total" ng-model="app.pager.current" items-per-page="app.pager.pageSize" ng-change="app.pageChanged()"></pagination>
+                <pagination ng-show="app.dedupeRecords.length"
+                            total-items="app.pager.total"
+                            ng-model="app.pager.current"
+                            items-per-page="app.pager.pageSize"
+                            ng-change="app.pageChanged()"
+                            max-size="10"
+                            boundary-links="true"
+                            rotate="false">
+                </pagination>
             </div>
             <div class="resolve-footer">
                 <div class="col-sm-4">
