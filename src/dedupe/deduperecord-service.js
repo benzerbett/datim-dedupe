@@ -75,12 +75,7 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
             id: getColumnValue('group_id', rows[0]),
             details: {
                 orgUnitId: getColumnValue('ou_uid', rows[0]),
-                orgUnitName: [
-                    getColumnValue('oulevel2_name', rows[0]),
-                    getColumnValue('oulevel3_name', rows[0]),
-                    getColumnValue('oulevel4_name', rows[0]),
-                    getColumnValue('oulevel5_name', rows[0])
-                ].filter(function (ouName) { return ouName.length > 0; }).join(' / '),
+                orgUnitName: getOrganisationUnitName(rows),
                 dataElementId: getColumnValue('de_uid', rows[0]),
                 dataElementName: getColumnValue('dataelement', rows[0]),
                 disaggregation: getColumnValue('disaggregation',  rows[0]),
@@ -103,6 +98,20 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
         getNonDedupeRows(rows).forEach(processRecord(dedupeRecord));
 
         return dedupeRecord;
+
+        function getOrganisationUnitName(rows) {
+            var combinedOuName = [
+                getColumnValue('oulevel2_name', rows[0]),
+                getColumnValue('oulevel3_name', rows[0]),
+                getColumnValue('oulevel4_name', rows[0]),
+                getColumnValue('oulevel5_name', rows[0])
+            ].filter(function (ouName) { return ouName.length > 0; }).join(' / ');
+
+            if (combinedOuName) {
+                return combinedOuName;
+            }
+            return getColumnValue('orgunit_name', rows[0]);
+        }
     }
     function processRecord(dedupeRecord) {
         return function (record) {
