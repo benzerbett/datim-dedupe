@@ -49,7 +49,11 @@ RETURNS setof duplicate_records AS  $$
  INNER JOIN _orgunitstructure ous on dv1.sourceid = ous.organisationunitid
  and ous.uidlevel3 = ''' ||  $1 || '''
  WHERE dv1.dataelementid IN (
- SELECT DISTINCT dataelementid from datasetmembers where datasetid in (SELECT datasetid from dataset where uid IN (''qRvKHvlzNdv'',''ovYEbELCknv'',''tCIW2VFd8uu'',
+ SELECT DISTINCT dsm.dataelementid from datasetmembers dsm
+ INNER JOIN (SELECT DISTINCT dataelementid from dataelement where numbertype IS NOT NULL) de
+ ON dsm.dataelementid = de.dataelementid
+ where dsm.datasetid in (SELECT datasetid from dataset 
+ where uid IN (''qRvKHvlzNdv'',''ovYEbELCknv'',''tCIW2VFd8uu'',
  ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'') ) ) 
  AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $2 || ''' LIMIT 1)';

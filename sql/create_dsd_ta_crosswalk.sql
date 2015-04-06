@@ -2376,4 +2376,4 @@ select 'qeS0bazg6IW' as dsd_de_uid, (
 		where uid = 'myiCwzqRxSt'
 		) as ta_dataelementid
 from dataelement
-where uid = 'qeS0bazg6IW');
+where uid = 'qeS0bazg6IW') a;
