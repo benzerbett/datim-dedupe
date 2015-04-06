@@ -1,9 +1,9 @@
 #Global database connection
 require(RPostgreSQL)
 require(dplyr)
-dbUserName="***"
-dbPassword="****"
-dbName="****"
+dbUserName="postgres"
+dbPassword="postgres"
+dbName="datim"
 dbPort=5432
 dbHost="localhost"
 con <- dbConnect(PostgreSQL(), user= dbUserName, password=dbPassword,host=dbHost, port=dbPort,dbname=dbName)
@@ -33,7 +33,3 @@ sql<-paste("SELECT '",dsd.ta.crosswalk$dsd_de_uid,"' as dsd_de_uid,
            dsd.ta.crosswalk$ta_de_uid,"' as ta_de_uid, (SELECT dataelementid from dataelement where uid = '",dsd.ta.crosswalk$ta_de_uid,
            "') as ta_dataelementid from dataelement where uid = '",dsd.ta.crosswalk$dsd_de_uid,"';",sep="",collapse="")
 
-SELECT 'NYXJu5vwbhN' as dsd_de_uid, (SELECT dataelementid from dataelement where uid = 'NYXJu5vwbhN') as dsd_dataelementid,
-'ASaP3A4Y416' as ta_de_uid,(SELECT dataelementid from dataelement where uid = 'ASaP3A4Y416') as ta_dataelementid
-from dataelement 
-where uid = 'NYXJu5vwbhN';
