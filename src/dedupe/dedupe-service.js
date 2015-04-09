@@ -51,6 +51,9 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         return dedupeRecordData
             .map(pick('value'))
             .map(parseFloat)
+            .filter(function (value) {
+                return !isNaN(value);
+            })
             .reduce(max, 0);
     }
 
@@ -59,6 +62,10 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
 
         return dedupeRecordData
             .map(pick('value'))
+            .map(parseFloat)
+            .filter(function (value) {
+                return !isNaN(value);
+            })
             .reduce(add, 0);
     }
 

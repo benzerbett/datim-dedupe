@@ -51,6 +51,16 @@ describe('Dedupe service', function () {
 
             expect(dedupeService.getMax(dedupeValues)).toBe(60);
         });
+
+        it('should not take NaN values into account when summing the numbers', function () {
+            var dedupeValues = [
+                {agency: 'USAID', partner: 'PartnerA', value: 60},
+                {agency: 'USAID', partner: 'PartnerB', value: NaN},
+                {agency: 'USAID', partner: 'PartnerC', value: 20}
+            ];
+
+            expect(dedupeService.getMax(dedupeValues)).toBe(60);
+        });
     });
 
     describe('getSum', function () {
@@ -78,6 +88,16 @@ describe('Dedupe service', function () {
             ];
 
             expect(dedupeService.getSum(dedupeValues)).toBe(120);
+        });
+
+        it('should not take NaN values into account', function () {
+            var dedupeValues = [
+                {agency: 'USAID', partner: 'PartnerA', value: NaN},
+                {agency: 'USAID', partner: 'PartnerB', value: 40},
+                {agency: 'USAID', partner: 'PartnerC', value: 20}
+            ];
+
+            expect(dedupeService.getSum(dedupeValues)).toBe(60);
         });
     });
 
