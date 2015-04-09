@@ -60,9 +60,8 @@ RETURNS setof duplicate_records AS  $$
   
 
 /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
-  
-EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
- UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || periodid::text ) ';
+ALTER TABLE temp1 ADD COLUMN group_id character(32);
+UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || periodid::text ) ;
 
 /*We need to filter out sketchy values and then determine if there are any phantom groups */
 DELETE FROM temp1 where value !~('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
@@ -72,21 +71,45 @@ DELETE FROM temp1 where group_id IN (SELECT group_id from temp1   WHERE attribut
  
  /*Duplication status*/
  
- EXECUTE 'ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT ''UNRESOLVED'';
- 
- UPDATE temp1 set duplication_status = ''RESOLVED''
+ ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT 'UNRESOLVED';
+ UPDATE temp1 set duplication_status = 'RESOLVED'
  where group_id IN (SELECT DISTINCT group_id FROM temp1
  WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
-  FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment'')))';
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment')));
  
  IF rs = FALSE THEN 
- EXECUTE 'DELETE FROM temp1 where duplication_status =''RESOLVED''';
+ DELETE FROM temp1 where duplication_status ='RESOLVED';
  END IF;
 
+
+ /*Data element names*/
  
+ ALTER TABLE temp1 ADD COLUMN dataelement character varying(230);
+ UPDATE temp1 set dataelement = b.name from dataelement b
+ where temp1.dataelementid = b.dataelementid;
+ 
+/*Targets and results*/
+
+ALTER TABLE temp1 ADD COLUMN dataset_type character varying(50) DEFAULT 'RESULTS';
+UPDATE temp1 SET dataset_type = 'TARGETS' where 
+dataelement ~('TARGET');
+
+/*Filter out results and targets*/
+/*TODO Do this in the SELECT statement instead*/ 
+IF dt = 'RESULTS' THEN
+DELETE FROM temp1 WHERE dataset_type != 'RESULTS';
+ELSEIF dt = 'TARGETS' THEN 
+DELETE FROM temp1 where dataset_type != 'TARGETS';
+END IF;
+ 
+/*Data element uids*/
+ ALTER TABLE temp1 ADD COLUMN de_uid character varying(11);
+ UPDATE temp1 set de_uid = b.uid from dataelement b
+ where temp1.dataelementid = b.dataelementid;
+
   /*Paging*/
- EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_count integer;
- ALTER TABLE temp1 ADD COLUMN total_groups integer';
+ ALTER TABLE temp1 ADD COLUMN group_count integer;
+ ALTER TABLE temp1 ADD COLUMN total_groups integer;
  /* Init the group count*/
  this_group := 0;
 FOR dup_groups IN SELECT * FROM (SELECT DISTINCT group_id FROM temp1 ORDER BY group_id) BY LOOP
@@ -103,40 +126,31 @@ this_group := this_group + 1;
    OR group_count > $2
    ' USING start_group, end_group;
   
- /*Data element names*/
- 
- EXECUTE 'ALTER TABLE temp1 ADD COLUMN dataelement character varying(230);
- ALTER TABLE temp1 ADD COLUMN de_uid character varying(11);
- 
- UPDATE temp1 set dataelement = b.name from dataelement b
- where temp1.dataelementid = b.dataelementid;
- 
- UPDATE temp1 set de_uid = b.uid from dataelement b
- where temp1.dataelementid = b.dataelementid';
+
  
   
   /*Disagg*/
- EXECUTE 'ALTER TABLE temp1 ADD COLUMN disaggregation character varying(250);
+ ALTER TABLE temp1 ADD COLUMN disaggregation character varying(250);
  ALTER TABLE temp1 ADD COLUMN coc_uid character varying(11);
  
  UPDATE temp1 set disaggregation = b.categoryoptioncomboname from _categoryoptioncomboname b
  where temp1.categoryoptioncomboid = b.categoryoptioncomboid;
  
  UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
- where temp1.categoryoptioncomboid = b.categoryoptioncomboid';
+ where temp1.categoryoptioncomboid = b.categoryoptioncomboid;
   /*Agency*/
- EXECUTE 'ALTER TABLE temp1 ADD COLUMN agency character varying(250);
+ ALTER TABLE temp1 ADD COLUMN agency character varying(250);
  
  UPDATE temp1 set agency = b."Funding Agency" from _categoryoptiongroupsetstructure b
- where temp1.attributeoptioncomboid = b.categoryoptioncomboid';
+ where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
  
  /*Mechanism*/
- EXECUTE 'ALTER TABLE temp1 ADD COLUMN mechanism character varying(250);
+ ALTER TABLE temp1 ADD COLUMN mechanism character varying(250);
  UPDATE temp1 set mechanism = b.categoryoptioncomboname from _categoryoptioncomboname b
- where temp1.attributeoptioncomboid = b.categoryoptioncomboid';
+ where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
   
   /*Orgunits*/
- EXECUTE '
+ 
  ALTER TABLE temp1 ADD COLUMN oulevel2_name character varying(230);
  ALTER TABLE temp1 ADD COLUMN oulevel3_name character varying(230);
  ALTER TABLE temp1 ADD COLUMN oulevel4_name character varying(230);
@@ -165,32 +179,23 @@ this_group := this_group + 1;
  LEFT JOIN organisationunit oulevel3 on ous.idlevel5 = oulevel3.organisationunitid
  LEFT JOIN  organisationunit oulevel4 on ous.idlevel6 = oulevel4.organisationunitid
  LEFT JOIN  organisationunit oulevel5 on ous.idlevel7 = oulevel5.organisationunitid ) b
- where temp1.sourceid = b.sourceid';
+ where temp1.sourceid = b.sourceid;
   
 
   /*Partner*/
   
-  EXECUTE 'ALTER TABLE temp1 ADD COLUMN partner character varying(230);
-  UPDATE temp1 set partner = b.name from (
-  SELECT _cocg.categoryoptioncomboid,_cog.name from categoryoptiongroup _cog
- INNER JOIN categoryoptiongroupsetmembers _cogsm on _cog.categoryoptiongroupid=_cogsm.categoryoptiongroupid 
- INNER JOIN categoryoptiongroupmembers _cogm on _cog.categoryoptiongroupid=_cogm.categoryoptiongroupid 
- INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=_cocg.categoryoptionid
-  WHERE _cogsm.categoryoptiongroupsetid= 481662 ) b
-  where temp1.attributeoptioncomboid = b.categoryoptioncomboid';
+ALTER TABLE temp1 ADD COLUMN partner character varying(230);
+UPDATE temp1 set partner = b.name from (
+SELECT _cocg.categoryoptioncomboid,_cog.name from categoryoptiongroup _cog
+INNER JOIN categoryoptiongroupsetmembers _cogsm on _cog.categoryoptiongroupid=_cogsm.categoryoptiongroupid 
+INNER JOIN categoryoptiongroupmembers _cogm on _cog.categoryoptiongroupid=_cogm.categoryoptiongroupid 
+INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=_cocg.categoryoptionid
+WHERE _cogsm.categoryoptiongroupsetid= 481662 ) b
+WHERE  temp1.attributeoptioncomboid = b.categoryoptioncomboid;
  
 
  
-  /*Targets and results*/
-  EXECUTE 'ALTER TABLE temp1 ADD COLUMN dataset_type character varying(50) DEFAULT ''RESULTS'';
-  UPDATE temp1 SET dataset_type = ''TARGETS'' where 
-  dataelement ~(''TARGET'')';
- 
- IF dt = 'RESULTS' THEN
- EXECUTE 'DELETE FROM temp1 where dataset_type != ''RESULTS''';
- ELSEIF dt = 'TARGETS' THEN 
- EXECUTE 'DELETE FROM temp1 where dataset_type != ''TARGETS''';
- END IF;
+
  
  CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
  
