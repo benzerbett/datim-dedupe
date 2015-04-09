@@ -56,9 +56,11 @@ RETURNS setof duplicate_records AS  $$
  where uid IN (''qRvKHvlzNdv'',''ovYEbELCknv'',''tCIW2VFd8uu'',
  ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'') ) ) 
  AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
- where iso = ''' || $2 || ''' LIMIT 1)';
+ where iso = ''' || $2 || ''' LIMIT 1)
+ AND dv1.value IS NOT NULL and dv2.value IS NOT NULL';
   
-  
+
+
 /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
   
 EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
