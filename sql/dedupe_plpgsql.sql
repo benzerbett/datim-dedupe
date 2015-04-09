@@ -34,7 +34,7 @@ RETURNS setof duplicate_records AS  $$
  dv1.dataelementid,
  dv1.categoryoptioncomboid,
  dv1.attributeoptioncomboid,
- dv1.value ,''PURE''::character varying(20) as duplicate_type
+ trim(dv1.value) ,''PURE''::character varying(20) as duplicate_type
  from datavalue dv1
  INNER JOIN  datavalue dv2 on 
  dv1.sourceid = dv2.sourceid
@@ -56,15 +56,19 @@ RETURNS setof duplicate_records AS  $$
  where uid IN (''qRvKHvlzNdv'',''ovYEbELCknv'',''tCIW2VFd8uu'',
  ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'') ) ) 
  AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
- where iso = ''' || $2 || ''' LIMIT 1)
- AND dv1.value IS NOT NULL and dv2.value IS NOT NULL';
+ where iso = ''' || $2 || ''' LIMIT 1)';
   
-
 
 /*Group ID. This will be used to group duplicates. Important for the DSD TA overlap*/
   
 EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
  UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || periodid::text ) ';
+
+/*We need to filter out sketchy values and then determine if there are any phantom groups */
+DELETE FROM temp1 where value !~('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
+DELETE FROM temp1 where group_id IN (SELECT group_id from temp1   WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~('00000 De-duplication adjustment'))  GROUP BY group_id HAVING COUNT(*) < 2); 
+/*TODO..What do we do with dangling dedupe factors?*/
  
  /*Duplication status*/
  
