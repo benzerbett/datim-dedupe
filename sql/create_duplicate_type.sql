@@ -1,12 +1,12 @@
 DROP TYPE IF EXISTS duplicate_records;
 
 CREATE TYPE duplicate_records AS 
-(oulevel2_name character varying(230)   ,
- oulevel3_name character varying(230)   ,
+(oulevel3_name character varying(230)   ,
  oulevel4_name character varying(230)   ,
  oulevel5_name character varying(230)   ,
- orgunit_name  character varying(230)   ,
- orgunit_level integer                  ,
+ oulevel6_name character varying(230)   ,
+ ou_name  character varying(230)   ,
+ ou_level integer                  ,
  dataelement   character varying(230)   ,
  disaggregation character varying(250)   ,
  agency character varying (250) ,
