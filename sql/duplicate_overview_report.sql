@@ -76,7 +76,10 @@ INNER JOIN
  dv1.attributeoptioncomboid
  from datavalue dv1
  INNER JOIN  (SELECT * FROM _view_dsd_ta_crosswalk ) map
- on dv1.dataelementid = map.dsd_dataelementid  ) dsd
+ on dv1.dataelementid = map.dsd_dataelementid 
+ WHERE dv1.attributeoptioncomboid != (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment''))
+) dsd
 on ta.sourceid = dsd.sourceid
 AND ta.periodid = dsd.periodid
 and ta.dataelementid = dsd.ta_dataelementid
@@ -84,7 +87,11 @@ and ta.categoryoptioncomboid = dsd.categoryoptioncomboid
 INNER JOIN _orgunitstructure ous on ta.sourceid = ous.organisationunitid
 INNER JOIN organisationunit ou3 on ous.idlevel3 = ou3.organisationunitid
 WHERE ta.periodid = (SELECT DISTINCT periodid from _periodstructure
- where iso = ''' || $1 || ''' LIMIT 1)';
+ where iso = ''' || $1 || ''' LIMIT 1)
+AND ta.attributeoptioncomboid != (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment''))'
+
+;
 
 
 
