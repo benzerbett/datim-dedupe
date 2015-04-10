@@ -6,7 +6,6 @@ CREATE TYPE duplicate_records AS
  oulevel5_name character varying(230)   ,
  oulevel6_name character varying(230)   ,
  ou_name  character varying(230)   ,
- ou_level integer                  ,
  dataelement   character varying(230)   ,
  disaggregation character varying(250)   ,
  agency character varying (250) ,

@@ -1,4 +1,4 @@
-DROP FUNCTION view_duplicates(character,character varying,
+DROP FUNCTION  IF EXISTS view_duplicates(character,character varying,
 boolean,integer,integer,character varying );
 
 CREATE OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
@@ -195,7 +195,6 @@ WHERE a.sourceid = b.organisationunitid';
 
 
 UPDATE temp1 a set ou_name =  b.name from organisationunit b where a.sourceid = b.organisationunitid;
-UPDATE temp1 a set ou_level = b.level from _orgunitstructure b where a.sourceid = b.organisationunitid;
 UPDATE temp1 a set ou_uid = b.uid from organisationunit  b where a.sourceid = b.organisationunitid;
 
 
@@ -220,7 +219,6 @@ oulevel4_name,
 oulevel5_name,
 oulevel6_name,
 ou_name,
-ou_level,
 dataelement ,
 disaggregation,
 agency,
