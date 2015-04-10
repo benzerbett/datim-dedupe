@@ -1,5 +1,5 @@
-/*DROP FUNCTION view_duplicates(character,character varying,
-boolean,integer,integer,character varying );*/
+DROP FUNCTION view_duplicates(character,character varying,
+boolean,integer,integer,character varying );
 
 CREATE OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
 ps integer default 50,pg integer default 1,dt character varying(50) default 'ALL' ) 
@@ -57,7 +57,14 @@ RETURNS setof duplicate_records AS  $$
  ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'') ) ) 
  AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $2 || ''' LIMIT 1)';
+
   
+
+/*DELETE ANY DSD-TA Crosswalk values. 
+TODO This should not really ever happen in the workflow*/
+
+DELETE FROM temp1 where attributeoptioncomboid = 
+(SELECT categoryoptioncomboid from categoryoptioncombo where code = '00001DSDTA');
 
 /*Group ID. This will be used to group duplicates. */
 ALTER TABLE temp1 ADD COLUMN group_id character(32);
