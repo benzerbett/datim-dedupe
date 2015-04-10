@@ -228,12 +228,6 @@
         smallerDedupe: {
             "title": "DEDUPLICATION_Demoland",
             "headers": [{
-                "name": "oulevel2_name",
-                "column": "oulevel2_name",
-                "type": "java.lang.String",
-                "hidden": false,
-                "meta": false
-            }, {
                 "name": "oulevel3_name",
                 "column": "oulevel3_name",
                 "type": "java.lang.String",
@@ -248,6 +242,12 @@
             }, {
                 "name": "oulevel5_name",
                 "column": "oulevel5_name",
+                "type": "java.lang.String",
+                "hidden": false,
+                "meta": false
+            }, {
+                "name": "oulevel6_name",
+                "column": "oulevel6_name",
                 "type": "java.lang.String",
                 "hidden": false,
                 "meta": false

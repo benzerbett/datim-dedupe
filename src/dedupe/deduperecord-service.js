@@ -105,7 +105,7 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
                 getColumnValue('oulevel4_name', rows[0]),
                 getColumnValue('oulevel5_name', rows[0]),
                 getColumnValue('oulevel6_name', rows[0])
-            ].filter(function (ouName) { return ouName.length > 0; }).join(' / ');
+            ].filter(function (ouName) { return angular.isString(ouName) && ouName.length > 0; }).join(' / ');
 
             if (combinedOuName) {
                 return combinedOuName;
