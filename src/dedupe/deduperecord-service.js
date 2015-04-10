@@ -101,16 +101,16 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
 
         function getOrganisationUnitName(rows) {
             var combinedOuName = [
-                getColumnValue('oulevel2_name', rows[0]),
                 getColumnValue('oulevel3_name', rows[0]),
                 getColumnValue('oulevel4_name', rows[0]),
-                getColumnValue('oulevel5_name', rows[0])
+                getColumnValue('oulevel5_name', rows[0]),
+                getColumnValue('oulevel6_name', rows[0])
             ].filter(function (ouName) { return ouName.length > 0; }).join(' / ');
 
             if (combinedOuName) {
                 return combinedOuName;
             }
-            return getColumnValue('orgunit_name', rows[0]);
+            return getColumnValue('ou_name', rows[0]);
         }
     }
     function processRecord(dedupeRecord) {
