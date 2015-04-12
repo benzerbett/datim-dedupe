@@ -71,7 +71,7 @@ DELETE FROM temp1 where attributeoptioncomboid =
 /*Group ID. This will be used to group duplicates. */
 ALTER TABLE temp1 ADD COLUMN group_id character(32);
 UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || periodid::text ) ;
-CREATE INDEX title_group_ids ON temp1 (group_id);
+CREATE INDEX idx_group_ids ON temp1 (group_id);
 
 /*We need to filter out sketchy values and then determine if there are any phantom groups */
 DELETE FROM temp1 where value !~('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
