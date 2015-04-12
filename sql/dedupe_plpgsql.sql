@@ -23,7 +23,8 @@ RETURNS setof duplicate_records AS  $$
  categoryoptioncomboid integer,
  attributeoptioncomboid integer,
  value character varying (500000),
- duplicate_type character varying(20)
+ duplicate_type character varying(20),
+ lastupdated timestamp without time zone
  ) ON COMMIT DROP;
  
  
@@ -34,7 +35,8 @@ RETURNS setof duplicate_records AS  $$
  dv1.dataelementid,
  dv1.categoryoptioncomboid,
  dv1.attributeoptioncomboid,
- trim(dv1.value) ,''PURE''::character varying(20) as duplicate_type
+ trim(dv1.value) ,''PURE''::character varying(20) as duplicate_type,
+ dv1.lastupdated
  from datavalue dv1
  INNER JOIN  datavalue dv2 on 
  dv1.sourceid = dv2.sourceid
@@ -76,14 +78,27 @@ DELETE FROM temp1 where value !~('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
 DELETE FROM temp1 where group_id IN (SELECT group_id from temp1   WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
   FROM _categoryoptioncomboname where categoryoptioncomboname ~('00000 De-duplication adjustment'))  GROUP BY group_id HAVING COUNT(*) < 2); 
 /*TODO..What do we do with dangling dedupe factors?*/
- 
+
  /*Duplication status*/
  
  ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT 'UNRESOLVED';
+ 
  UPDATE temp1 set duplication_status = 'RESOLVED'
  where group_id IN (SELECT DISTINCT group_id FROM temp1
  WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
-  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment')));
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment')))
+AND group_id NOT IN (SELECT a.group_id FROM (
+SELECT group_id,MAX(lastupdated) as dedupe_time from temp1 
+WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
+GROUP BY group_id ) a
+INNER JOIN (
+SELECT group_id,MAX(lastupdated) as data_time from temp1 
+WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
+FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
+GROUP BY group_id ) b
+on a.group_id = b.group_id
+WHERE a.dedupe_time <= b.data_time);
  
  IF rs = FALSE THEN 
  DELETE FROM temp1 where duplication_status ='RESOLVED';
@@ -234,7 +249,7 @@ group_count,
 total_groups,
 dataset_type
 FROM temp1
-ORDER BY group_id';
+ORDER BY group_id'; 
   
    /*Return the records*/
    FOR returnrec IN SELECT * FROM temp2 ORDER BY group_id LOOP
