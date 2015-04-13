@@ -656,6 +656,32 @@ describe('Dedupe directive', function () {
                 expect($scope.firstDedupeRecord.resolve.value).toBe(60);
             });
 
+            it('should not accept a custom value that is lower than 0', function () {
+                var customRadioButton = element[0].querySelector('.resolve-action-custom input[type=radio]');
+                var customTextField = element[0].querySelector('.resolve-action-custom input[type=number]');
+                customRadioButton.click();
+
+                angular.element(customTextField).val('-1');
+                angular.element(customTextField).change();
+                $scope.$apply();
+
+                expect($scope.firstDedupeRecord.resolve.type).toBe('custom');
+                expect($scope.firstDedupeRecord.resolve.value).toBe(undefined);
+            });
+
+            it('should not be able to resolve using a value larger than sum', function () {
+                var customRadioButton = element[0].querySelector('.resolve-action-custom input[type=radio]');
+                var customTextField = element[0].querySelector('.resolve-action-custom input[type=number]');
+                customRadioButton.click();
+
+                angular.element(customTextField).val('1209');
+                angular.element(customTextField).change();
+                $scope.$apply();
+
+                expect($scope.firstDedupeRecord.resolve.type).toBe('custom');
+                expect($scope.firstDedupeRecord.resolve.value).toBe(undefined);
+            });
+
             it('should set the form to be invalid when it is not touched', function () {
                 var dedupeForm = element[0];
 

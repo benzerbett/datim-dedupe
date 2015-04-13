@@ -80,7 +80,13 @@
                             <span translate>Use a custom value</span>
                         </label>
                         <span class="value">
-                            <input name="resolveNumber" type="number" min="0" ng-model="dedupeCtrl.dedupeRecord.resolve.value" ng-required="dedupeCtrl.dedupeRecord.resolve.type == 'custom'" ng-change="dedupeCtrl.dedupeRecord.resolve.type = 'custom'" />
+                            <input name="resolveNumber"
+                                   type="number"
+                                   min="0"
+                                   max="{{::dedupeCtrl.getSum()}}"
+                                   ng-model="dedupeCtrl.dedupeRecord.resolve.value"
+                                   ng-required="dedupeCtrl.dedupeRecord.resolve.type == 'custom'"
+                                   ng-change="dedupeCtrl.dedupeRecord.resolve.type = 'custom'" />
                         </span>
                         <div class="error-messages" ng-messages="dedupeRecordForm.resolveNumber.$error">
                             <div ng-message="required">
@@ -88,6 +94,9 @@
                             </div>
                             <div ng-message="min">
                                 This value should be a positive number (not decimal)
+                            </div>
+                            <div ng-message="max">
+                                A value larger than the sum is not allowed.
                             </div>
                             <div ng-message="number">
                                 This value should be a number.
