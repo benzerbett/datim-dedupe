@@ -74,15 +74,16 @@ UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categ
 CREATE INDEX idx_group_ids ON temp1 (group_id);
 
 /*We need to filter out sketchy values and then determine if there are any phantom groups */
-DELETE FROM temp1 where value !~('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
-DELETE FROM temp1 where group_id IN (SELECT group_id from temp1   WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
-  FROM _categoryoptioncomboname where categoryoptioncomboname ~('00000 De-duplication adjustment'))  GROUP BY group_id HAVING COUNT(*) < 2); 
-/*TODO..What do we do with dangling dedupe factors?*/
+/*Get rid of any DSD-TA crosswalk. This should never happen*/
+DELETE FROM temp1 where attributeoptioncomboid =
+ (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(00001'));
 
- /*Duplication status*/
+DELETE FROM temp1 where group_id IN (SELECT group_id from temp1   WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
+FROM _categoryoptioncomboname where categoryoptioncomboname ~('00000 De-duplication adjustment'))  GROUP BY group_id HAVING COUNT(*) < 2);
+/*Duplication status*/
  
  ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT 'UNRESOLVED';
- 
+/*Only resolve non-legacy dedupes*/
  UPDATE temp1 set duplication_status = 'RESOLVED'
  where group_id IN (SELECT DISTINCT group_id FROM temp1
  WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
@@ -98,7 +99,9 @@ WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
 FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
 GROUP BY group_id ) b
 on a.group_id = b.group_id
-WHERE a.dedupe_time <= b.data_time);
+WHERE a.dedupe_time <= b.data_time)
+AND group_id IN (SELECT DISTINCT group_id from temp1 where value ~('^[-|0]') and attributeoptioncomboid = (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~('00000 De-duplication adjustment')));
  
  IF rs = FALSE THEN 
  DELETE FROM temp1 where duplication_status ='RESOLVED';

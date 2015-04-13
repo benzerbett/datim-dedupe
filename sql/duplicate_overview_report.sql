@@ -20,7 +20,8 @@ BEGIN
  dataelementid integer,
  categoryoptioncomboid integer,
  attributeoptioncomboid integer,
- duplicate_type character varying(30)
+ duplicate_type character varying(30),
+ lastupdated timestamp without time zone
  ) ON COMMIT DROP; 
  
 
@@ -31,7 +32,8 @@ BEGIN
  dv1.dataelementid,
  dv1.categoryoptioncomboid,
  dv1.attributeoptioncomboid,
-''PURE''::character varying(20) as duplicate_type
+''PURE''::character varying(20) as duplicate_type,
+dv1.lastupdated
  from datavalue dv1
  INNER JOIN  datavalue dv2 on 
  dv1.sourceid = dv2.sourceid
@@ -55,6 +57,9 @@ WHERE dsm.datasetid in (SELECT datasetid from dataset
  AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $1 || ''' LIMIT 1)';
 
+#Be sure we do not get any DSD-TA crosswalks at this point. This should only be pure duplicates
+DELETE FROM temp1 where attributeoptioncomboid = 
+(SELECT categoryoptioncomboid from categoryoptioncombo where code = '00001DSDTA');
 
 EXECUTE '
 INSERT INTO temp1
@@ -89,23 +94,51 @@ INNER JOIN organisationunit ou3 on ous.idlevel3 = ou3.organisationunitid
 WHERE ta.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $1 || ''' LIMIT 1)
 AND ta.attributeoptioncomboid != (SELECT categoryoptioncomboid
-  FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment''))'
-
-;
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment''))';
 
 
+ALTER TABLE temp1 ADD COLUMN group_id character(32);
+ UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || duplicate_type::text );
+ CREATE INDEX idx_group_ids ON temp1 (group_id);
 
-EXECUTE 'ALTER TABLE temp1 ADD COLUMN group_id character(32);
- UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || duplicate_type::text ) ';
+ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT 'UNRESOLVED';
  
- /*Duplication status*/
- 
- EXECUTE 'ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT ''UNRESOLVED'';
- 
- UPDATE temp1 set duplication_status = ''RESOLVED''
+ UPDATE temp1 set duplication_status = 'RESOLVED'
  where group_id IN (SELECT DISTINCT group_id FROM temp1
  WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
-  FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment'')))';
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment')))
+AND group_id NOT IN (SELECT a.group_id FROM (
+SELECT group_id,MAX(lastupdated) as dedupe_time from temp1 
+WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
+GROUP BY group_id ) a
+INNER JOIN (
+SELECT group_id,MAX(lastupdated) as data_time from temp1 
+WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
+FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
+GROUP BY group_id ) b
+on a.group_id = b.group_id
+WHERE a.dedupe_time <= b.data_time);
+
+
+
+ UPDATE temp1 set duplication_status = 'RESOLVED'
+ where group_id IN (SELECT DISTINCT group_id FROM temp1
+ WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00001 De-duplication adjustment')))
+AND group_id NOT IN (SELECT a.group_id FROM (
+SELECT group_id,MAX(lastupdated) as dedupe_time from temp1 
+WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00001 De-duplication adjustment'))
+GROUP BY group_id ) a
+INNER JOIN (
+SELECT group_id,MAX(lastupdated) as data_time from temp1 
+WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
+FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00001 De-duplication adjustment'))
+GROUP BY group_id ) b
+on a.group_id = b.group_id
+WHERE a.dedupe_time <= b.data_time);
+
 
 
  CREATE TEMP TABLE temp2 
