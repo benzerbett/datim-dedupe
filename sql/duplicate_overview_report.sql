@@ -24,6 +24,7 @@ BEGIN
  lastupdated timestamp without time zone
  ) ON COMMIT DROP; 
  
+  CREATE TEMP TABLE temp2 OF  duplicate_type ON COMMIT DROP;
 
  EXECUTE 'INSERT INTO temp1
  SELECT DISTINCT
@@ -57,9 +58,42 @@ WHERE dsm.datasetid in (SELECT datasetid from dataset
  AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $1 || ''' LIMIT 1)';
 
-#Be sure we do not get any DSD-TA crosswalks at this point. This should only be pure duplicates
+/*Remove any DSD-TA Crosswalks at this point.*/
 DELETE FROM temp1 where attributeoptioncomboid = 
 (SELECT categoryoptioncomboid from categoryoptioncombo where code = '00001DSDTA');
+
+
+
+ALTER TABLE temp1 ADD COLUMN group_id character(32);
+ UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || duplicate_type::text );
+ CREATE INDEX idx_group_ids ON temp1 (group_id);
+
+ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT 'UNRESOLVED';
+ 
+ UPDATE temp1 set duplication_status = 'RESOLVED'
+ where group_id IN (SELECT DISTINCT group_id FROM temp1
+ WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment')))
+AND group_id NOT IN (SELECT a.group_id FROM (
+SELECT group_id,MAX(lastupdated) as dedupe_time from temp1 
+WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
+GROUP BY group_id ) a
+INNER JOIN (
+SELECT group_id,MAX(lastupdated) as data_time from temp1 
+WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
+FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
+GROUP BY group_id ) b
+on a.group_id = b.group_id
+WHERE a.dedupe_time <= b.data_time);
+
+
+
+INSERT INTO temp2 SELECT DISTINCT country, duplication_status,duplicate_type,COUNT(*) 
+GROUP BY country, duplication_status,duplicate_type from temp1;
+
+/*DSD-TA Crosswalk*/
+TRUNCATE temp1;
 
 EXECUTE '
 INSERT INTO temp1
@@ -97,31 +131,6 @@ AND ta.attributeoptioncomboid != (SELECT categoryoptioncomboid
   FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment''))';
 
 
-ALTER TABLE temp1 ADD COLUMN group_id character(32);
- UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || duplicate_type::text );
- CREATE INDEX idx_group_ids ON temp1 (group_id);
-
-ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT 'UNRESOLVED';
- 
- UPDATE temp1 set duplication_status = 'RESOLVED'
- where group_id IN (SELECT DISTINCT group_id FROM temp1
- WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
-  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment')))
-AND group_id NOT IN (SELECT a.group_id FROM (
-SELECT group_id,MAX(lastupdated) as dedupe_time from temp1 
-WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
-  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
-GROUP BY group_id ) a
-INNER JOIN (
-SELECT group_id,MAX(lastupdated) as data_time from temp1 
-WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
-FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
-GROUP BY group_id ) b
-on a.group_id = b.group_id
-WHERE a.dedupe_time <= b.data_time);
-
-
-
  UPDATE temp1 set duplication_status = 'RESOLVED'
  where group_id IN (SELECT DISTINCT group_id FROM temp1
  WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
@@ -137,17 +146,11 @@ WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
 FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00001 De-duplication adjustment'))
 GROUP BY group_id ) b
 on a.group_id = b.group_id
-WHERE a.dedupe_time <= b.data_time);
+WHERE a.dedupe_time <= b.data_time); 
 
 
-
- CREATE TEMP TABLE temp2 
- (country character varying(255),
- groupid character(32),
-duplication_status character varying(50),
-duplicate_type character varying(30)) ON COMMIT DROP; 
-
- EXECUTE 'INSERT INTO temp2 SELECT DISTINCT country,group_id,duplication_status,duplicate_type from temp1';
+INSERT INTO temp2 SELECT DISTINCT country, duplication_status,duplicate_type,COUNT(*) 
+GROUP BY country, duplication_status,duplicate_type from temp1;
 
 FOR returnrec IN SELECT country,duplication_status,duplicate_type,count(*) FROM temp2
    GROUP BY country,duplication_status,duplicate_type 

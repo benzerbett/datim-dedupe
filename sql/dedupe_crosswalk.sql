@@ -1,7 +1,6 @@
-DROP FUNCTION  IF EXISTS view_duplicates(character,character varying,
-boolean,integer,integer,character varying );
 
-CREATE OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
+
+CREATE OR REPLACE FUNCTION view_crosswalk_duplicates(ou character (11),pe character varying(15),rs boolean default false,
 ps integer default 50,pg integer default 1,dt character varying(50) default 'ALL' ) 
 RETURNS setof duplicate_records AS  $$
  DECLARE
@@ -21,65 +20,77 @@ RETURNS setof duplicate_records AS  $$
  periodid integer,
  dataelementid integer,
  categoryoptioncomboid integer,
- attributeoptioncomboid integer,
- value character varying (500000),
- duplicate_type character varying(20),
- lastupdated timestamp without time zone
- ) ON COMMIT DROP;
+  value numeric,
+  lastupdated timestamp without time zone
+) ON COMMIT DROP;
  
  
- EXECUTE 'INSERT INTO temp1
- SELECT DISTINCT
+
+
+EXECUTE 'INSERT INTO temp1 
+SELECT DISTINCT ta.sourceid,
+ ta.periodid,
+ ta.dataelementid,
+ ta.categoryoptioncomboid,
+ sum(ta.value::numeric) as value,
+ MAX(lastupdated) as lastupdated
+ from datavalue ta
+ INNER JOIN
+ (SELECT DISTINCT
  dv1.sourceid,
  dv1.periodid,
  dv1.dataelementid,
+ map.ta_dataelementid,
  dv1.categoryoptioncomboid,
- dv1.attributeoptioncomboid,
- trim(dv1.value) ,''PURE''::character varying(20) as duplicate_type,
- dv1.lastupdated
+ dv1.attributeoptioncomboid
  from datavalue dv1
- INNER JOIN  datavalue dv2 on 
- dv1.sourceid = dv2.sourceid
- AND 
- dv1.periodid = dv2.periodid
- AND 
- dv1.dataelementid = dv2.dataelementid
- AND 
- dv1.categoryoptioncomboid = dv2.categoryoptioncomboid
- AND 
- dv1.attributeoptioncomboid  != dv2.attributeoptioncomboid 
- INNER JOIN _orgunitstructure ous on dv1.sourceid = ous.organisationunitid
- and ous.uidlevel3 = ''' ||  $1 || '''
- WHERE dv1.dataelementid IN (
- SELECT DISTINCT dsm.dataelementid from datasetmembers dsm
- INNER JOIN (SELECT DISTINCT dataelementid from dataelement where numbertype IS NOT NULL) de
- ON dsm.dataelementid = de.dataelementid
- where dsm.datasetid in (SELECT datasetid from dataset 
- where uid IN (''qRvKHvlzNdv'',''ovYEbELCknv'',''tCIW2VFd8uu'',
- ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'') ) ) 
- AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
- where iso = ''' || $2 || ''' LIMIT 1)';
+ INNER JOIN  (SELECT * FROM _view_dsd_ta_crosswalk ) map
+ on dv1.dataelementid = map.dsd_dataelementid
+ WHERE  dv1.attributeoptioncomboid != 
+ (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~(''^\(00001''))
+ AND dv1.value ~ (''^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$'')
+ ) dsd
+ on ta.sourceid = dsd.sourceid
+ AND ta.periodid = dsd.periodid
+ and ta.dataelementid = dsd.ta_dataelementid
+ and ta.categoryoptioncomboid = dsd.categoryoptioncomboid
+ INNER JOIN _orgunitstructure ous on ta.sourceid = ous.organisationunitid
+ and ous.uidlevel3 = ''' || $1 || '''
+  AND ta.periodid = (SELECT DISTINCT periodid from _periodstructure
+ where iso = ''' || $2 || ''')
+ AND ta.attributeoptioncomboid != 
+ (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~(''^\(00001''))
+and ta.value ~ (''^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$'')
+ GROUP BY ta.sourceid,ta.periodid,ta.dataelementid,ta.categoryoptioncomboid';
 
-  
+ALTER TABLE temp1 ADD COLUMN attributeoptioncomboid integer;
+UPDATE temp1 SET  attributeoptioncomboid = -1::integer;
 
-/*DELETE ANY DSD-TA Crosswalk values. 
-TODO This should not really ever happen in the workflow*/
+ /*Get any existing DSD-TA resolutions*/
+EXECUTE 'INSERT INTO temp1 
+SELECT DISTINCT ta.sourceid,
+ ta.periodid,
+ ta.dataelementid,
+ ta.categoryoptioncomboid,
+ta.value::numeric  as value,
+ ta.lastupdated,
+(SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00001 De-duplication adjustment'')) as attributeoptioncomboid
+ from datavalue ta
+ INNER JOIN _orgunitstructure ous on ta.sourceid = ous.organisationunitid
+ and ous.uidlevel3 = ''' || $1 || '''
+  AND ta.periodid = (SELECT DISTINCT periodid from _periodstructure
+ where iso = ''' || $2 || ''')
+ WHERE ta.attributeoptioncomboid = 
+ (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~(''^\(00001''))
+and ta.value ~ (''^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$'')';
 
-DELETE FROM temp1 where attributeoptioncomboid = 
-(SELECT categoryoptioncomboid from categoryoptioncombo where code = '00001DSDTA');
 
 /*Group ID. This will be used to group duplicates. */
 ALTER TABLE temp1 ADD COLUMN group_id character(32);
 UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || periodid::text ) ;
 CREATE INDEX idx_group_ids ON temp1 (group_id);
 
-/*We need to filter out sketchy values and then determine if there are any phantom groups */
-/*Get rid of any DSD-TA crosswalk. This should never happen*/
-DELETE FROM temp1 where attributeoptioncomboid =
- (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(00001'));
-
-DELETE FROM temp1 where group_id IN (SELECT group_id from temp1   WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
-FROM _categoryoptioncomboname where categoryoptioncomboname ~('00000 De-duplication adjustment'))  GROUP BY group_id HAVING COUNT(*) < 2);
 /*Duplication status*/
  
  ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT 'UNRESOLVED';
@@ -87,26 +98,23 @@ FROM _categoryoptioncomboname where categoryoptioncomboname ~('00000 De-duplicat
  UPDATE temp1 set duplication_status = 'RESOLVED'
  where group_id IN (SELECT DISTINCT group_id FROM temp1
  WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
-  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment')))
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00001 De-duplication adjustment')))
 AND group_id NOT IN (SELECT a.group_id FROM (
 SELECT group_id,MAX(lastupdated) as dedupe_time from temp1 
 WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
-  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00001 De-duplication adjustment'))
 GROUP BY group_id ) a
 INNER JOIN (
 SELECT group_id,MAX(lastupdated) as data_time from temp1 
 WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
-FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
+FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00001 De-duplication adjustment'))
 GROUP BY group_id ) b
 on a.group_id = b.group_id
-WHERE a.dedupe_time <= b.data_time)
-AND group_id IN (SELECT DISTINCT group_id from temp1 where value ~('^[-|0]') and attributeoptioncomboid = (SELECT categoryoptioncomboid
-  FROM _categoryoptioncomboname where categoryoptioncomboname ~('00000 De-duplication adjustment'))); 
+WHERE a.dedupe_time <= b.data_time); 
  
  IF rs = FALSE THEN 
  DELETE FROM temp1 where duplication_status ='RESOLVED';
  END IF;
-
 
  /*Data element names*/
  
@@ -151,9 +159,6 @@ this_group := this_group + 1;
    WHERE group_count < $1
    OR group_count > $2
    ' USING start_group, end_group;
-  
-
- 
   
   /*Disagg*/
  ALTER TABLE temp1 ADD COLUMN disaggregation character varying(250);
