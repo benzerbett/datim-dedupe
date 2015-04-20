@@ -89,7 +89,7 @@ describe('Dedupe record service', function () {
             });
 
             it('should set the groupId as the id onto the record', function () {
-                expect(dedupeRecords[0].id).toBe('2364f5b15e57185fc6564ce64cc9c629');
+                expect(dedupeRecords[0].id).toBe('1');
             });
 
             it('should set the total number of pages onto the result', function () {

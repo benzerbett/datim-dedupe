@@ -72,7 +72,7 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
 
     function createDedupeRecord(rows) {
         var dedupeRecord = {
-            id: getColumnValue('group_id', rows[0]),
+            id: getColumnValue('group_count', rows[0]),
             details: {
                 orgUnitId: getColumnValue('ou_uid', rows[0]),
                 orgUnitName: getOrganisationUnitName(rows),
@@ -149,7 +149,7 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
     }
 
     function recordGroupIdentifier(record) {
-        return getColumnValue('group_id', record);
+        return getColumnValue('group_count', record);
     }
 
     function getColumnValue(columnName, record) {

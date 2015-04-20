@@ -10,8 +10,8 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         resolveDuplicates: resolveDuplicates
     };
 
-    function getDuplicateRecords(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber) {
-        var filters = getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber);
+    function getDuplicateRecords(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, isCrosswalk) {
+        var filters = getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, isCrosswalk);
 
         if (isRequiredFiltersPresent(filters)) {
             return dedupeRecordService.getRecords(filters);
