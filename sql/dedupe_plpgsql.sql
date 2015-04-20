@@ -58,25 +58,24 @@ RETURNS setof duplicate_records AS  $$
  where uid IN (''qRvKHvlzNdv'',''ovYEbELCknv'',''tCIW2VFd8uu'',
  ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'') ) ) 
  AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
- where iso = ''' || $2 || ''' LIMIT 1)';
+ where iso = ''' || $2 || ''' LIMIT 1)
+ORDER BY dv1.dataelementid,dv1.categoryoptioncomboid,dv1.attributeoptioncomboid,dv1.sourceid';
 
   
-
-/*DELETE ANY DSD-TA Crosswalk values. 
-TODO This should not really ever happen in the workflow*/
-
-DELETE FROM temp1 where attributeoptioncomboid = 
-(SELECT categoryoptioncomboid from categoryoptioncombo where code = '00001DSDTA');
-
 /*Group ID. This will be used to group duplicates. */
 ALTER TABLE temp1 ADD COLUMN group_id character(32);
-UPDATE temp1 SET group_id = md5( dataelementid::text || sourceid::text  || categoryoptioncomboid::text || periodid::text ) ;
+UPDATE temp1 SET group_id = dataelementid::text ||  categoryoptioncomboid::text || sourceid::text  ;
 CREATE INDEX idx_group_ids ON temp1 (group_id);
 
 /*We need to filter out sketchy values and then determine if there are any phantom groups */
 /*Get rid of any DSD-TA crosswalk. This should never happen*/
 DELETE FROM temp1 where attributeoptioncomboid =
  (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(00001'));
+/*Delete any zeros. They should not be part of the crosswalk*/
+DELETE FROM temp1 where attributeoptioncomboid !=
+ (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(00000'))
+AND value = '0';
+
 
 DELETE FROM temp1 where group_id IN (SELECT group_id from temp1   WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
 FROM _categoryoptioncomboname where categoryoptioncomboname ~('00000 De-duplication adjustment'))  GROUP BY group_id HAVING COUNT(*) < 2);
@@ -136,24 +135,23 @@ END IF;
   /*Paging*/
  ALTER TABLE temp1 ADD COLUMN group_count integer;
  ALTER TABLE temp1 ADD COLUMN total_groups integer;
- /* Init the group count*/
- this_group := 0;
-FOR dup_groups IN SELECT * FROM (SELECT DISTINCT group_id FROM temp1 ORDER BY group_id) BY LOOP
-this_group := this_group + 1;
- EXECUTE 'UPDATE temp1 SET group_count = $1 where group_id = $2'
- USING this_group,dup_groups.group_id;
- END LOOP;
+
+ UPDATE temp1 a set group_count = b.group_count FROM(
+SELECT dataelementid,categoryoptioncomboid,sourceid, sum(1) OVER (ORDER BY dataelementid,categoryoptioncomboid,sourceid) as group_count
+FROM temp1
+GROUP BY dataelementid,categoryoptioncomboid,sourceid) b 
+ where a.dataelementid = b.dataelementid
+ and a.categoryoptioncomboid = b.categoryoptioncomboid
+ and a.sourceid = b.sourceid;
+
   /*Provide the total number of groups*/
- EXECUTE 'UPDATE temp1 set total_groups = $1' USING this_group;
+UPDATE temp1 set total_groups =  (SELECT max(group_count) from temp1 );
   
   /*Paging. Get rid of the records now.*/
    EXECUTE 'DELETE FROM temp1 
    WHERE group_count < $1
    OR group_count > $2
    ' USING start_group, end_group;
-  
-
- 
   
   /*Disagg*/
  ALTER TABLE temp1 ADD COLUMN disaggregation character varying(250);
@@ -251,11 +249,10 @@ group_id,
 group_count,
 total_groups,
 dataset_type
-FROM temp1
-ORDER BY group_id'; 
+FROM temp1'; 
   
    /*Return the records*/
-   FOR returnrec IN SELECT * FROM temp2 ORDER BY group_id LOOP
+   FOR returnrec IN SELECT * FROM temp2 ORDER BY group_count LOOP
      RETURN NEXT returnrec;
      END LOOP;
  
