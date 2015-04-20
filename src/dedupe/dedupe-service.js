@@ -1,7 +1,7 @@
 angular.module('PEPFAR.dedupe').factory('dedupeService', dedupeService);
 
 function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_SIZE) {
-    var requiredFilters = ['ou', 'pe', 'rs', 'ps', 'pg', 'dt'];
+    var requiredFilters = ['ou', 'pe', 'rs', 'ps', 'pg', 'dt', 'ty'];
 
     return {
         getDuplicateRecords: getDuplicateRecords,
@@ -10,8 +10,8 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         resolveDuplicates: resolveDuplicates
     };
 
-    function getDuplicateRecords(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, isCrosswalk) {
-        var filters = getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, isCrosswalk);
+    function getDuplicateRecords(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType) {
+        var filters = getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType);
 
         if (isRequiredFiltersPresent(filters)) {
             return dedupeRecordService.getRecords(filters);
@@ -20,7 +20,7 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         return $q.when([]);
     }
 
-    function getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber) {
+    function getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType) {
         var filters = {};
 
         if (organisationUnitId && angular.isString(organisationUnitId)) {
@@ -35,6 +35,7 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         filters.ps = DEDUPE_PAGE_SIZE;
         filters.pg = pageNumber || 1;
         filters.dt = (angular.isString(targetsResults) && targetsResults.toUpperCase()) || 'ALL';
+        filters.ty = dedupeType;
 
         return filters;
     }

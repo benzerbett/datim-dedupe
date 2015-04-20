@@ -70,7 +70,8 @@ body
   .organisation-unit
     margin-bottom: 20px
 
-  .period-selector.row
+  .period-selector.row,
+  .dedupe-type-buttons
     margin-top: 20px
 
   .filters-cog
@@ -87,3 +88,29 @@ body
       button
         position: absolute
         right: 0
+
+.dedupe-confirm-box
+  background-color: rgba(255, 255, 255, .4)
+
+  .modal-content
+    background: #FFFFFF
+    background-color: rgba(255, 255, 255, .85)
+    padding: 15px
+
+    button
+      margin-right: 30px
+
+.dedupe-type-buttons
+  padding
+  button
+    display: table-cell
+    width: 49%
+
+    &:last-child
+      float: right
+
+.dedupe-type
+  background: darkgreen
+  margin: 10px 5px 0px
+  padding: 5px 10px
+  color: orange

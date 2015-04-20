@@ -19,6 +19,11 @@
                 <span ng-bind="::dedupeCtrl.dedupeRecord.details.timePeriodDisplayName"></span>
             </div>
         </div>
+        <div ng-show="::dedupeCtrl.dedupeRecord.details.dedupeType == 'CROSSWALK'" class="row">
+            <div class="dedupe-type">
+                DSD-TA Cross dedupe
+            </div>
+        </div>
     </div>
     <div class="dedupe-data row">
         <div class="dedupe-data-table col-sm-6">
@@ -48,7 +53,22 @@
                 </div>
             </div>
         </div>
-        <div class="dedupe-resolve-actions col-sm-6">
+        <div class="dedupe-resolve-crosswalk-info col-sm-6" ng-show="dedupeCtrl.isCrosswalkRecord()">
+            <div class="resolve-wrap">
+                <p>The values on the left will be canceled out (With a dedupe of <span ng-bind="-1 * dedupeCtrl.getSum()"></span>)</p>
+                <div class="resolve-actions row">
+                    <div class="resolve-action-button col-sm-12">
+                        <button type="button"
+                                class="btn btn-primary"
+                                ng-click="dedupeCtrl.resolve()"
+                                ng-disabled="dedupeRecordForm.$invalid || dedupeCtrl.isProcessing"
+                                translate>Resolve
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="dedupe-resolve-actions col-sm-6" ng-hide="dedupeCtrl.isCrosswalkRecord()">
             <div class="resolve-wrap">
                 <div class="resolve-header row">
                     <div class="col-sm-12">

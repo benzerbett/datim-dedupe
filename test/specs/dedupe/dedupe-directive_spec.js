@@ -36,7 +36,8 @@ describe('Dedupe directive', function () {
                 timePeriodDisplayName: 'FY 2014',
                 dataElementId: 'K6f6jR0NOcZ',
                 dataElementName: 'HTC_TST (N, DSD): HTC received results',
-                disaggregation: '(default)'
+                disaggregation: '(default)',
+                dedupeType: 'PURE'
             },
             data: [
                 {agency: 'USAID', partner: 'PartnerA', value: 60},
@@ -800,6 +801,25 @@ describe('Dedupe directive', function () {
 
                 expect(resolveButton).not.toHaveAttribute('disabled');
             });
+        });
+    });
+
+    describe('crosswalk dedupe', function () {
+        beforeEach(function () {
+            $scope.firstDedupeRecord.details.dedupeType = 'CROSSWALK';
+            $scope.$apply();
+        });
+
+        it('should not show the actions', function () {
+            var resolveActions = angular.element(element[0].querySelector('.dedupe-resolve-actions'));
+
+            expect(resolveActions.hasClass('ng-hide')).toBe(true);
+        });
+
+        it('should show the dedupe info', function () {
+            var resolveInfo = angular.element(element[0].querySelector('.dedupe-resolve-crosswalk-info'));
+
+            expect(resolveInfo.hasClass('ng-hide')).toBe(false);
         });
     });
 });

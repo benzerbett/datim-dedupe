@@ -50,7 +50,7 @@ describe('Dedupefilter service', function () {
         it('should fire the update event with the correct parameters', function () {
             service.changePeriodFilter({iso: '2013Oct'});
 
-            expect(eventCallbackSpy.calls.argsFor(0)[1]).toEqual({pe: '2013Oct'});
+            expect(eventCallbackSpy.calls.argsFor(0)[1]).toEqual({ty: 'PURE', pe: '2013Oct'});
         });
 
         it('should not throw when period is undefined', function () {
@@ -114,7 +114,31 @@ describe('Dedupefilter service', function () {
         it('should fire the update event with the correct parameters', function () {
             service.changeOrganisationUnit({id: 'orgunitid'});
 
-            expect(eventCallbackSpy.calls.argsFor(0)[1]).toEqual({ou: 'orgunitid'});
+            expect(eventCallbackSpy.calls.argsFor(0)[1]).toEqual({ty: 'PURE', ou: 'orgunitid'});
+        });
+    });
+
+    describe('changeIsCrosswalk', function () {
+        it('should be a method', function () {
+            expect(service.changeIsCrosswalk).toEqual(jasmine.any(Function));
+        });
+
+        it('should set the isCrosswalk flag to true when true is passed', function () {
+            service.changeIsCrosswalk(true);
+
+            expect(service.getDedupeType()).toEqual('CROSSWALK');
+        });
+
+        it('should fire the update event when the value was changed', function () {
+            service.changeIsCrosswalk(true);
+
+            expect(eventCallbackSpy).toHaveBeenCalled();
+        });
+
+        it('should fire the update event with the correct parameters', function () {
+            service.changeIsCrosswalk(true);
+
+            expect(eventCallbackSpy.calls.argsFor(0)[1]).toEqual({ty: 'CROSSWALK'});
         });
     });
 });

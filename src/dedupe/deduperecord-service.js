@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').factory('dedupeRecordService', dedupeRecordService);
 
-function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
+function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME, DEDUPE_MECHANISM_CROSSWALK_NAME) {
     var headers;
 
     return {
@@ -10,7 +10,7 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
     function getRecords(filters) {
         return executeSqlViewOnApi(filters)
             .then(extractHeaders)
-            .then(createDedupeRecords);
+            .then(createDedupeRecords(filters.ty));
     }
 
     function extractHeaders(sqlViewData) {
@@ -51,23 +51,40 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
         });
     }
 
-    function createDedupeRecords(rows) {
-        var totalNumber;
+    function createDedupeRecords(dedupeType) {
+        return function (rows) {
+            var totalNumber;
 
-        var dedupeRecords = _.chain(rows)
-            .tap(function (rows) {
-                if (rows.length > 0) {
-                    totalNumber = getColumnValue('total_groups', rows[0]);
-                }
-            })
-            .groupBy(recordGroupIdentifier)
-            .values()
-            .map(createDedupeRecord)
-            .value();
+            var dedupeRecords = _.chain(rows)
+                .tap(function (rows) {
+                    if (rows.length > 0) {
+                        totalNumber = getColumnValue('total_groups', rows[0]);
+                    }
+                })
+                .groupBy(recordGroupIdentifier)
+                .values()
+                .map(createDedupeRecord)
+                .map(addDedupeType(dedupeType))
+                .map(function (dedupeRecord) {
+                    if (dedupeType === 'CROSSWALK' && dedupeRecord.resolve.value !== 0) {
+                        dedupeRecord.resolve.type = 'custom';
+                        dedupeRecord.resolve.value = 0;
+                    }
+                    return dedupeRecord;
+                })
+                .value();
 
-        dedupeRecords.totalNumber = parseInt(totalNumber, 10);
+            dedupeRecords.totalNumber = parseInt(totalNumber, 10);
 
-        return dedupeRecords;
+            return dedupeRecords;
+        };
+    }
+
+    function addDedupeType(dedupeType) {
+        return function (dedupeRecord) {
+            dedupeRecord.details.dedupeType = dedupeType;
+            return dedupeRecord;
+        };
     }
 
     function createDedupeRecord(rows) {
@@ -187,11 +204,16 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME) {
     function getNonDedupeRows(dataRows) {
         return _.chain(dataRows)
             .reject(isDedupeMechanismRow)
+            .reject(isDedupeCrosswalkMechanismRow)
             .value();
     }
 
     function isDedupeMechanismRow(row) {
         return getColumnValue('mechanism', row) === DEDUPE_MECHANISM_NAME;
+    }
+
+    function isDedupeCrosswalkMechanismRow(row) {
+        return getColumnValue('mechanism', row) === DEDUPE_MECHANISM_CROSSWALK_NAME;
     }
 
     function pickValueColumn(row) {

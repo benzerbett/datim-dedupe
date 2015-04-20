@@ -1,12 +1,14 @@
 angular.module('PEPFAR.dedupe').controller('appController', appController);
 
-function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUPE_PAGE_SIZE) {
+function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notify, DEDUPE_PAGE_SIZE) {
     var ctrl = this;
     var dedupeFilters = {
-        includeResolved: false
+        includeResolved: false,
+        ty: 'PURE'
     };
 
     ctrl.isFilterToggle = false;
+    ctrl.noLoadDone = true;
     ctrl.isProcessing = false;
     ctrl.dedupeRecords = [];
     ctrl.allDedupeRecords = [];
@@ -25,6 +27,8 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
     ctrl.getDuplicateRecords = getDuplicateRecords;
     ctrl.pageChanged = pageChanged;
     ctrl.filters = dedupeRecordFilters;
+    ctrl.showCrossWalkMessage = showCrossWalkMessage;
+    ctrl.isShowingCrosswalkDedupes = isShowingCrosswalkDedupes;
 
     $scope.$on('DEDUPE_DIRECTIVE.resolve', function (event, dedupeRecordId, saveStatus) {
 
@@ -40,6 +44,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
         dedupeFilters.ou = dedupeRecordFilters.ou;
         dedupeFilters.pe = dedupeRecordFilters.pe;
         dedupeFilters.tr = dedupeRecordFilters.tr;
+        dedupeFilters.ty = dedupeRecordFilters.ty;
 
         ctrl.getDuplicateRecords();
     });
@@ -47,7 +52,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
     function getDuplicateRecords() {
         ctrl.isProcessing = true;
 
-        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current)
+        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current, dedupeFilters.ty)
             .then(addPeriodInformationToRecords)
             .then(function (duplicateRecords) {
                 ctrl.allDedupeRecords = ctrl.dedupeRecords = duplicateRecords;
@@ -56,6 +61,14 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
 
                 if (ctrl.allDedupeRecords.length === 0 && dedupeFilters.ou && dedupeFilters.pe) {
                     notifyUserIfNoRecordsWereFound();
+
+                    if (dedupeFilters.ty === 'PURE') {
+                        ctrl.showCrossWalkMessage();
+                    }
+                }
+
+                if (dedupeFilters.ou && dedupeFilters.pe) {
+                    ctrl.noLoadDone = false;
                 }
 
                 return duplicateRecords;
@@ -73,6 +86,30 @@ function appController(dedupeService, dedupeRecordFilters, $scope, notify, DEDUP
         });
 
         return duplicateRecords;
+    }
+
+    function showCrossWalkMessage() {
+        var modal;
+
+        if (ctrl.dedupeRecords.length === 0) {
+            modal = $modal.open({
+               template: [
+                   '<p>There are no more PURE dedupes to be done for this organisation unit and period, would you like to dedupe the CROSSWALK duplicates?</p>',
+                   '<button class="btn btn-primary" ng-click="$close()">Yes, please!</button><button class="btn btn-default" ng-click="$dismiss()">No, thanks.</button>'
+                   ],
+                size: 'sm',
+                windowClass: 'dedupe-confirm-box'
+            });
+
+            modal.result
+                .then(function () {
+                    dedupeRecordFilters.changeIsCrosswalk(true);
+                });
+        }
+    }
+
+    function isShowingCrosswalkDedupes() {
+        return dedupeFilters.ty === 'CROSSWALK';
     }
 
     function adjustPager(total) {

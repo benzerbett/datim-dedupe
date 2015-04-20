@@ -22,6 +22,7 @@ function dedupeDirectiveController(dedupeService, $scope, $q) {
     ctrl.resolveWithSum = resolveWithSum;
     ctrl.resolve = resolve;
     ctrl.isProcessing = false;
+    ctrl.isCrosswalkRecord = isCrosswalkRecord;
 
     function getMax() {
         return dedupeService.getMax(ctrl.dedupeRecord.data);
@@ -57,5 +58,9 @@ function dedupeDirectiveController(dedupeService, $scope, $q) {
             .finally(function () {
                 ctrl.isProcessing = false;
             });
+    }
+
+    function isCrosswalkRecord() {
+        return ctrl.dedupeRecord.details.dedupeType === 'CROSSWALK';
     }
 }

@@ -1,4 +1,4 @@
-angular.module('PEPFAR.dedupe', ['ngAnimate', 'ngMessages', 'restangular', 'dhis2.notify', 'ui.select', 'ui.bootstrap.collapse', 'ui.bootstrap.pagination', 'ui.bootstrap.tpls']);
+angular.module('PEPFAR.dedupe', ['ngAnimate', 'ngMessages', 'restangular', 'dhis2.notify', 'ui.select', 'ui.bootstrap.collapse', 'ui.bootstrap.pagination', 'ui.bootstrap.tpls', 'ui.bootstrap.modal']);
 
 angular.module('PEPFAR.dedupe').run(function (Restangular, webappManifest) {
     Restangular.setBaseUrl([webappManifest.activities.dhis.href, 'api'].join('/'));
@@ -9,11 +9,20 @@ function angularUiSelectConfig(uiSelectConfig) {
     uiSelectConfig.theme = 'bootstrap';
 }
 
-//Config values
-angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_OPTION_COMBO_ID', 'X8hrDf6bLDC');
+//Normal and crosswalk
 angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_COMBO_ID', 'wUpfppgjEza');
+
+//Normal dedupe
+angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_OPTION_COMBO_ID', 'X8hrDf6bLDC');
 angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_OPTION_ID', 'xEzelmtHWPn');
 angular.module('PEPFAR.dedupe').value('DEDUPE_MECHANISM_NAME', '(00000 De-duplication adjustment)');
+
+//Crosswalk
+angular.module('PEPFAR.dedupe').value('DEDUPE_CROSSWALK_CATEGORY_OPTION_COMBO_ID', 'YGT1o7UxfFu');
+angular.module('PEPFAR.dedupe').value('DEDUPE_CROSSWALK_CATEGORY_OPTION_ID', 'OM58NubPbx1');
+angular.module('PEPFAR.dedupe').value('DEDUPE_MECHANISM_CROSSWALK_NAME', '(00001 De-duplication adjustment (DSD-TA))');
+
+//Default values
 angular.module('PEPFAR.dedupe').value('DEDUPE_PAGE_SIZE', 50);
 
 //==================================================================================

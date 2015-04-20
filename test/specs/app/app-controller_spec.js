@@ -103,7 +103,8 @@ describe('App controller', function () {
             id: '2364f5b15e57185fc6564ce64cc9c629',
             details: {
                 orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014'
+                timePeriodName: 'FY 2014',
+                dedupeType: 'PURE'
             },
             data: [
                 {agency: 'USAID', partner: 'PartnerA', value: 60},
@@ -117,7 +118,8 @@ describe('App controller', function () {
         }, {
             details: {
                 orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014'
+                timePeriodName: 'FY 2014',
+                dedupeType: 'PURE'
             },
             data: [
                 {agency: 'CDC', partner: 'PartnerA', value: 12},
@@ -131,7 +133,8 @@ describe('App controller', function () {
         }, {
             details: {
                 orgUnitName: 'Mark\'s clinic',
-                timePeriodName: 'FY 2014'
+                timePeriodName: 'FY 2014',
+                dedupeType: 'PURE'
             },
             data: [
                 {agency: 'CDC', partner: 'PartnerD', value: 50},
@@ -149,7 +152,8 @@ describe('App controller', function () {
             id: '2364f5b15e57185fc6564ce64cc9c629',
             details: {
                 orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014'
+                timePeriodName: 'FY 2014',
+                dedupeType: 'PURE'
             },
             data: [
                 {agency: 'USAID', partner: 'PartnerA', value: 60},
@@ -163,7 +167,8 @@ describe('App controller', function () {
         }, {
             details: {
                 orgUnitName: 'Glady\'s clinic',
-                timePeriodName: 'FY 2014'
+                timePeriodName: 'FY 2014',
+                dedupeType: 'PURE'
             },
             data: [
                 {agency: 'CDC', partner: 'PartnerA', value: 12},
@@ -349,17 +354,17 @@ describe('App controller', function () {
         it('should update the records when calling changedIncludeResolved', function () {
             controller.changedIncludeResolved();
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, true, undefined, 1);
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, true, undefined, 1, 'PURE');
         });
 
         it('should return to only showing the resolved ones', function () {
             controller.changedIncludeResolved();
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, true, undefined, 1);
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, true, undefined, 1, 'PURE');
 
             controller.changedIncludeResolved();
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined, 1);
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined, 1, 'PURE');
         });
     });
 
@@ -428,6 +433,17 @@ describe('App controller', function () {
             expect(controller.dedupeRecords[0].details.timePeriodName).toEqual('2013Oct');
             expect(controller.dedupeRecords[0].details.timePeriodDisplayName).toEqual('October 2013');
         });
+
+        it('should ask for crosswalk dedupe if there are no records and getrecords was called with PURE', function () {
+            dedupeServiceMock.getDuplicateRecords.and.returnValue($q.when([]));
+            spyOn(controller, 'showCrossWalkMessage');
+            $rootScope.$broadcast('DEDUPE_RECORDFILTER_SERVICE.updated', {ou: 'myOrgUnit', pe: 'Oct 2013', ty: 'PURE'});
+
+            $rootScope.$apply();
+
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith('myOrgUnit', 'Oct 2013', false, undefined, 1, 'PURE');
+            expect(controller.showCrossWalkMessage).toHaveBeenCalled();
+        });
     });
 
     describe('update on filter changed', function () {
@@ -440,9 +456,9 @@ describe('App controller', function () {
         });
 
         it('should set the correct filters onto the controller', function () {
-            $rootScope.$broadcast('DEDUPE_RECORDFILTER_SERVICE.updated', {ou: 'myOrgUnit', pe: '2013Oct', tr: 'Results'});
+            $rootScope.$broadcast('DEDUPE_RECORDFILTER_SERVICE.updated', {ou: 'myOrgUnit', pe: '2013Oct', tr: 'Results', ty: 'PURE'});
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith('myOrgUnit', '2013Oct', false, 'Results', 1);
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith('myOrgUnit', '2013Oct', false, 'Results', 1, 'PURE');
         });
     });
 
@@ -451,7 +467,7 @@ describe('App controller', function () {
             controller.pager.current = 2;
             controller.pageChanged();
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined, 2);
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined, 2, 'PURE');
         });
 
         it('should notify the user if no results have been found', function () {
@@ -471,6 +487,12 @@ describe('App controller', function () {
             $rootScope.$apply();
 
             expect(notifyMock.warning).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('isShowingCrosswalkDedupes', function () {
+        it('should be a function', function () {
+            expect(controller.isShowingCrosswalkDedupes).toEqual(jasmine.any(Function));
         });
     });
 });

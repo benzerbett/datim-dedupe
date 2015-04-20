@@ -1,6 +1,11 @@
 angular.module('PEPFAR.dedupe').factory('dedupeSaverService', dedupeSaverService);
 
-function dedupeSaverService($q, Restangular, DEDUPE_CATEGORY_OPTION_COMBO_ID, DEDUPE_CATEGORY_OPTION_ID, DEDUPE_CATEGORY_COMBO_ID) {
+function dedupeSaverService($q, Restangular,
+                            DEDUPE_CATEGORY_OPTION_ID,
+                            DEDUPE_CATEGORY_OPTION_COMBO_ID,
+                            DEDUPE_CROSSWALK_CATEGORY_OPTION_ID,
+                            DEDUPE_CROSSWALK_CATEGORY_OPTION_COMBO_ID,
+                            DEDUPE_CATEGORY_COMBO_ID) {
     return {
         saveDeduplication: saveDeduplication
     };
@@ -94,7 +99,7 @@ function dedupeSaverService($q, Restangular, DEDUPE_CATEGORY_OPTION_COMBO_ID, DE
             ou: getValueFromObjectorThrow('orgUnitId', dedupeRecord.details),
             co: getValueFromObjectorThrow('categoryOptionComboId', dedupeRecord.details),
             cc: DEDUPE_CATEGORY_COMBO_ID,
-            cp: DEDUPE_CATEGORY_OPTION_ID,
+            cp: isCrosswalkRecord(dedupeRecord) ? DEDUPE_CROSSWALK_CATEGORY_OPTION_ID : DEDUPE_CATEGORY_OPTION_ID,
             value: getValueFromObjectorThrow('adjustedValue', dedupeRecord.resolve).toString()
         };
     }
@@ -105,7 +110,7 @@ function dedupeSaverService($q, Restangular, DEDUPE_CATEGORY_OPTION_COMBO_ID, DE
             period: getValueFromObjectorThrow('timePeriodName', dedupeRecord.details),
             orgUnit: getValueFromObjectorThrow('orgUnitId', dedupeRecord.details),
             categoryOptionCombo: getValueFromObjectorThrow('categoryOptionComboId', dedupeRecord.details),
-            attributeOptionCombo: DEDUPE_CATEGORY_OPTION_COMBO_ID,
+            attributeOptionCombo: isCrosswalkRecord(dedupeRecord) ? DEDUPE_CROSSWALK_CATEGORY_OPTION_COMBO_ID : DEDUPE_CATEGORY_OPTION_COMBO_ID,
             value: getValueFromObjectorThrow('adjustedValue', dedupeRecord.resolve).toString()
         };
     }
@@ -123,5 +128,9 @@ function dedupeSaverService($q, Restangular, DEDUPE_CATEGORY_OPTION_COMBO_ID, DE
 
     function isValidNumberValue(value) {
         return angular.isDefined(value) && angular.isNumber(value);
+    }
+
+    function isCrosswalkRecord(dedupeRecord) {
+        return dedupeRecord.details.dedupeType === 'CROSSWALK';
     }
 }

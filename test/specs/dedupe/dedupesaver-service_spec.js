@@ -86,6 +86,11 @@ describe('Dedupe saver service', function () {
             });
 
             describe('single value', function () {
+                beforeEach(function () {
+                    dedupeRecordOne.details.dedupeType = 'PURE';
+                    dedupeRecordTwo.details.dedupeType = 'PURE';
+                });
+
                 it('should call the api with the correct dataValueSet structure', function () {
                     $httpBackend.expectPOST('/dhis/api/dataValues?cc=wUpfppgjEza&co=HllvX50cXC0&cp=xEzelmtHWPn&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
                         .respond(200, fixtures.get('importResponse'));
@@ -136,9 +141,29 @@ describe('Dedupe saver service', function () {
 
                     expect(catchFunction).toHaveBeenCalledWith({successCount: 0, errorCount: 1, errors: [new Error('Saving failed (409: html error message)')]});
                 });
+
+                describe('crosswalk', function () {
+                    beforeEach(function () {
+                        dedupeRecordOne.details.dedupeType = 'CROSSWALK';
+                    });
+
+                    it('should call the api with the correct dataValueSet structure', function () {
+                        $httpBackend.expectPOST('/dhis/api/dataValues?cc=wUpfppgjEza&co=HllvX50cXC0&cp=OM58NubPbx1&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
+                            .respond(200, fixtures.get('importResponse'));
+
+                        dedupeSaverService.saveDeduplication([dedupeRecordOne]);
+
+                        $httpBackend.flush();
+                    });
+                });
             });
 
             describe('multiple values', function () {
+                beforeEach(function () {
+                    dedupeRecordOne.details.dedupeType = 'PURE';
+                    dedupeRecordTwo.details.dedupeType = 'PURE';
+                });
+
                 it('should call the api with multiple values when passed multiple', function () {
                     $httpBackend.expectPOST('/dhis/api/dataValueSets?preheatCache=false', {
                         dataValues: [
@@ -187,6 +212,61 @@ describe('Dedupe saver service', function () {
                     $httpBackend.flush();
                 });
 
+                describe('crosswalk', function () {
+                    beforeEach(function () {
+                        dedupeRecordOne.details.dedupeType = 'CROSSWALK';
+                        dedupeRecordTwo.details.dedupeType = 'CROSSWALK';
+                    });
+
+                    it('should call the api with multiple values when passed multiple', function () {
+                        $httpBackend.expectPOST('/dhis/api/dataValueSets?preheatCache=false', {
+                            dataValues: [
+                                {
+                                    dataElement: 'K6f6jR0NOcZ',
+                                    period: '2013Oct',
+                                    orgUnit: 'HfiOUYEPgLK',
+                                    categoryOptionCombo: 'HllvX50cXC0',
+                                    attributeOptionCombo: 'YGT1o7UxfFu',
+                                    value: '-400'
+                                },
+                                {
+                                    dataElement: 'H9Q2jDZ76ih',
+                                    period: '2013Oct',
+                                    orgUnit: 'HfiOUYEPgLK',
+                                    categoryOptionCombo: 'TbYpjxM5j6w',
+                                    attributeOptionCombo: 'YGT1o7UxfFu',
+                                    value: '124'
+                                }
+                            ]
+                        }).respond(200, fixtures.get('importResponse'));
+
+                        dedupeSaverService.saveDeduplication([dedupeRecordOne, dedupeRecordTwo]);
+
+                        $httpBackend.flush();
+                    });
+
+                    it('should call the api with the resulting values if one of the values was incorrect', function () {
+                        $httpBackend.expectPOST('/dhis/api/dataValueSets?preheatCache=false', {
+                            dataValues: [
+                                {
+                                    dataElement: 'K6f6jR0NOcZ',
+                                    period: '2013Oct',
+                                    orgUnit: 'HfiOUYEPgLK',
+                                    categoryOptionCombo: 'HllvX50cXC0',
+                                    attributeOptionCombo: 'YGT1o7UxfFu',
+                                    value: '-400'
+                                }
+                            ]
+                        }).respond(200, fixtures.get('importResponse'));
+
+                        delete dedupeRecordTwo.resolve.adjustedValue;
+
+                        dedupeSaverService.saveDeduplication([dedupeRecordOne, dedupeRecordTwo]);
+
+                        $httpBackend.flush();
+                    });
+                });
+
                 it('should return an object with the number of success', function () {
                     var promiseResult;
                     var importResponse = fixtures.get('importResponse');
@@ -224,7 +304,7 @@ describe('Dedupe saver service', function () {
                         new Error('Did not find a value for "orgUnitId" on passed record. ' +
                         '{"orgUnitName":"Cardinal Site","timePeriodName":"2013Oct","dataElementId":"H9Q2jDZ76ih",' +
                         '"dataElementName":"TX_CURR (N, DSD, Age/Sex Aggregated): Receiving ART",' +
-                        '"categoryOptionComboId":"TbYpjxM5j6w","categoryOptionComboName":"(15+, Female)","type":"PURE"}')
+                        '"categoryOptionComboId":"TbYpjxM5j6w","categoryOptionComboName":"(15+, Female)","dedupeType":"PURE"}')
                     ]);
                 });
 

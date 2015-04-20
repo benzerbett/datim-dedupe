@@ -16,7 +16,7 @@ describe('Dedupe record service', function () {
                 id: 'AuL6zTSLxNc'
             });
 
-        getRecordsRequest = $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data')
+        getRecordsRequest = $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?var=ty:PURE')
             .respond(200, fixtures.get('smallerDedupe'));
     }));
 
@@ -30,14 +30,14 @@ describe('Dedupe record service', function () {
         });
 
         it('should return a promise', function () {
-            expect(dedupeRecordService.getRecords()).toBeAPromiseLikeObject();
+            expect(dedupeRecordService.getRecords({ty: 'PURE'})).toBeAPromiseLikeObject();
         });
 
         describe('results', function () {
             var dedupeRecords;
 
             beforeEach(function () {
-                dedupeRecordService.getRecords()
+                dedupeRecordService.getRecords({ty: 'PURE'})
                     .then(function (records) {
                         dedupeRecords = records;
                     });
@@ -96,6 +96,10 @@ describe('Dedupe record service', function () {
                 expect(dedupeRecords.totalNumber).toBe(243);
             });
 
+            it('should set the dedupe type onto the result', function () {
+                expect(dedupeRecords[0].details.dedupeType).toBe('PURE');
+            });
+
             describe('data rows', function () {
                 var firstDataRow;
 
@@ -129,7 +133,7 @@ describe('Dedupe record service', function () {
             beforeEach(function () {
                 getRecordsRequest.respond(200, fixtures.get('resolvedDedupe'));
 
-                dedupeRecordService.getRecords()
+                dedupeRecordService.getRecords({ty: 'PURE'})
                     .then(function (records) {
                         firstDedupeRecord = records[0];
                         secondDedupeRecord = records[1];
@@ -158,6 +162,42 @@ describe('Dedupe record service', function () {
             it('should set the resolved type to max', function () {
                 expect(thirdDedupeRecord.resolve.type).toBe('max');
             });
+        });
+    });
+
+    describe('getCrossWalkRecords', function () {
+        var dedupeRecords;
+
+        beforeEach(function () {
+            $httpBackend.resetExpectations();
+
+            $httpBackend.expectGET('/dhis/api/systemSettings/keyDedupeSqlViewId')
+                .respond(200, {
+                    id: 'AuL6zTSLxNc'
+                });
+
+            $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?var=ty:CROSSWALK')
+                .respond(200, fixtures.get('crossWalkUnresolved'));
+
+            dedupeRecordService.getRecords({ty: 'CROSSWALK'})
+                .then(function (records) {
+                    dedupeRecords = records;
+                });
+
+            $httpBackend.flush();
+        });
+
+        it('should return crosswalk records', function () {
+            expect(dedupeRecords[0].details.dedupeType).toEqual('CROSSWALK');
+        });
+
+        it('should not include the dedupe records', function () {
+            expect(dedupeRecords[0].data.length).toEqual(2);
+        });
+
+        it('should auto resolve these prior to returning them', function () {
+            expect(dedupeRecords[0].resolve.type).toEqual('custom');
+            expect(dedupeRecords[0].resolve.value).toEqual(0);
         });
     });
 
@@ -216,7 +256,7 @@ describe('Dedupe record service', function () {
             $httpBackend.expectGET('/dhis/api/systemSettings/keyDedupeSqlViewId')
                 .respond(200, '');
 
-            dedupeRecordService.getRecords()
+            dedupeRecordService.getRecords({ty: 'PURE'})
                 .catch(function (errorMessage) {
                     message = errorMessage;
                 });

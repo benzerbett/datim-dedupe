@@ -3,17 +3,19 @@ angular.module('PEPFAR.dedupe').factory('dedupeRecordFilters', dedupeRecordFilte
 function dedupeRecordFilters($rootScope) {
     var periodDisplayName;
     var dedupeFilters = {
-
+        ty: 'PURE'
     };
 
     return {
         changeOrganisationUnit: changeOrganisationUnit,
         changeFilterResultsTargets: changeFilterResultsTargets,
         changePeriodFilter: changePeriodFilter,
+        changeIsCrosswalk: changeIsCrosswalk,
         getResultsTargetsFilter: getResultsTargetsFilter,
         getFilters: getFilters,
         getPeriodName: getPeriodName,
-        getPeriodDisplayName: getPeriodDisplayName
+        getPeriodDisplayName: getPeriodDisplayName,
+        getDedupeType: getDedupeType
     };
 
     function changeFilterResultsTargets(newResultsTargets) {
@@ -39,6 +41,14 @@ function dedupeRecordFilters($rootScope) {
         }
     }
 
+    function changeIsCrosswalk(value) {
+        if (value === false || value === true) {
+            dedupeFilters.ty = value ? 'CROSSWALK' : 'PURE';
+            fireUpdateEvent();
+        }
+        return dedupeFilters.ty;
+    }
+
     function getPeriodName() {
         return dedupeFilters.pe;
     }
@@ -49,6 +59,10 @@ function dedupeRecordFilters($rootScope) {
 
     function getResultsTargetsFilter() {
         return dedupeFilters.tr;
+    }
+
+    function getDedupeType() {
+        return dedupeFilters.ty;
     }
 
     function getFilters() {
