@@ -328,7 +328,6 @@ duplication_status,
 ou_uid,
 de_uid,
 coc_uid,
-group_id,
 group_count,
 total_groups,
 dataset_type
