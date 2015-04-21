@@ -93,7 +93,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
 
         if (ctrl.dedupeRecords.length === 0) {
             modal = $modal.open({
-               template: [
+                template: [
                    '<p>There are no more PURE dedupes to be done for this organisation unit and period, would you like to dedupe the CROSSWALK duplicates?</p>',
                    '<button class="btn btn-primary" ng-click="$close()">Yes, please!</button><button class="btn btn-default" ng-click="$dismiss()">No, thanks.</button>'
                    ],
