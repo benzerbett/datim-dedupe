@@ -1,5 +1,5 @@
 DROP FUNCTION  IF EXISTS view_duplicates(character,character varying,
-boolean,integer,integer,character varying );
+boolean,integer,integer,character varying,character varying);
 
 CREATE OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
 ps integer default 50,pg integer default 1,dt character varying(50) default 'ALL',ty character varying(50) default 'PURE' ) 
@@ -24,7 +24,8 @@ RETURNS setof duplicate_records AS  $$
  attributeoptioncomboid integer,
  value character varying (500000),
  duplicate_type character varying(20),
- lastupdated timestamp without time zone
+ lastupdated timestamp without time zone,
+ PRIMARY KEY (sourceid, periodid,dataelementid,categoryoptioncomboid,attributeoptioncomboid)
  ) ON COMMIT DROP;
  
 IF ty = 'PURE'::character varying(50) THEN
@@ -59,8 +60,7 @@ IF ty = 'PURE'::character varying(50) THEN
  where uid IN (''qRvKHvlzNdv'',''ovYEbELCknv'',''tCIW2VFd8uu'',
  ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'') ) ) 
  AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
- where iso = ''' || $2 || ''' LIMIT 1)
- AND dv1.value ~ (''^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$'')';
+ where iso = ''' || $2 || ''' LIMIT 1)';
 
   
 /*Group ID. This will be used to group duplicates. */
@@ -68,7 +68,10 @@ ALTER TABLE temp1 ADD COLUMN group_id text;
 UPDATE temp1 SET group_id = dataelementid::text ||  categoryoptioncomboid::text || sourceid::text  ;
 CREATE INDEX idx_group_ids ON temp1 (group_id);
 
+
 /*We need to filter out sketchy values and then determine if there are any phantom groups */
+DELETE FROM temp1 where value !~ ('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
+
 /*Get rid of any DSD-TA crosswalk. This should never happen*/
 DELETE FROM temp1 where attributeoptioncomboid =
  (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(00001'));
@@ -130,7 +133,6 @@ EXECUTE 'INSERT INTO temp1
  from datavalue dv1
  INNER JOIN  (SELECT * FROM _view_dsd_ta_crosswalk ) map
  on dv1.dataelementid = map.dsd_dataelementid
- WHERE dv1.value ~ (''^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$'')
  ) dsd
  on ta.sourceid = dsd.sourceid
  AND ta.periodid = dsd.periodid
@@ -151,6 +153,10 @@ CREATE INDEX idx_group_ids ON temp1 (group_id);
 DELETE FROM temp1 where attributeoptioncomboid NOT IN
  (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(0000[0|1]'))
 AND value = '0';
+
+/*We need to filter out sketchy values and then determine if there are any phantom groups */
+DELETE FROM temp1 where value !~ ('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
+
 
 /*DELETE FROM temp1 where group_id IN (SELECT * from temp1   WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
 FROM _categoryoptioncomboname where categoryoptioncomboname ~('00001 De-duplication adjustment'))  GROUP BY group_id HAVING COUNT(*) < 2);*/
@@ -310,7 +316,7 @@ WHERE _cogsm.categoryoptiongroupsetid= 481662 ) b
 WHERE  temp1.attributeoptioncomboid = b.categoryoptioncomboid;
  
 
- CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
+CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
  
 EXECUTE 'INSERT INTO temp2 SELECT 
 oulevel3_name ,
