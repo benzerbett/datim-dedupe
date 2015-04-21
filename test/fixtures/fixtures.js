@@ -1584,6 +1584,144 @@
         "height": 24
     };
 
+    fixtures.messedupdedupe = {
+        "title": "datim-dedupe-app",
+        "headers": [{
+            "name": "oulevel3_name",
+            "column": "oulevel3_name",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "oulevel4_name",
+            "column": "oulevel4_name",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "oulevel5_name",
+            "column": "oulevel5_name",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "oulevel6_name",
+            "column": "oulevel6_name",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "ou_name",
+            "column": "ou_name",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "dataelement",
+            "column": "dataelement",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "disaggregation",
+            "column": "disaggregation",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "agency",
+            "column": "agency",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "mechanism",
+            "column": "mechanism",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "partner",
+            "column": "partner",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "value",
+            "column": "value",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "duplicate_status",
+            "column": "duplicate_status",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "ou_uid",
+            "column": "ou_uid",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "de_uid",
+            "column": "de_uid",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "coc_uid",
+            "column": "coc_uid",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "group_count",
+            "column": "group_count",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "total_groups",
+            "column": "total_groups",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }, {
+            "name": "dataset_type",
+            "column": "dataset_type",
+            "type": "java.lang.String",
+            "hidden": false,
+            "meta": false
+        }],
+        "rows": [
+
+            [
+                "Demoland",
+                "Place",
+                "Color town",
+                "K Town",
+                "K Town", "Mech1 TARGET: People Targeted",
+                "(default)",
+                "",
+                "(00000 De-duplication adjustment)",
+                "",
+                "-830",
+                "UNRESOLVED",
+                "GpoMSxvvPmW",
+                "MrZObQjQljp",
+                "HllvX50cXC0",
+                "1",
+                "6",
+                "TARGETS"
+            ]
+
+        ],
+        "width": 18,
+        "height": 24
+    };
+
     window.fixtures = {
         get: function (fixtureName) {
             if (fixtures[fixtureName]) {

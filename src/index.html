@@ -74,10 +74,12 @@
             </div>
             <div class="resolve-footer">
                 <div class="col-sm-4">
-                    <span translate>Mark all duplicates as</span>
-                    <div class="btn-group">
-                        <button ng-disabled="!app.dedupeRecords.length || app.isShowingCrosswalkDedupes()" class="btn btn-default" ng-click="app.useMax()">Use max</button>
-                        <button ng-disabled="!app.dedupeRecords.length || app.isShowingCrosswalkDedupes()" class="btn btn-default" ng-click="app.useSum()">Use sum</button>
+                    <div ng-show="!app.isShowingCrosswalkDedupes()">
+                        <span translate>Mark all duplicates as</span>
+                        <div class="btn-group">
+                            <button ng-disabled="!app.dedupeRecords.length" class="btn btn-default" ng-click="app.useMax()">Use max</button>
+                            <button ng-disabled="!app.dedupeRecords.length" class="btn btn-default" ng-click="app.useSum()">Use sum</button>
+                        </div>
                     </div>
                 </div>
                 <div class="col-sm-3">

@@ -163,6 +163,25 @@ describe('Dedupe record service', function () {
                 expect(thirdDedupeRecord.resolve.type).toBe('max');
             });
         });
+
+        describe('messed up dedupe', function () {
+            var dedupeRecords;
+
+            beforeEach(function () {
+                getRecordsRequest.respond(200, fixtures.get('messedupdedupe'));
+
+                dedupeRecordService.getRecords({ty: 'PURE'})
+                    .then(function (records) {
+                        dedupeRecords = records;
+                    });
+
+                $httpBackend.flush();
+            });
+
+            it('should not show any records', function () {
+                expect(dedupeRecords.length).toBe(0);
+            });
+        });
     });
 
     describe('getCrossWalkRecords', function () {
@@ -192,7 +211,7 @@ describe('Dedupe record service', function () {
         });
 
         it('should not include the dedupe records', function () {
-            expect(dedupeRecords[0].data.length).toEqual(2);
+            expect(dedupeRecords[0].data.length).toEqual(3);
         });
 
         it('should auto resolve these prior to returning them', function () {

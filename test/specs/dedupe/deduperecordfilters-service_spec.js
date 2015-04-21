@@ -141,4 +141,42 @@ describe('Dedupefilter service', function () {
             expect(eventCallbackSpy.calls.argsFor(0)[1]).toEqual({ty: 'CROSSWALK'});
         });
     });
+
+    describe('filterChanged', function () {
+        it('should set the filter to PURE after an orgunit change', function () {
+            service.changeIsCrosswalk(true);
+            expect(service.getDedupeType()).toEqual('CROSSWALK');
+
+            service.changeOrganisationUnit({id: 'orgunitid'});
+
+            expect(service.getDedupeType()).toEqual('PURE');
+        });
+
+        it('should set the filter to PURE after a period change', function () {
+            service.changeIsCrosswalk(true);
+            expect(service.getDedupeType()).toEqual('CROSSWALK');
+
+            service.changePeriodFilter({name: 'October 2013', iso: 'Oct2013'});
+
+            expect(service.getDedupeType()).toEqual('PURE');
+        });
+
+        it('should not set the filter to PURE when crosswalk is being changed', function () {
+            service.changeIsCrosswalk(true);
+            expect(service.getDedupeType()).toEqual('CROSSWALK');
+
+            service.changeIsCrosswalk(true);
+
+            expect(service.getDedupeType()).toEqual('CROSSWALK');
+        });
+
+        it('should set the filter to PURE when crosswalk is being changed', function () {
+            service.changeIsCrosswalk(true);
+            expect(service.getDedupeType()).toEqual('CROSSWALK');
+
+            service.changeIsCrosswalk(false);
+
+            expect(service.getDedupeType()).toEqual('PURE');
+        });
+    });
 });

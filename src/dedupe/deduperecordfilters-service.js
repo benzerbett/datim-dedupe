@@ -28,6 +28,7 @@ function dedupeRecordFilters($rootScope) {
 
     function changeOrganisationUnit(organisationUnit) {
         if (organisationUnit) {
+            dedupeFilters.ty = 'PURE';
             dedupeFilters.ou = organisationUnit.id;
             fireUpdateEvent();
         }
@@ -35,6 +36,7 @@ function dedupeRecordFilters($rootScope) {
 
     function changePeriodFilter(period) {
         if (period) {
+            dedupeFilters.ty = 'PURE';
             periodDisplayName = period.name;
             dedupeFilters.pe = period.iso;
             fireUpdateEvent();

@@ -809,12 +809,12 @@ describe('Dedupe directive', function () {
             $scope.firstDedupeRecord.details.dedupeType = 'CROSSWALK';
             $scope.$apply();
         });
-
-        it('should not show the actions', function () {
-            var resolveActions = angular.element(element[0].querySelector('.dedupe-resolve-actions'));
-
-            expect(resolveActions.hasClass('ng-hide')).toBe(true);
-        });
+        //
+        //it('should not show the actions', function () {
+        //    var resolveActions = angular.element(element[0].querySelector('.dedupe-resolve-actions'));
+        //
+        //    expect(resolveActions.hasClass('ng-hide')).toBe(true);
+        //});
 
         it('should show the dedupe info', function () {
             var resolveInfo = angular.element(element[0].querySelector('.dedupe-resolve-crosswalk-info'));
