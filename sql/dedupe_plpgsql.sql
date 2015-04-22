@@ -66,7 +66,7 @@ IF ty = 'PURE'::character varying(50) THEN
 /*Group ID. This will be used to group duplicates. */
 ALTER TABLE temp1 ADD COLUMN group_id text;
 UPDATE temp1 SET group_id = dataelementid::text ||  categoryoptioncomboid::text || sourceid::text  ;
-CREATE INDEX idx_group_ids ON temp1 (group_id);
+--CREATE INDEX idx_group_ids ON temp1 (group_id);
 
 
 /*We need to filter out sketchy values and then determine if there are any phantom groups */
@@ -80,9 +80,12 @@ DELETE FROM temp1 where attributeoptioncomboid !=
  (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(00000'))
 AND value = '0';
 
+/*Get rid of any dangling dupes*/
+DELETE FROM temp1 where group_id IN (SELECT group_id from temp1 GROUP BY group_id HAVING COUNT(*) = 1);
 /*Get rid of any groups which remain with less than two members*/
 DELETE FROM temp1 where group_id IN (SELECT group_id from temp1   WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
 FROM _categoryoptioncomboname where categoryoptioncomboname ~('00000 De-duplication adjustment'))  GROUP BY group_id HAVING COUNT(*) < 2);
+
 
 /*Duplication status*/
  
@@ -264,39 +267,9 @@ UPDATE temp1 set total_groups =  (SELECT max(group_count) from temp1 );
   
   /*Orgunits*/
  /*Country level*/
- ALTER TABLE temp1 ADD COLUMN oulevel3_name character varying(230);
- ALTER TABLE temp1 ADD COLUMN oulevel4_name character varying(230);
- ALTER TABLE temp1 ADD COLUMN oulevel5_name character varying(230);
- ALTER TABLE temp1 ADD COLUMN oulevel6_name character varying(230);
+
  ALTER TABLE temp1 ADD COLUMN ou_name character varying(230);
- ALTER TABLE temp1 ADD COLUMN ou_level integer;
  ALTER TABLE temp1 ADD COLUMN ou_uid character varying(11);
-
-EXECUTE 'UPDATE temp1 set oulevel3_name = (SELECT name from organisationunit where uid = ''' || $1 || ''')';
-
-EXECUTE ' UPDATE temp1 a set oulevel4_name = b.name from (
-SELECT x.name,y.organisationunitid from organisationunit x 
-INNER JOIN (
-SELECT organisationunitid,
-idlevel4 from _orgunitstructure where uidlevel3 = ''' || $1 || ''' AND idlevel4 IS NOT NULL ) y 
-ON x.organisationunitid = y.idlevel4 ) b
-WHERE a.sourceid = b.organisationunitid';
-
-EXECUTE ' UPDATE temp1 a set oulevel5_name = b.name from (
-SELECT x.name,y.organisationunitid from organisationunit x 
-INNER JOIN (
-SELECT organisationunitid,
-idlevel5 from _orgunitstructure where uidlevel3 = ''' || $1 || ''' AND idlevel5 IS NOT NULL ) y 
-ON x.organisationunitid = y.idlevel5 ) b
-WHERE a.sourceid = b.organisationunitid';
-
-EXECUTE ' UPDATE temp1 a set oulevel6_name = b.name from (
-SELECT x.name,y.organisationunitid from organisationunit x 
-INNER JOIN (
-SELECT organisationunitid,
-idlevel6 from _orgunitstructure where uidlevel3 = ''' || $1 || ''' AND idlevel6 IS NOT NULL ) y 
-ON x.organisationunitid = y.idlevel6 ) b
-WHERE a.sourceid = b.organisationunitid';
 
 
 UPDATE temp1 a set ou_name =  b.name from organisationunit b where a.sourceid = b.organisationunitid;
@@ -314,15 +287,16 @@ INNER JOIN categoryoptiongroupmembers _cogm on _cog.categoryoptiongroupid=_cogm.
 INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=_cocg.categoryoptionid
 WHERE _cogsm.categoryoptiongroupsetid= 481662 ) b
 WHERE  temp1.attributeoptioncomboid = b.categoryoptioncomboid;
+
+UPDATE temp1 set partner = 'Dedupe adjustment' where attributeoptioncomboid IN (SELECT categoryoptioncomboid from _categoryoptioncomboname
+where categoryoptioncomboname ~ '^\(00000');
+
+
  
 
 CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
  
 EXECUTE 'INSERT INTO temp2 SELECT 
-oulevel3_name ,
-oulevel4_name,
-oulevel5_name,
-oulevel6_name,
 ou_name,
 dataelement ,
 disaggregation,
