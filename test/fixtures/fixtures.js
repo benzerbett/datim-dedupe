@@ -708,8 +708,8 @@
                 "hidden": false,
                 "meta": false
             }, {
-                "name": "orgunit_name",
-                "column": "orgunit_name",
+                "name": "ou_name",
+                "column": "ou_name",
                 "type": "java.lang.String",
                 "hidden": false,
                 "meta": false

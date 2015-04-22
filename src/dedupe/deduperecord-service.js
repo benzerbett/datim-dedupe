@@ -129,18 +129,6 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME, DEDUPE_MECH
         };
 
         function getOrganisationUnitName(rows) {
-            var combinedOuName = [
-                getColumnValue('oulevel3_name', rows[0]),
-                getColumnValue('oulevel4_name', rows[0]),
-                getColumnValue('oulevel5_name', rows[0]),
-                getColumnValue('oulevel6_name', rows[0])
-            ].filter(function (ouName) {
-                    return angular.isString(ouName) && ouName.length > 0;
-                }).join(' / ');
-
-            if (combinedOuName) {
-                return combinedOuName;
-            }
             return getColumnValue('ou_name', rows[0]);
         }
     }
