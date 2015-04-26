@@ -158,6 +158,32 @@ SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
   AND ta.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $2 || ''')';
 
+/*Join with the DSD values*/
+
+EXECUTE' 
+INSERT INTO temp1
+SELECT sourceid,periodid,dataelementid,categoryoptioncomboid,-1::integer as attributeoptioncomboid,value::text,duplicate_type,lastupdated FROM (
+SELECT 
+dsd.sourceid,
+dsd.periodid,
+ta.dataelementid,
+dsd.categoryoptioncomboid,
+sum(dsd.value::numeric) as value,''CROSSWALK''::character varying(20) as duplicate_type,
+max(dsd.lastupdated) as lastupdated
+from datavalue dsd
+INNER JOIN (SELECT DISTINCT ta.sourceid,ta.periodid,ta.dataelementid,ta.categoryoptioncomboid,map.dsd_dataelementid
+FROM temp1 ta
+INNER JOIN _view_dsd_ta_crosswalk map
+on ta.dataelementid = map.ta_dataelementid) ta
+ON dsd.sourceid=ta.sourceid
+and dsd.periodid = ta.periodid
+and dsd.dataelementid = ta.dsd_dataelementid
+and dsd.categoryoptioncomboid = ta.categoryoptioncomboid
+WHERE dsd.dataelementid IN (SELECT dsd_dataelementid FROM _view_dsd_ta_crosswalk)
+AND dsd.value  ~ (''^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$'')
+AND attributeoptioncomboid != (SELECT categoryoptioncomboid
+FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00001 De-duplication adjustment''))
+GROUP BY dsd.sourceid,dsd.periodid,ta.dataelementid,dsd.categoryoptioncomboid) foo';
 
 
 /*Group ID. This will be used to group duplicates. */
@@ -166,7 +192,8 @@ UPDATE temp1 SET group_id = dataelementid::text ||  categoryoptioncomboid::text 
 CREATE INDEX idx_group_ids ON temp1 (group_id);
 /*Exclude any zero dupe components*/
 DELETE FROM temp1 where attributeoptioncomboid NOT IN
- (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(0000[0|1]'))
+ (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(0000[0|1]')
+  UNION SELECT -1)
 AND value = '0';
 
 /*We need to filter out sketchy values and then determine if there are any phantom groups */
@@ -251,19 +278,26 @@ UPDATE temp1 set total_groups =  (SELECT max(group_count) from temp1 );
  
  UPDATE temp1 set disaggregation = b.categoryoptioncomboname from _categoryoptioncomboname b
  where temp1.categoryoptioncomboid = b.categoryoptioncomboid;
- 
- UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
+UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
  where temp1.categoryoptioncomboid = b.categoryoptioncomboid;
+
+
+
   /*Agency*/
  ALTER TABLE temp1 ADD COLUMN agency character varying(250);
  
  UPDATE temp1 set agency = b."Funding Agency" from _categoryoptiongroupsetstructure b
  where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
  
+ UPDATE temp1 set agency = 'DSD Value' where attributeoptioncomboid = -1;
+
+ 
  /*Mechanism*/
  ALTER TABLE temp1 ADD COLUMN mechanism character varying(250);
  UPDATE temp1 set mechanism = b.categoryoptioncomboname from _categoryoptioncomboname b
  where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
+
+ UPDATE temp1 set mechanism = 'DSD Value' where attributeoptioncomboid = -1;
   
   /*Orgunits*/
  /*Country level*/
@@ -290,7 +324,7 @@ WHERE  temp1.attributeoptioncomboid = b.categoryoptioncomboid;
 
 UPDATE temp1 set partner = 'Dedupe adjustment' where attributeoptioncomboid IN (SELECT categoryoptioncomboid from _categoryoptioncomboname
 where categoryoptioncomboname ~ '^\(00000');
-
+UPDATE temp1 set partner = 'DSD Value' where attributeoptioncomboid = -1;
 
  
 
