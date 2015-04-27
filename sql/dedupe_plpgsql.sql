@@ -10,12 +10,22 @@ RETURNS setof duplicate_records AS  $$
  this_group integer;
  start_group integer;
  end_group integer;
+ dataset_filter character varying (100);
  BEGIN
  
  start_group := pg * ps - ps + 1;
  end_group := pg * ps;
  
- 
+
+CASE dt
+ WHEN 'RESULTS' THEN
+ dataset_filter := ' AND name ~*(''RESULTS'') ';
+WHEN 'TARGETS' THEN
+  dataset_filter := ' AND name ~*(''TARGETS'') ';
+ELSE
+  dataset_filter := ' ';
+END CASE;
+
  CREATE TEMP TABLE temp1
  (sourceid integer,
  periodid integer,
@@ -53,13 +63,11 @@ IF ty = 'PURE'::character varying(50) THEN
  INNER JOIN _orgunitstructure ous on dv1.sourceid = ous.organisationunitid
  and ous.uidlevel3 = ''' ||  $1 || '''
  WHERE dv1.dataelementid IN (
- SELECT DISTINCT dsm.dataelementid from datasetmembers dsm
- INNER JOIN (SELECT DISTINCT dataelementid from dataelement where numbertype IS NOT NULL) de
- ON dsm.dataelementid = de.dataelementid
- where dsm.datasetid in (SELECT datasetid from dataset 
- where uid IN (''qRvKHvlzNdv'',''ovYEbELCknv'',''tCIW2VFd8uu'',
- ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'') ) ) 
- AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
+ SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
+ SELECT datasetid from dataset where uid in (
+''qRvKHvlzNdv'',''vYEbELCknv'',''tCIW2VFd8uu'', ''ovYEbELCknv'',
+ ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'')'  || dataset_filter ||
+ ' ) ) AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $2 || ''' LIMIT 1)';
 
   
@@ -134,9 +142,13 @@ EXECUTE 'INSERT INTO temp1
  dv1.categoryoptioncomboid,
  dv1.attributeoptioncomboid
  from datavalue dv1
- INNER JOIN  (SELECT * FROM _view_dsd_ta_crosswalk ) map
- on dv1.dataelementid = map.dsd_dataelementid
- ) dsd
+ INNER JOIN  (SELECT * FROM _view_dsd_ta_crosswalk where dsd_dataelementid in (
+SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
+ SELECT datasetid from dataset where uid in (
+''qRvKHvlzNdv'',''vYEbELCknv'',''tCIW2VFd8uu'', ''ovYEbELCknv'',
+ ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'')'  || dataset_filter ||
+ '  ) ) ) map
+ on dv1.dataelementid = map.dsd_dataelementid ) dsd
  on ta.sourceid = dsd.sourceid
  AND ta.periodid = dsd.periodid
  and ta.dataelementid = dsd.ta_dataelementid
@@ -146,6 +158,32 @@ EXECUTE 'INSERT INTO temp1
   AND ta.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $2 || ''')';
 
+/*Join with the DSD values*/
+
+EXECUTE' 
+INSERT INTO temp1
+SELECT sourceid,periodid,dataelementid,categoryoptioncomboid,-1::integer as attributeoptioncomboid,value::text,duplicate_type,lastupdated FROM (
+SELECT 
+dsd.sourceid,
+dsd.periodid,
+ta.dataelementid,
+dsd.categoryoptioncomboid,
+sum(dsd.value::numeric) as value,''CROSSWALK''::character varying(20) as duplicate_type,
+max(dsd.lastupdated) as lastupdated
+from datavalue dsd
+INNER JOIN (SELECT DISTINCT ta.sourceid,ta.periodid,ta.dataelementid,ta.categoryoptioncomboid,map.dsd_dataelementid
+FROM temp1 ta
+INNER JOIN _view_dsd_ta_crosswalk map
+on ta.dataelementid = map.ta_dataelementid) ta
+ON dsd.sourceid=ta.sourceid
+and dsd.periodid = ta.periodid
+and dsd.dataelementid = ta.dsd_dataelementid
+and dsd.categoryoptioncomboid = ta.categoryoptioncomboid
+WHERE dsd.dataelementid IN (SELECT dsd_dataelementid FROM _view_dsd_ta_crosswalk)
+AND dsd.value  ~ (''^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$'')
+AND attributeoptioncomboid != (SELECT categoryoptioncomboid
+FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00001 De-duplication adjustment''))
+GROUP BY dsd.sourceid,dsd.periodid,ta.dataelementid,dsd.categoryoptioncomboid) foo';
 
 
 /*Group ID. This will be used to group duplicates. */
@@ -154,17 +192,16 @@ UPDATE temp1 SET group_id = dataelementid::text ||  categoryoptioncomboid::text 
 CREATE INDEX idx_group_ids ON temp1 (group_id);
 /*Exclude any zero dupe components*/
 DELETE FROM temp1 where attributeoptioncomboid NOT IN
- (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(0000[0|1]'))
+ (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(0000[0|1]')
+  UNION SELECT -1)
 AND value = '0';
 
 /*We need to filter out sketchy values and then determine if there are any phantom groups */
 DELETE FROM temp1 where value !~ ('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
 
+/*This case can result from blanks in the DSD values.*/
 
-/*DELETE FROM temp1 where group_id IN (SELECT * from temp1   WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
-FROM _categoryoptioncomboname where categoryoptioncomboname ~('00001 De-duplication adjustment'))  GROUP BY group_id HAVING COUNT(*) < 2);*/
-
-
+DELETE FROM temp1 where group_id IN (SELECT group_id  from temp1  GROUP BY group_id HAVING COUNT(*) < 2);
 
 /*Duplication status*/
  
@@ -192,8 +229,6 @@ END IF;
 /*End CROSSWALK Dedupe logic*/
 
 
-
-
  IF rs = FALSE THEN 
  DELETE FROM temp1 where duplication_status ='RESOLVED';
  END IF;
@@ -207,18 +242,10 @@ END IF;
  
 /*Targets and results*/
 
-ALTER TABLE temp1 ADD COLUMN dataset_type character varying(50) DEFAULT 'RESULTS';
-UPDATE temp1 SET dataset_type = 'TARGETS' where 
-dataelement ~('TARGET');
+ALTER TABLE temp1 ADD COLUMN dataset_type character varying(50) DEFAULT 'TARGETS';
+UPDATE temp1 SET dataset_type = 'RESULTS' where 
+dataelement ~('RESULT');
 
-/*Filter out results and targets*/
-/*TODO Do this in the SELECT statement instead*/ 
-IF dt = 'RESULTS' THEN
-DELETE FROM temp1 WHERE dataset_type != 'RESULTS';
-ELSEIF dt = 'TARGETS' THEN 
-DELETE FROM temp1 where dataset_type != 'TARGETS';
-END IF;
- 
 /*Data element uids*/
  ALTER TABLE temp1 ADD COLUMN de_uid character varying(11);
  UPDATE temp1 set de_uid = b.uid from dataelement b
@@ -228,13 +255,13 @@ END IF;
  ALTER TABLE temp1 ADD COLUMN group_count integer;
  ALTER TABLE temp1 ADD COLUMN total_groups integer;
 
- UPDATE temp1 a set group_count = b.group_count FROM(
+UPDATE temp1 a set group_count = b.group_count FROM(
 SELECT dataelementid,categoryoptioncomboid,sourceid, sum(1) OVER (ORDER BY dataelementid,categoryoptioncomboid,sourceid) as group_count
 FROM temp1
 GROUP BY dataelementid,categoryoptioncomboid,sourceid) b 
- where a.dataelementid = b.dataelementid
- and a.categoryoptioncomboid = b.categoryoptioncomboid
- and a.sourceid = b.sourceid;
+where a.dataelementid = b.dataelementid
+and a.categoryoptioncomboid = b.categoryoptioncomboid
+and a.sourceid = b.sourceid;
 
   /*Provide the total number of groups*/
 UPDATE temp1 set total_groups =  (SELECT max(group_count) from temp1 );
@@ -251,19 +278,26 @@ UPDATE temp1 set total_groups =  (SELECT max(group_count) from temp1 );
  
  UPDATE temp1 set disaggregation = b.categoryoptioncomboname from _categoryoptioncomboname b
  where temp1.categoryoptioncomboid = b.categoryoptioncomboid;
- 
- UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
+UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
  where temp1.categoryoptioncomboid = b.categoryoptioncomboid;
+
+
+
   /*Agency*/
  ALTER TABLE temp1 ADD COLUMN agency character varying(250);
  
  UPDATE temp1 set agency = b."Funding Agency" from _categoryoptiongroupsetstructure b
  where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
  
+ UPDATE temp1 set agency = 'DSD Value' where attributeoptioncomboid = -1;
+
+ 
  /*Mechanism*/
  ALTER TABLE temp1 ADD COLUMN mechanism character varying(250);
  UPDATE temp1 set mechanism = b.categoryoptioncomboname from _categoryoptioncomboname b
  where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
+
+ UPDATE temp1 set mechanism = 'DSD Value' where attributeoptioncomboid = -1;
   
   /*Orgunits*/
  /*Country level*/
@@ -290,7 +324,7 @@ WHERE  temp1.attributeoptioncomboid = b.categoryoptioncomboid;
 
 UPDATE temp1 set partner = 'Dedupe adjustment' where attributeoptioncomboid IN (SELECT categoryoptioncomboid from _categoryoptioncomboname
 where categoryoptioncomboname ~ '^\(00000');
-
+UPDATE temp1 set partner = 'DSD Value' where attributeoptioncomboid = -1;
 
  
 
