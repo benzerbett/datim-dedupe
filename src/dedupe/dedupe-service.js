@@ -50,6 +50,9 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         throwIfNotArray(dedupeRecordData, 'getMax');
 
         return dedupeRecordData
+            .filter(function (record) {
+                return record.calculate;
+            })
             .map(pick('value'))
             .map(parseFloat)
             .filter(function (value) {
@@ -62,6 +65,9 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         throwIfNotArray(dedupeRecordData, 'getSum');
 
         return dedupeRecordData
+            .filter(function (record) {
+                return record.calculate;
+            })
             .map(pick('value'))
             .map(parseFloat)
             .filter(function (value) {

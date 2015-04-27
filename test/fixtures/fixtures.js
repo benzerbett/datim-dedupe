@@ -855,27 +855,32 @@
                     {
                         "agency": "USAID",
                         "partner": "Demoland Cardinal IP",
-                        "value": 23
+                        "value": 23,
+                        "calculate": true
                     },
                     {
                         "agency": "USAID",
                         "partner": "Demoland Demoland USAID IP",
-                        "value": 2500
+                        "value": 2500,
+                        "calculate": true
                     },
                     {
                         "agency": "USAID",
                         "partner": "Demoland Demoland USAID IP",
-                        "value": 900
+                        "value": 900,
+                        "calculate": true
                     },
                     {
                         "agency": "USAID",
                         "partner": "Demoland Owl IP",
-                        "value": 100
+                        "value": 100,
+                        "calculate": true
                     },
                     {
                         "agency": "USAID",
                         "partner": "Demoland Perch IP",
-                        "value": 100
+                        "value": 100,
+                        "calculate": true
                     }
                 ],
                 "resolve": {
@@ -899,12 +904,14 @@
                     {
                         "agency": "USAID",
                         "partner": "Demoland Owl IP",
-                        "value": 11
+                        "value": 11,
+                        "calculate": true
                     },
                     {
                         "agency": "USAID",
                         "partner": "Demoland Perch IP",
-                        "value": 3
+                        "value": 3,
+                        "calculate": true
                     }
                 ],
                 "resolve": {
@@ -926,12 +933,14 @@
                     {
                         "agency": "USAID",
                         "partner": "Demoland Owl IP",
-                        "value": 22
+                        "value": 22,
+                        "calculate": true
                     },
                     {
                         "agency": "USAID",
                         "partner": "Demoland Perch IP",
-                        "value": 30
+                        "value": 30,
+                        "calculate": true
                     }
                 ],
                 "resolve": {
@@ -952,12 +961,14 @@
                     {
                         "agency": "USAID",
                         "partner": "Demoland Owl IP",
-                        "value": 12
+                        "value": 12,
+                        "calculate": true
                     },
                     {
                         "agency": "USAID",
                         "partner": "Demoland Perch IP",
-                        "value": 10
+                        "value": 10,
+                        "calculate": true
                     }
                 ],
                 "resolve": {
@@ -979,12 +990,14 @@
                     {
                         "agency": "USAID",
                         "partner": "Demoland Owl IP",
-                        "value": 23
+                        "value": 23,
+                        "calculate": true
                     },
                     {
                         "agency": "USAID",
                         "partner": "Demoland Perch IP",
-                        "value": 20
+                        "value": 20,
+                        "calculate": true
                     }
                 ],
                 "resolve": {
@@ -1006,22 +1019,26 @@
                     {
                         "agency": "USAID",
                         "partner": "Demoland Dory IP",
-                        "value": 114
+                        "value": 114,
+                        "calculate": true
                     },
                     {
                         "agency": "USAID",
                         "partner": "Demoland Hawk IP",
-                        "value": 10
+                        "value": 10,
+                        "calculate": true
                     },
                     {
                         "agency": "USAID",
                         "partner": "Demoland Owl IP",
-                        "value": 12
+                        "value": 12,
+                        "calculate": true
                     },
                     {
                         "agency": "USAID",
                         "partner": "Demoland Parrot IP",
-                        "value": 123
+                        "value": 123,
+                        "calculate": true
                     }
                 ],
                 "resolve": {
@@ -1577,8 +1594,9 @@
                 "HllvX50cXC0",
                 "4",
                 "6",
-                "TARGETS"]
-
+                "TARGETS"],
+            ["District Hospital", "Dedupe record", "(default)", "DSD Value", "DSD Value", "DSD Value", "242", "UNRESOLVED", "AY69i2rJOCj", "asDctw7cqRt", "HllvX50cXC0", "6", "7", "TARGETS"],
+            ["District Hospital", "Dedupe record", "(default)", "HHS/CDC", "catcombo", "Centre for Infectious Diseases", "253", "UNRESOLVED", "AY69i2rJOCj", "asDctw7cqRt", "HllvX50cXC0", "6", "7", "TARGETS"]
         ],
         "width": 18,
         "height": 24
@@ -1696,7 +1714,6 @@
             "meta": false
         }],
         "rows": [
-
             [
                 "Demoland",
                 "Place",
@@ -1716,10 +1733,101 @@
                 "6",
                 "TARGETS"
             ]
-
         ],
         "width": 18,
         "height": 24
+    };
+
+    fixtures.dsdvaluedupes = {
+        "title": "datim-dedupe-app",
+        "headers": [{
+        "name": "ou_name",
+        "column": "ou_name",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {
+        "name": "dataelement",
+        "column": "dataelement",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {
+        "name": "disaggregation",
+        "column": "disaggregation",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {
+        "name": "agency",
+        "column": "agency",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {
+        "name": "mechanism",
+        "column": "mechanism",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {
+        "name": "partner",
+        "column": "partner",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {
+        "name": "value",
+        "column": "value",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {
+        "name": "duplicate_status",
+        "column": "duplicate_status",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {
+        "name": "ou_uid",
+        "column": "ou_uid",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {
+        "name": "de_uid",
+        "column": "de_uid",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {
+        "name": "coc_uid",
+        "column": "coc_uid",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {
+        "name": "group_count",
+        "column": "group_count",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {
+        "name": "total_groups",
+        "column": "total_groups",
+        "type": "java.lang.String",
+        "hidden": false,
+        "meta": false
+    }, {"name": "dataset_type", "column": "dataset_type", "type": "java.lang.String", "hidden": false, "meta": false}],
+        "rows": [
+        ["District clinic", "Dedupe record", "(default)", "DSD Value", "DSD Value", "DSD Value", "492", "UNRESOLVED", "B6pFC3PYx0J", "asDctw7cqRt", "HllvX50cXC0", "1", "9268", "TARGETS"],
+        ["District clinic", "Dedupe record", "(default)", "HHS/CDC", "catcombo", "Centre for Infectious Diseases", "123", "UNRESOLVED", "B6pFC3PYx0J", "asDctw7cqRt", "HllvX50cXC0", "1", "9268", "TARGETS"],
+        ["Demoland", "Mech1 TARGET: People Targeted", "(default)", "", "(00001 De-duplication adjustment (DSD-TA))", "", "-830", "UNRESOLVED", "GpoMSxvvPmW", "MrZObQjQljp", "HllvX50cXC0", "1", "6", "TARGETS"],
+        ["District Hospital", "Dedupe record", "(default)", "DSD Value", "DSD Value", "DSD Value", "242", "UNRESOLVED", "AY69i2rJOCj", "asDctw7cqRt", "HllvX50cXC0", "2", "9268", "TARGETS"],
+        ["District Hospital", "Dedupe record", "(default)", "HHS/CDC", "catcombo", "Centre for Infectious Diseases", "253", "UNRESOLVED", "AY69i2rJOCj", "asDctw7cqRt", "HllvX50cXC0", "2", "9268", "TARGETS"]
+            ],
+        "width": 14,
+        "height": 105
     };
 
     window.fixtures = {

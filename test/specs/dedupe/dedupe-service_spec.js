@@ -44,9 +44,9 @@ describe('Dedupe service', function () {
 
         it('should return the max of the numbers', function () {
             var dedupeValues = [
-                {agency: 'USAID', partner: 'PartnerA', value: 60},
-                {agency: 'USAID', partner: 'PartnerB', value: 40},
-                {agency: 'USAID', partner: 'PartnerC', value: 20}
+                {agency: 'USAID', partner: 'PartnerA', value: 60, calculate: true},
+                {agency: 'USAID', partner: 'PartnerB', value: 40, calculate: true},
+                {agency: 'USAID', partner: 'PartnerC', value: 20, calculate: true}
             ];
 
             expect(dedupeService.getMax(dedupeValues)).toBe(60);
@@ -54,9 +54,19 @@ describe('Dedupe service', function () {
 
         it('should not take NaN values into account when summing the numbers', function () {
             var dedupeValues = [
-                {agency: 'USAID', partner: 'PartnerA', value: 60},
-                {agency: 'USAID', partner: 'PartnerB', value: NaN},
-                {agency: 'USAID', partner: 'PartnerC', value: 20}
+                {agency: 'USAID', partner: 'PartnerA', value: 60, calculate: true},
+                {agency: 'USAID', partner: 'PartnerB', value: NaN, calculate: true},
+                {agency: 'USAID', partner: 'PartnerC', value: 20, calculate: true}
+            ];
+
+            expect(dedupeService.getMax(dedupeValues)).toBe(60);
+        });
+
+        it('should not take calculate:false values into account when summing the numbers', function () {
+            var dedupeValues = [
+                {agency: 'USAID', partner: 'PartnerA', value: 60, calculate: true},
+                {agency: 'USAID', partner: 'PartnerB', value: 70, calculate: false},
+                {agency: 'USAID', partner: 'PartnerC', value: 20, calculate: true}
             ];
 
             expect(dedupeService.getMax(dedupeValues)).toBe(60);
@@ -82,9 +92,9 @@ describe('Dedupe service', function () {
 
         it('should return the sum of the numbers', function () {
             var dedupeValues = [
-                {agency: 'USAID', partner: 'PartnerA', value: 60},
-                {agency: 'USAID', partner: 'PartnerB', value: 40},
-                {agency: 'USAID', partner: 'PartnerC', value: 20}
+                {agency: 'USAID', partner: 'PartnerA', value: 60, calculate: true},
+                {agency: 'USAID', partner: 'PartnerB', value: 40, calculate: true},
+                {agency: 'USAID', partner: 'PartnerC', value: 20, calculate: true}
             ];
 
             expect(dedupeService.getSum(dedupeValues)).toBe(120);
@@ -92,12 +102,22 @@ describe('Dedupe service', function () {
 
         it('should not take NaN values into account', function () {
             var dedupeValues = [
-                {agency: 'USAID', partner: 'PartnerA', value: NaN},
-                {agency: 'USAID', partner: 'PartnerB', value: 40},
-                {agency: 'USAID', partner: 'PartnerC', value: 20}
+                {agency: 'USAID', partner: 'PartnerA', value: NaN, calculate: true},
+                {agency: 'USAID', partner: 'PartnerB', value: 40, calculate: true},
+                {agency: 'USAID', partner: 'PartnerC', value: 20, calculate: true}
             ];
 
             expect(dedupeService.getSum(dedupeValues)).toBe(60);
+        });
+
+        it('should not take calculate:false values into account', function () {
+            var dedupeValues = [
+                {agency: 'USAID', partner: 'PartnerA', value: 60, calculate: true},
+                {agency: 'USAID', partner: 'PartnerB', value: 40, calculate: false},
+                {agency: 'USAID', partner: 'PartnerC', value: 20, calculate: true}
+            ];
+
+            expect(dedupeService.getSum(dedupeValues)).toBe(80);
         });
     });
 

@@ -17,7 +17,7 @@ describe('Dedupe directive', function () {
                 getMax: jasmine.createSpy()
                     .and.returnValue(60),
                 getSum: jasmine.createSpy()
-                    .and.returnValue(120)
+                    .and.returnValue(130)
             };
         });
     }));
@@ -40,9 +40,10 @@ describe('Dedupe directive', function () {
                 dedupeType: 'PURE'
             },
             data: [
-                {agency: 'USAID', partner: 'PartnerA', value: 60},
-                {agency: 'USAID', partner: 'PartnerB', value: 40},
-                {agency: 'USAID', partner: 'PartnerC', value: 20}
+                {agency: 'USAID', partner: 'PartnerA', value: 60, display: true},
+                {agency: 'USAID', partner: 'PartnerB', value: 40, display: true},
+                {agency: 'USAID', partner: 'PartnerC', value: 20, display: true},
+                {agency: 'USAID', partner: 'PartnerD', value: 10, display: false}
             ],
             resolve: {
                 type: undefined,
@@ -492,7 +493,7 @@ describe('Dedupe directive', function () {
                         });
 
                         it('should display the value', function () {
-                            expect(sumValueElement.textContent).toBe('(120)');
+                            expect(sumValueElement.textContent).toBe('(130)');
                         });
                     });
                 });
@@ -625,13 +626,13 @@ describe('Dedupe directive', function () {
             });
 
             it('should set the resolve to sum when the sum action is clicked', function () {
-                var maxRadioButton = element[0].querySelector('.resolve-action-sum input[type=radio]');
+                var sumRadioButton = element[0].querySelector('.resolve-action-sum input[type=radio]');
 
-                maxRadioButton.click();
+                sumRadioButton.click();
                 $scope.$apply();
 
                 expect($scope.firstDedupeRecord.resolve.type).toBe('sum');
-                expect($scope.firstDedupeRecord.resolve.value).toBe(120);
+                expect($scope.firstDedupeRecord.resolve.value).toBe(130);
             });
 
             it('should set the resolve to custom when the custom action is clicked', function () {

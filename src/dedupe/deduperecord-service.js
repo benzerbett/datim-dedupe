@@ -125,6 +125,9 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME, DEDUPE_MECH
                 isResolved: false,
                 type: undefined,
                 value: undefined
+            },
+            getDedupeType: function () {
+                return this.details.dedupeType;
             }
         };
 
@@ -147,7 +150,7 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME, DEDUPE_MECH
             dedupeRecord.resolve.value = 0;
         }
 
-        getNonCrosswalkDedupeRows(rows).forEach(processRecord(dedupeRecord));
+        dedupeRecord.data = getNonCrosswalkDedupeRows(rows).map(processRecord);
 
         return dedupeRecord;
     }
@@ -161,28 +164,32 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME, DEDUPE_MECH
             dedupeRecord.resolve.value = calculateActualDedupedValue(rows);
         }
 
-        getNonDedupeRows(rows).forEach(processRecord(dedupeRecord));
+        dedupeRecord.data = getNonDedupeRows(rows).map(processRecord);
 
         return dedupeRecord;
     }
 
-    function processRecord(dedupeRecord) {
-        return function (record) {
-            var partnerName = getColumnValue('partner', record);
-            var agencyName = getColumnValue('agency', record);
-            var value = getColumnValue('value', record);
+    function processRecord(record) {
+        var partnerName = getColumnValue('partner', record);
+        var agencyName = getColumnValue('agency', record);
+        var value = getColumnValue('value', record);
 
-            if (isDedupeMechanismRow(record)) {
-                agencyName = 'Dedupe adjustment';
-                partnerName = 'Dedupe adjustment';
-            }
+        if (isDedupeMechanismRow(record)) {
+            agencyName = 'Dedupe adjustment';
+            partnerName = 'Dedupe adjustment';
+        }
 
-            dedupeRecord.data.push({
-                agency: agencyName,
-                partner: partnerName,
-                value: parseFloat(value)
-            });
+        return {
+            agency: agencyName,
+            partner: partnerName,
+            value: parseFloat(value),
+            display: !isDedupeMechanismRow(record),
+            calculate: !isDSDValueRow(record)
         };
+    }
+
+    function isDSDValueRow(record) {
+        return getColumnValue('mechanism', record) === 'DSD Value';
     }
 
     function isResolved(dataRows) {
@@ -236,29 +243,29 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME, DEDUPE_MECH
     }
 
     function getDedupeAdjustmentValue(dataRows) {
-        var dedupeAdjustmentRow = _.chain(dataRows)
+        var dedupeAdjustmentValues = _.chain(dataRows)
             .filter(isDedupeMechanismRow)
             .map(pickValueColumn)
             .value();
 
-        if (dedupeAdjustmentRow.length > 1) {
+        if (dedupeAdjustmentValues.length > 1) {
             throw new Error('More than 1 dedupe adjustment row found');
         }
 
-        return dedupeAdjustmentRow.reduce(add, 0);
+        return dedupeAdjustmentValues.reduce(add, 0);
     }
 
     function getCrosswalkDedupeAdjustmentValue(dataRows) {
-        var dedupeAdjustmentRow = _.chain(dataRows)
+        var dedupeAdjustmentValues = _.chain(dataRows)
             .filter(isDedupeCrosswalkMechanismRow)
             .map(pickValueColumn)
             .value();
 
-        if (dedupeAdjustmentRow.length > 1) {
+        if (dedupeAdjustmentValues.length > 1) {
             throw new Error('More than 1 dedupe adjustment row found');
         }
 
-        return dedupeAdjustmentRow.reduce(add, 0);
+        return dedupeAdjustmentValues.reduce(add, 0);
     }
 
     function getTotalOfAllRows(dataRows) {

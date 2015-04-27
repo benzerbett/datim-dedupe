@@ -100,6 +100,10 @@ describe('Dedupe record service', function () {
                 expect(dedupeRecords[0].details.dedupeType).toBe('PURE');
             });
 
+            it('should return the dedupe type when calling the getDedupeType method', function () {
+                expect(dedupeRecords[0].getDedupeType()).toBe('PURE');
+            });
+
             describe('data rows', function () {
                 var firstDataRow;
 
@@ -196,7 +200,7 @@ describe('Dedupe record service', function () {
                 });
 
             $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?var=ty:CROSSWALK')
-                .respond(200, fixtures.get('crossWalkUnresolved'));
+                .respond(200, fixtures.get('dsdvaluedupes'));
 
             dedupeRecordService.getRecords({ty: 'CROSSWALK'})
                 .then(function (records) {
@@ -211,12 +215,20 @@ describe('Dedupe record service', function () {
         });
 
         it('should not include the dedupe records', function () {
-            expect(dedupeRecords[0].data.length).toEqual(3);
+            expect(dedupeRecords[0].data.length).toEqual(2);
         });
 
         it('should auto resolve these prior to returning them', function () {
             expect(dedupeRecords[0].resolve.type).toEqual('custom');
             expect(dedupeRecords[0].resolve.value).toEqual(0);
+        });
+
+        it('should set the DSD Value record to not calculate=false', function () {
+            expect(dedupeRecords[0].data[0].calculate).toEqual(false);
+        });
+
+        it('should set the DSD Value record to not display=true', function () {
+            expect(dedupeRecords[0].data[0].display).toEqual(true);
         });
     });
 

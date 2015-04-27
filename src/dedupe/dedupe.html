@@ -39,7 +39,7 @@
                 </div>
             </div>
             <div class="table-data row"
-                 ng-repeat="dedupeRecord in ::dedupeCtrl.dedupeRecord.data"
+                 ng-repeat="dedupeRecord in ::dedupeCtrl.dedupeRecord.data | filter: {display: true}"
                  ng-class-odd="'odd'"
                  ng-class-even="'even'">
                 <div class="agency-name col-sm-4">
@@ -60,7 +60,7 @@
                         <span translate>How to resolve?</span>
                     </div>
                 </div>
-                <div class="resolve-actions row">
+                <div class="resolve-actions row" ng-show="dedupeCtrl.dedupeRecord.getDedupeType() == 'PURE'">
                     <div class="resolve-action-max col-sm-12">
                         <label>
                             <input value="max" type="radio" ng-model="dedupeCtrl.dedupeRecord.resolve.type" ng-required="!dedupeCtrl.dedupeRecord.resolve.type" ng-change="dedupeCtrl.resolveWithMax()">
@@ -69,7 +69,7 @@
                         </label>
                     </div>
                 </div>
-                <div class="resolve-actions row">
+                <div class="resolve-actions row" ng-show="dedupeCtrl.dedupeRecord.getDedupeType() == 'PURE'">
                     <div class="resolve-action-sum col-sm-12">
                         <label>
                             <input value="sum" type="radio" ng-model="dedupeCtrl.dedupeRecord.resolve.type" ng-required="!dedupeCtrl.dedupeRecord.resolve.type" ng-change="dedupeCtrl.resolveWithSum()">
