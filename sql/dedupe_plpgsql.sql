@@ -199,9 +199,12 @@ AND value = '0';
 /*We need to filter out sketchy values and then determine if there are any phantom groups */
 DELETE FROM temp1 where value !~ ('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
 
-/*This case can result from blanks in the DSD values.*/
+/*DELETE CASES WHICH DO NOT HAVE ANY TA VALUES while ignoring the dedupe and DSD values*/
+DELETE FROM temp1 where group_id NOT IN (SELECT DISTINCT group_id from temp1
+where attributeoptioncomboid NOT IN
+ (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(0000[0|1]')
+  UNION SELECT -1));
 
-DELETE FROM temp1 where group_id IN (SELECT group_id  from temp1  GROUP BY group_id HAVING COUNT(*) < 2);
 
 /*Duplication status*/
  
