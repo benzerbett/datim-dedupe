@@ -221,6 +221,9 @@ describe('Dedupe record service', function () {
         it('should auto resolve these prior to returning them', function () {
             expect(dedupeRecords[0].resolve.type).toEqual('custom');
             expect(dedupeRecords[0].resolve.value).toEqual(0);
+
+            expect(dedupeRecords[1].resolve.type).toEqual('custom');
+            expect(dedupeRecords[1].resolve.value).toEqual(11);
         });
 
         it('should set the DSD Value record to not calculate=false', function () {

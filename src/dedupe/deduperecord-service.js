@@ -144,15 +144,32 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME, DEDUPE_MECH
 
         if (isCrosswalkResolved(rows)) {
             dedupeRecord.resolve.type = getDedupeType(rows);
-            dedupeRecord.resolve.value = calculateActualDedupedValue(rows);
+            dedupeRecord.resolve.value = calculateActualCrosswalkDedupedValue(rows);
         } else {
             dedupeRecord.resolve.type = 'custom';
-            dedupeRecord.resolve.value = 0;
+            dedupeRecord.resolve.value = getDefaultResolvedValue(rows);
         }
 
         dedupeRecord.data = getNonCrosswalkDedupeRows(rows).map(processRecord);
 
         return dedupeRecord;
+
+        function getDefaultResolvedValue(rows) {
+            var defaultValue = getNonCrosswalkDedupeRows(rows)
+                .filter(function (row) {
+                    return !isDSDValueRow(row);
+                })
+                .map(pickValueColumn)
+                .reduce(add, 0) - getNonCrosswalkDedupeRows(rows)
+                .filter(isDSDValueRow)
+                .map(pickValueColumn)
+                .reduce(add, 0);
+
+            if (defaultValue > 0) {
+                return defaultValue;
+            }
+            return 0;
+        }
     }
 
     function createDedupeRecord(rows) {
