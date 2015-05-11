@@ -300,4 +300,35 @@ describe('Dedupe record service', function () {
             expect(message).toBe('System setting with id of sqlview not found. Please check if your app is configured correctly.');
         });
     });
+
+    describe('getCsvUrl', function () {
+        beforeEach(function () {
+            $httpBackend.resetExpectations();
+
+            $httpBackend.expectGET('/dhis/api/systemSettings/keyDedupeSqlViewId')
+                .respond(200, {
+                    id: 'AuL6zTSLxNc'
+                });
+        });
+
+        it('should be a function', function () {
+            expect(dedupeRecordService.getCsvUrl).toEqual(jasmine.any(Function));
+        });
+
+        it('should return a url with the correct filters', function (done) {
+            var filters = {
+                ou: 'HfiOUYEPgLK',
+                pe: '2013Oct',
+                ty: 'PURE'
+            };
+
+            dedupeRecordService.getCsvUrl(filters)
+                .then(function (url) {
+                    expect(url).toEqual('/dhis/api/sqlViews/AuL6zTSLxNc/data.csv?var=ou:HfiOUYEPgLK&var=pe:2013Oct&var=ty:PURE');
+                    done();
+                });
+
+            $httpBackend.flush();
+        });
+    });
 });

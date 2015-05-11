@@ -29,6 +29,10 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
     ctrl.filters = dedupeRecordFilters;
     ctrl.showCrossWalkMessage = showCrossWalkMessage;
     ctrl.isShowingCrosswalkDedupes = isShowingCrosswalkDedupes;
+    ctrl.csvSettings = {
+        url: '',
+        show: false
+    };
 
     $scope.$on('DEDUPE_DIRECTIVE.resolve', function (event, dedupeRecordId, saveStatus) {
 
@@ -51,6 +55,15 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
 
     function getDuplicateRecords() {
         ctrl.isProcessing = true;
+
+        dedupeService.getCsvUrl(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current, dedupeFilters.ty)
+            .then(function (csvUrl) {
+                ctrl.csvSettings.url = csvUrl;
+                ctrl.csvSettings.show = true;
+            })
+            .catch(function () {
+                ctrl.csvSettings.show = false;
+            });
 
         dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current, dedupeFilters.ty)
             .then(addPeriodInformationToRecords)

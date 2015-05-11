@@ -59,6 +59,9 @@
             </div>
         </div>
 
+        <div ng-show="app.csvSettings.show && app.dedupeRecords.length" class="dedupe-download-csv">
+            <a class="btn btn-default" ng-href="{{app.csvSettings.url}}" target="_blank" download="dedupes.csv" translate>Download these dedupes as CSV</a>
+        </div>
         <form name="deduplication">
             <div class="dedupe-records">
                 <dedupe dedupe-record="dedupeRecord" ng-repeat="dedupeRecord in app.dedupeRecords"></dedupe>

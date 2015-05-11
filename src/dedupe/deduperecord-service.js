@@ -1,10 +1,11 @@
 angular.module('PEPFAR.dedupe').factory('dedupeRecordService', dedupeRecordService);
 
-function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME, DEDUPE_MECHANISM_CROSSWALK_NAME) {
+function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_NAME, DEDUPE_MECHANISM_CROSSWALK_NAME) {
     var headers;
 
     return {
-        getRecords: getRecords
+        getRecords: getRecords,
+        getCsvUrl: getCsvUrl
     };
 
     function getRecords(filters) {
@@ -15,6 +16,18 @@ function dedupeRecordService($q, Restangular, DEDUPE_MECHANISM_NAME, DEDUPE_MECH
             return dataRows.then(createCrosswalkDedupeRecords);
         }
         return dataRows.then(createDedupeRecords);
+    }
+
+    function getCsvUrl(filters) {
+        return getSqlViewIdFromSystemSettings()
+            .then(function (sqlViewId) {
+                return [
+                    [webappManifest.activities.dhis.href, 'api', 'sqlViews', sqlViewId, 'data.csv'].join('/'),
+                    getFilterArrayFromFilters(filters).map(function (value) {
+                        return 'var=' + value;
+                    }).join('&')
+                ].join('?');
+            });
     }
 
     function extractHeaders(sqlViewData) {

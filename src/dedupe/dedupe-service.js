@@ -5,6 +5,7 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
 
     return {
         getDuplicateRecords: getDuplicateRecords,
+        getCsvUrl: getCsvUrl,
         getMax: getMax,
         getSum: getSum,
         resolveDuplicates: resolveDuplicates
@@ -18,6 +19,16 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         }
 
         return $q.when([]);
+    }
+
+    function getCsvUrl(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType) {
+        var filters = getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType);
+
+        if (isRequiredFiltersPresent(filters)) {
+            return dedupeRecordService.getCsvUrl(filters);
+        }
+
+        return $q.reject('Unable to get the correct url, because filters are not correct');
     }
 
     function getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType) {

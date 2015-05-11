@@ -74,7 +74,9 @@ describe('App controller', function () {
                     successCount: 1,
                     errorCount: 0,
                     errors: []
-                }))
+                })),
+            getCsvUrl: jasmine.createSpy('dedupeServive.getCsvUrl')
+                .and.returnValue($q.when('/dhis/api/sqlViews/AuL6zTSLxNc/data.csv?var=ou:HfiOUYEPgLK&var=pe:2013Oct&var=ty:PURE'))
         };
 
         dedupeRecordFiltersMock = {
@@ -493,6 +495,44 @@ describe('App controller', function () {
     describe('isShowingCrosswalkDedupes', function () {
         it('should be a function', function () {
             expect(controller.isShowingCrosswalkDedupes).toEqual(jasmine.any(Function));
+        });
+    });
+
+    describe('when getting duplicate records', function () {
+        it('should call getCsvUrl on the dedupeService', function () {
+            //Sets filters and calls duplicate records through event
+            $rootScope.$broadcast('DEDUPE_RECORDFILTER_SERVICE.updated', {ou: 'myOrgUnit', pe: '2013Oct', tr: 'Results', ty: 'PURE'});
+
+            $rootScope.$apply();
+
+            expect(dedupeServiceMock.getCsvUrl).toHaveBeenCalledWith('myOrgUnit', '2013Oct', false, 'Results', 1, 'PURE');
+        });
+
+        it('should set the url on the controller on success', function () {
+            $rootScope.$broadcast('DEDUPE_RECORDFILTER_SERVICE.updated', {ou: 'myOrgUnit', pe: '2013Oct', tr: 'Results', ty: 'PURE'});
+
+            $rootScope.$apply();
+
+            expect(controller.csvSettings.url).toEqual('/dhis/api/sqlViews/AuL6zTSLxNc/data.csv?var=ou:HfiOUYEPgLK&var=pe:2013Oct&var=ty:PURE');
+        });
+
+        it('should set the show flag on the controller on success', function () {
+            $rootScope.$broadcast('DEDUPE_RECORDFILTER_SERVICE.updated', {ou: 'myOrgUnit', pe: '2013Oct', tr: 'Results', ty: 'PURE'});
+
+            $rootScope.$apply();
+
+            expect(controller.csvSettings.show).toEqual(true);
+        });
+
+        it('should set the show flag to false when the call fails', function () {
+            dedupeServiceMock.getCsvUrl.and.returnValue($q.reject('failed'));
+
+            controller.csvSettings.show = true;
+            controller.getDuplicateRecords();
+
+            $rootScope.$apply();
+
+            expect(controller.csvSettings.show).toEqual(false);
         });
     });
 });

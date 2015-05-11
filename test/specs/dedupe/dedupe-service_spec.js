@@ -6,7 +6,9 @@ describe('Dedupe service', function () {
         $provide.factory('dedupeRecordService', function ($q) {
             return {
                 getRecords: jasmine.createSpy('dedupeRecordService.getRecords')
-                    .and.returnValue($q.when(window.fixtures.get('dedupeRecords')))
+                    .and.returnValue($q.when(window.fixtures.get('dedupeRecords'))),
+                getCsvUrl: jasmine.createSpy('dedupeRecordService.getCsvUrl')
+                    .and.returnValue($q.when('/dhis/api/sqlViews/AuL6zTSLxNc/data.csv?var=ou:HfiOUYEPgLK&var=pe:2013Oct&var=ty:PURE'))
             };
         });
 
@@ -257,5 +259,41 @@ describe('Dedupe service', function () {
 
             expect(catchCallBack).toHaveBeenCalledWith('Non of the passed dedupe records had resolved values that should be saved.');
         }));
+    });
+
+    describe('getCsvUrl', function () {
+        var dedupeRecordServiceMock;
+        var $rootScope;
+
+        beforeEach(inject(function ($injector) {
+            $rootScope = $injector.get('$rootScope');
+            dedupeRecordServiceMock = $injector.get('dedupeRecordService');
+        }));
+
+        it('should call the record service get csv url', function () {
+            dedupeService.getCsvUrl('myOrgUnitId', '2013Oct', true, undefined, 1, 'PURE');
+
+            expect(dedupeRecordServiceMock.getCsvUrl).toHaveBeenCalledWith({ou: 'myOrgUnitId', pe: '2013Oct', rs: true, ps: 50, pg: 1, dt: 'ALL', ty: 'PURE'});
+        });
+
+        it('should reject with a message', function (done) {
+            dedupeService.getCsvUrl()
+                .catch(function (message) {
+                    expect(message).toEqual('Unable to get the correct url, because filters are not correct');
+                    done();
+                });
+
+            $rootScope.$apply();
+        });
+
+        it('should resolve with the correct url', function (done) {
+            dedupeService.getCsvUrl('myOrgUnitId', '2013Oct', true, undefined, 1, 'PURE')
+                .then(function (url) {
+                    expect(url).toEqual('/dhis/api/sqlViews/AuL6zTSLxNc/data.csv?var=ou:HfiOUYEPgLK&var=pe:2013Oct&var=ty:PURE');
+                    done();
+                });
+
+            $rootScope.$apply();
+        });
     });
 });
