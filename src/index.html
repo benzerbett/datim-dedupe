@@ -75,18 +75,18 @@
             <div class="resolve-footer">
                 <div class="col-sm-4">
                     <div ng-show="!app.isShowingCrosswalkDedupes()">
-                        <span translate>Mark all duplicates as</span>
                         <div class="btn-group">
                             <button ng-disabled="!app.dedupeRecords.length" class="btn btn-default" ng-click="app.useMax()">Use max</button>
                             <button ng-disabled="!app.dedupeRecords.length" class="btn btn-default" ng-click="app.useSum()">Use sum</button>
                         </div>
+                        <span translate>for shown duplicates.</span>
                     </div>
                 </div>
                 <div class="col-sm-3">
-                    <!--<label>-->
-                        <!--<span>Show all: </span>-->
-                        <!--<input type="checkbox" ng-checked="app.isShowingAll()" ng-click="app.changedIncludeResolved()">-->
-                    <!--</label>-->
+                    <label>
+                        <span>Include resolved: </span>
+                        <input type="checkbox" ng-checked="app.isShowingAll()" ng-click="app.changedIncludeResolved()">
+                    </label>
                 </div>
                 <div class="col-sm-3">
                     <span>Showing <span ng-bind="((app.pager.current - 1) * app.pager.pageSize) + 1"></span> to <span ng-bind="app.dedupeRecords.length + ((app.pager.current - 1) * app.pager.pageSize)"></span> of <span ng-bind="app.pager.total"></span></span>
