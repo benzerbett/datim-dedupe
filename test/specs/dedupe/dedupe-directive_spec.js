@@ -40,10 +40,10 @@ describe('Dedupe directive', function () {
                 dedupeType: 'PURE'
             },
             data: [
-                {agency: 'USAID', partner: 'PartnerA', value: 60, display: true},
-                {agency: 'USAID', partner: 'PartnerB', value: 40, display: true},
-                {agency: 'USAID', partner: 'PartnerC', value: 20, display: true},
-                {agency: 'USAID', partner: 'PartnerD', value: 10, display: false}
+                {agency: 'USAID', partner: 'PartnerA', value: 60, display: true, mechanismNumber: '10000'},
+                {agency: 'USAID', partner: 'PartnerB', value: 40, display: true, mechanismNumber: '20000'},
+                {agency: 'USAID', partner: 'PartnerC', value: 20, display: true, mechanismNumber: '30000'},
+                {agency: 'USAID', partner: 'PartnerD', value: 10, display: false, mechanismNumber: '0000'}
             ],
             resolve: {
                 type: undefined,
@@ -168,7 +168,7 @@ describe('Dedupe directive', function () {
 
             expect(dedupeDataTable).toEqual(jasmine.any(HTMLElement));
             expect(dedupeDataTable).toHaveClass('dedupe-data-table');
-            expect(dedupeDataTable).toHaveClass('col-sm-6');
+            expect(dedupeDataTable).toHaveClass('col-sm-7');
         });
 
         describe('dedupe-data-table', function () {
@@ -194,7 +194,7 @@ describe('Dedupe directive', function () {
                 });
 
                 it('should have three columns', function () {
-                    expect(headerRowNode.querySelectorAll('div').length).toBe(3);
+                    expect(headerRowNode.querySelectorAll('div').length).toBe(4);
                 });
 
                 describe('first column', function () {
@@ -204,8 +204,8 @@ describe('Dedupe directive', function () {
                         firstHeaderColumn = headerRowNode.querySelectorAll('div')[0];
                     });
 
-                    it('should have the col-sm-4 class', function () {
-                        expect(firstHeaderColumn).toHaveClass('col-sm-4');
+                    it('should have the col-sm-3 class', function () {
+                        expect(firstHeaderColumn).toHaveClass('col-sm-3');
                     });
 
                     it('should have the label "Agency"', function () {
@@ -229,7 +229,7 @@ describe('Dedupe directive', function () {
                     });
 
                     it('should have the col-sm-4 class', function () {
-                        expect(secondHeaderColumn).toHaveClass('col-sm-6');
+                        expect(secondHeaderColumn).toHaveClass('col-sm-4');
                     });
 
                     it('should have the label "Partner"', function () {
@@ -252,18 +252,42 @@ describe('Dedupe directive', function () {
                         thirdHeaderColumn = headerRowNode.querySelectorAll('div')[2];
                     });
 
+                    it('should have the col-sm-3 class', function () {
+                        expect(thirdHeaderColumn).toHaveClass('col-sm-3');
+                    });
+
+                    it('should have the label "Mechanism"', function () {
+                        var textNode = thirdHeaderColumn.querySelector('span');
+
+                        expect(textNode.textContent).toBe('Mechanism');
+                    });
+
+                    it('should add the translate attibute to the label', function () {
+                        var textNode = thirdHeaderColumn.querySelector('span');
+
+                        expect(textNode).toHaveAttribute('translate');
+                    });
+                });
+
+                describe('fourth column', function () {
+                    var fourthHeaderColumn;
+
+                    beforeEach(function () {
+                        fourthHeaderColumn = headerRowNode.querySelectorAll('div')[3];
+                    });
+
                     it('should have the col-sm-4 class', function () {
-                        expect(thirdHeaderColumn).toHaveClass('col-sm-2');
+                        expect(fourthHeaderColumn).toHaveClass('col-sm-2');
                     });
 
                     it('should have the label "Value"', function () {
-                        var textNode = thirdHeaderColumn.querySelector('span');
+                        var textNode = fourthHeaderColumn.querySelector('span');
 
                         expect(textNode.textContent).toBe('Value');
                     });
 
                     it('should add the translate attibute to the label', function () {
-                        var textNode = thirdHeaderColumn.querySelector('span');
+                        var textNode = fourthHeaderColumn.querySelector('span');
 
                         expect(textNode).toHaveAttribute('translate');
                     });
@@ -285,14 +309,14 @@ describe('Dedupe directive', function () {
                     var agencyNameElement = dedupeDataTable.querySelector('.table-data.row .agency-name');
 
                     expect(agencyNameElement).toEqual(jasmine.any(HTMLElement));
-                    expect(agencyNameElement).toHaveClass('col-sm-4');
+                    expect(agencyNameElement).toHaveClass('col-sm-3');
                 });
 
                 it('should have an partner-name column with the right class', function () {
                     var partnerNameElement = dedupeDataTable.querySelector('.table-data.row .partner-name');
 
                     expect(partnerNameElement).toEqual(jasmine.any(HTMLElement));
-                    expect(partnerNameElement).toHaveClass('col-sm-6');
+                    expect(partnerNameElement).toHaveClass('col-sm-4');
                 });
 
                 it('should have an value column with the right class', function () {
@@ -316,6 +340,14 @@ describe('Dedupe directive', function () {
                     expect(partnerNameElements[0].textContent).toBe('PartnerA');
                     expect(partnerNameElements[1].textContent).toBe('PartnerB');
                     expect(partnerNameElements[2].textContent).toBe('PartnerC');
+                });
+
+                it('should display the mechanism names', function () {
+                    var mechanismNumberElements = dedupeDataTable.querySelectorAll('.table-data.row .mechanism-number span');
+
+                    expect(mechanismNumberElements[0].textContent).toBe('10000');
+                    expect(mechanismNumberElements[1].textContent).toBe('20000');
+                    expect(mechanismNumberElements[2].textContent).toBe('30000');
                 });
 
                 it('should display the values', function () {
@@ -347,8 +379,8 @@ describe('Dedupe directive', function () {
                 resolveActionsNode = dedupeDataElement.querySelector('.dedupe-resolve-actions');
             });
 
-            it('should have the class col-sm-6', function () {
-                expect(resolveActionsNode).toHaveClass('col-sm-6');
+            it('should have the class col-sm-5', function () {
+                expect(resolveActionsNode).toHaveClass('col-sm-5');
             });
 
             describe('header', function () {
@@ -810,12 +842,24 @@ describe('Dedupe directive', function () {
             $scope.firstDedupeRecord.details.dedupeType = 'CROSSWALK';
             $scope.$apply();
         });
-        //
-        //it('should not show the actions', function () {
-        //    var resolveActions = angular.element(element[0].querySelector('.dedupe-resolve-actions'));
-        //
-        //    expect(resolveActions.hasClass('ng-hide')).toBe(true);
-        //});
+
+        it('should not show the sum action', function () {
+            var sumResolveAction = angular.element(element[0].querySelector('.dedupe-resolve-actions .resolve-action-sum').parentNode);
+
+            expect(sumResolveAction.hasClass('ng-hide')).toBe(true);
+        });
+
+        it('should not show the max action', function () {
+            var maxResolveAction = angular.element(element[0].querySelector('.dedupe-resolve-actions .resolve-action-max').parentNode);
+
+            expect(maxResolveAction.hasClass('ng-hide')).toBe(true);
+        });
+
+        it('should show the custom action', function () {
+            var maxResolveAction = angular.element(element[0].querySelector('.dedupe-resolve-actions .resolve-action-custom').parentNode);
+
+            expect(maxResolveAction.hasClass('ng-hide')).toBe(false);
+        });
 
         it('should show the dedupe info', function () {
             var resolveInfo = angular.element(element[0].querySelector('.dedupe-resolve-crosswalk-info'));

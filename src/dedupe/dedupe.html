@@ -26,13 +26,16 @@
         </div>
     </div>
     <div class="dedupe-data row">
-        <div class="dedupe-data-table col-sm-6">
+        <div class="dedupe-data-table col-sm-7">
             <div class="table-header row">
-                <div class="col-sm-4">
+                <div class="col-sm-3">
                     <span translate>Agency</span>
                 </div>
-                <div class="col-sm-6">
+                <div class="col-sm-4">
                     <span translate>Partner</span>
+                </div>
+                <div class="col-sm-3">
+                    <span translate>Mechanism</span>
                 </div>
                 <div class="col-sm-2">
                     <span translate>Value</span>
@@ -42,18 +45,21 @@
                  ng-repeat="dedupeRecord in ::dedupeCtrl.dedupeRecord.data | filter: {display: true}"
                  ng-class-odd="'odd'"
                  ng-class-even="'even'">
-                <div class="agency-name col-sm-4">
+                <div class="agency-name col-sm-3">
                     <span ng-bind="::dedupeRecord.agency"></span>
                 </div>
-                <div class="partner-name col-sm-6">
+                <div class="partner-name col-sm-4">
                     <span ng-bind="::dedupeRecord.partner"></span>
+                </div>
+                <div class="mechanism-number col-sm-3">
+                    <span ng-bind="::dedupeRecord.mechanismNumber"></span>
                 </div>
                 <div class="value col-sm-2">
                     <span ng-bind="::dedupeRecord.value"></span>
                 </div>
             </div>
         </div>
-        <div class="dedupe-resolve-actions col-sm-6">
+        <div class="dedupe-resolve-actions col-sm-5">
             <div class="resolve-wrap">
                 <div class="resolve-header row">
                     <div class="col-sm-12">

@@ -203,6 +203,14 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
         var partnerName = getColumnValue('partner', record);
         var agencyName = getColumnValue('agency', record);
         var value = getColumnValue('value', record);
+        var mechanismNumber;
+
+        //Do not show the DSD Value row as a mechanism number
+        if (isDSDValueRow(record)) {
+            mechanismNumber = '';
+        } else {
+            mechanismNumber = getColumnValue('mechanism', record);
+        }
 
         if (isDedupeMechanismRow(record)) {
             agencyName = 'Dedupe adjustment';
@@ -213,6 +221,7 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
             agency: agencyName,
             partner: partnerName,
             value: parseFloat(value),
+            mechanismNumber: mechanismNumber,
             display: !isDedupeMechanismRow(record),
             calculate: !isDSDValueRow(record)
         };

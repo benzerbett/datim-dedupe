@@ -126,6 +126,10 @@ describe('Dedupe record service', function () {
                 it('should set the value onto the data object', function () {
                     expect(firstDataRow.value).toBe(23);
                 });
+
+                it('should set the mechanism number onto the record', function () {
+                    expect(firstDataRow.mechanismNumber).toEqual('1002');
+                });
             });
         });
 
@@ -232,6 +236,14 @@ describe('Dedupe record service', function () {
 
         it('should set the DSD Value record to not display=true', function () {
             expect(dedupeRecords[0].data[0].display).toEqual(true);
+        });
+
+        it('should set the mechanism number onto the record', function () {
+            expect(dedupeRecords[0].data[1].mechanismNumber).toEqual('12432');
+        });
+
+        it('should not show DSD Value as the mechanism number', function () {
+            expect(dedupeRecords[0].data[0].mechanismNumber).toEqual('');
         });
     });
 
