@@ -15,12 +15,12 @@ angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_COMBO_ID', 'wUpfppgjEza')
 //Normal dedupe
 angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_OPTION_COMBO_ID', 'X8hrDf6bLDC');
 angular.module('PEPFAR.dedupe').value('DEDUPE_CATEGORY_OPTION_ID', 'xEzelmtHWPn');
-angular.module('PEPFAR.dedupe').value('DEDUPE_MECHANISM_NAME', '(00000 De-duplication adjustment)');
+angular.module('PEPFAR.dedupe').value('DEDUPE_MECHANISM_NAME', '00000');
 
 //Crosswalk
 angular.module('PEPFAR.dedupe').value('DEDUPE_CROSSWALK_CATEGORY_OPTION_COMBO_ID', 'YGT1o7UxfFu');
 angular.module('PEPFAR.dedupe').value('DEDUPE_CROSSWALK_CATEGORY_OPTION_ID', 'OM58NubPbx1');
-angular.module('PEPFAR.dedupe').value('DEDUPE_MECHANISM_CROSSWALK_NAME', '(00001 De-duplication adjustment (DSD-TA))');
+angular.module('PEPFAR.dedupe').value('DEDUPE_MECHANISM_CROSSWALK_NAME', '00001');
 
 //Default values
 angular.module('PEPFAR.dedupe').value('DEDUPE_PAGE_SIZE', 50);
