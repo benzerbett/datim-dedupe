@@ -11,8 +11,8 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         resolveDuplicates: resolveDuplicates
     };
 
-    function getDuplicateRecords(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType) {
-        var filters = getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType);
+    function getDuplicateRecords(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType, pageSize) {
+        var filters = getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType, pageSize);
 
         if (isRequiredFiltersPresent(filters)) {
             return dedupeRecordService.getRecords(filters);
@@ -21,8 +21,8 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         return $q.when([]);
     }
 
-    function getCsvUrl(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType) {
-        var filters = getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType);
+    function getCsvUrl(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType, pageSize) {
+        var filters = getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType, pageSize);
 
         if (isRequiredFiltersPresent(filters)) {
             return dedupeRecordService.getCsvUrl(filters);
@@ -31,7 +31,7 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         return $q.reject('Unable to get the correct url, because filters are not correct');
     }
 
-    function getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType) {
+    function getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType, pageSize) {
         var filters = {};
 
         if (organisationUnitId && angular.isString(organisationUnitId)) {
@@ -43,7 +43,7 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         }
 
         filters.rs = includeResolved || false;
-        filters.ps = DEDUPE_PAGE_SIZE;
+        filters.ps = pageSize || DEDUPE_PAGE_SIZE;
         filters.pg = pageNumber || 1;
         filters.dt = (angular.isString(targetsResults) && targetsResults.toUpperCase()) || 'ALL';
         filters.ty = dedupeType;

@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').controller('appController', appController);
 
-function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notify, DEDUPE_PAGE_SIZE) {
+function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notify, $log, DEDUPE_PAGE_SIZE) { //jshint maxstatements:42
     var ctrl = this;
     var dedupeFilters = {
         includeResolved: false,
@@ -17,6 +17,10 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
         total: 0,
         pageSize: DEDUPE_PAGE_SIZE
     };
+    ctrl.customPageSize = ctrl.pager.pageSize;
+    ctrl.pageToGoTo = ctrl.pager.current;
+    ctrl.goToPage = goToPage;
+    ctrl.maxPageNumber = maxPageNumber;
 
     //Controller methods
     ctrl.useMax = useMax;
@@ -56,16 +60,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
     function getDuplicateRecords() {
         ctrl.isProcessing = true;
 
-        dedupeService.getCsvUrl(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current, dedupeFilters.ty)
-            .then(function (csvUrl) {
-                ctrl.csvSettings.url = csvUrl;
-                ctrl.csvSettings.show = true;
-            })
-            .catch(function () {
-                ctrl.csvSettings.show = false;
-            });
-
-        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current, dedupeFilters.ty)
+        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current, dedupeFilters.ty, ctrl.pager.pageSize)
             .then(addPeriodInformationToRecords)
             .then(function (duplicateRecords) {
                 ctrl.allDedupeRecords = ctrl.dedupeRecords = duplicateRecords;
@@ -83,6 +78,16 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
                 if (dedupeFilters.ou && dedupeFilters.pe) {
                     ctrl.noLoadDone = false;
                 }
+
+                //Get the download link
+                dedupeService.getCsvUrl(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, 1, dedupeFilters.ty, duplicateRecords.totalNumber)
+                    .then(function (csvUrl) {
+                        ctrl.csvSettings.url = csvUrl;
+                        ctrl.csvSettings.show = true;
+                    })
+                    .catch(function () {
+                        ctrl.csvSettings.show = false;
+                    });
 
                 return duplicateRecords;
             })
@@ -195,5 +200,39 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
 
     function setProcessingToFalse() {
         ctrl.isProcessing = false;
+    }
+
+    function goToPage() {
+        function isValidPageChange() {
+            return angular.isNumber(ctrl.pageToGoTo) && ctrl.pageToGoTo <= maxPageNumber() &&
+            ctrl.pager.current !== ctrl.pageToGoTo;
+        }
+
+        function isValidPageSize() {
+            return angular.isNumber(ctrl.customPageSize) && ctrl.customPageSize <= ctrl.pager.total &&
+                ctrl.pager.pageSize !== ctrl.customPageSize;
+        }
+
+        if (!isValidPageChange() && !isValidPageSize()) {
+            return;
+        }
+
+        if (isValidPageChange()) {
+            ctrl.pager.current = ctrl.pageToGoTo;
+        } else {
+            $log.log(ctrl.pageToGoTo, ' is not a valid page to navigate to.');
+        }
+
+        if (isValidPageSize()) {
+            ctrl.pager.pageSize = ctrl.customPageSize;
+        } else {
+            $log.log(ctrl.customPageSize, ' is not a valid page size.');
+        }
+
+        ctrl.pageChanged();
+    }
+
+    function maxPageNumber() {
+        return Math.ceil(ctrl.pager.total / ctrl.pager.pageSize);
     }
 }

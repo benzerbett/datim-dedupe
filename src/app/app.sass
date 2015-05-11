@@ -32,6 +32,7 @@ body
   left: 0
   top: 0
   width: 100%
+  z-index: 4
 
   .loading-mask-content
     color: #FFFFFF
@@ -57,6 +58,7 @@ body
   border-top: 1px solid #CCC
   bottom: 0
   width: 100%
+  z-index: 3
 
   span, label
     line-height: 34px
@@ -102,7 +104,6 @@ body
       margin-right: 30px
 
 .dedupe-type-buttons
-  padding
   button
     display: table-cell
     width: 49%
@@ -119,3 +120,29 @@ body
 .dedupe-download-csv
   margin-bottom: 30px
   text-align: right
+
+.page-goto
+  width: 50%
+  margin: 0 auto
+
+  button
+    vertical-align: top
+    margin: 0 auto
+    min-width: 294px
+    max-width: 294px
+
+  label
+    margin-right: 1rem
+    display: block
+
+    span
+      min-width: 210px
+      max-width: 210px
+      display: inline-block
+
+  input.form-control
+    width: 5rem
+    display: inline-block
+    width: 8rem
+    text-align: right
+    font-weight: normal

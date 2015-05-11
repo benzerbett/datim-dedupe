@@ -356,17 +356,17 @@ describe('App controller', function () {
         it('should update the records when calling changedIncludeResolved', function () {
             controller.changedIncludeResolved();
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, true, undefined, 1, 'PURE');
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, true, undefined, 1, 'PURE', 50);
         });
 
         it('should return to only showing the resolved ones', function () {
             controller.changedIncludeResolved();
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, true, undefined, 1, 'PURE');
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, true, undefined, 1, 'PURE', 50);
 
             controller.changedIncludeResolved();
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined, 1, 'PURE');
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined, 1, 'PURE', 50);
         });
     });
 
@@ -443,7 +443,7 @@ describe('App controller', function () {
 
             $rootScope.$apply();
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith('myOrgUnit', 'Oct 2013', false, undefined, 1, 'PURE');
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith('myOrgUnit', 'Oct 2013', false, undefined, 1, 'PURE', 50);
             expect(controller.showCrossWalkMessage).toHaveBeenCalled();
         });
     });
@@ -460,7 +460,7 @@ describe('App controller', function () {
         it('should set the correct filters onto the controller', function () {
             $rootScope.$broadcast('DEDUPE_RECORDFILTER_SERVICE.updated', {ou: 'myOrgUnit', pe: '2013Oct', tr: 'Results', ty: 'PURE'});
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith('myOrgUnit', '2013Oct', false, 'Results', 1, 'PURE');
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith('myOrgUnit', '2013Oct', false, 'Results', 1, 'PURE', 50);
         });
     });
 
@@ -469,7 +469,7 @@ describe('App controller', function () {
             controller.pager.current = 2;
             controller.pageChanged();
 
-            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined, 2, 'PURE');
+            expect(dedupeServiceMock.getDuplicateRecords).toHaveBeenCalledWith(undefined, undefined, false, undefined, 2, 'PURE', 50);
         });
 
         it('should notify the user if no results have been found', function () {
@@ -505,7 +505,7 @@ describe('App controller', function () {
 
             $rootScope.$apply();
 
-            expect(dedupeServiceMock.getCsvUrl).toHaveBeenCalledWith('myOrgUnit', '2013Oct', false, 'Results', 1, 'PURE');
+            expect(dedupeServiceMock.getCsvUrl).toHaveBeenCalledWith('myOrgUnit', '2013Oct', false, 'Results', 1, 'PURE', 10);
         });
 
         it('should set the url on the controller on success', function () {
@@ -533,6 +533,38 @@ describe('App controller', function () {
             $rootScope.$apply();
 
             expect(controller.csvSettings.show).toEqual(false);
+        });
+    });
+
+    describe('goToPage', function () {
+        it('should call the pageChanged when called', function () {
+            spyOn(controller, 'pageChanged');
+
+            controller.pageToGoTo = 2;
+            controller.pager.total = 500;
+            controller.goToPage();
+
+            expect(controller.pageChanged).toHaveBeenCalled();
+        });
+
+        it('should not call the pageChanged when goto page is too large', function () {
+            spyOn(controller, 'pageChanged');
+
+            controller.pageToGoTo = 11;
+            controller.pager.total = 500;
+            controller.goToPage();
+
+            expect(controller.pageChanged).not.toHaveBeenCalled();
+        });
+
+        it('should not call the pageChanged when goto page is not a number', function () {
+            spyOn(controller, 'pageChanged');
+
+            controller.pageToGoTo = 'a';
+            controller.pager.total = 500;
+            controller.goToPage();
+
+            expect(controller.pageChanged).not.toHaveBeenCalled();
         });
     });
 });
