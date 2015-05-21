@@ -35,102 +35,91 @@ END CASE;
  value character varying (500000),
  duplicate_type character varying(20),
  lastupdated timestamp without time zone,
- group_id text,
  PRIMARY KEY (sourceid, periodid,dataelementid,categoryoptioncomboid,attributeoptioncomboid)
  ) ON COMMIT DROP;
  
 IF ty = 'PURE'::character varying(50) THEN
  
-CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
-
-EXECUTE '
-INSERT INTO temp2 FROM 
-SELECT * FROM (
-SELECT ou.name as ou,
-de.name as dataelement,
-_coc.categoryoptioncomboname as disaggregation ,
-acoc.categoryoptioncomboname as mechanism,
-partner.partner,
-a.value,
-a.resolved ,
-ou.uid as ou_uid,
-de.uid as de_uid,
-coc.uid as coc_uid,
-dense_rank() OVER (ORDER BY a.sourceid,a.dataelementid,a.periodid,a.categoryoptioncomboid) as group_id,
-SUM(group_count) OVER (PARTITION BY a.periodid) as total_groups,' || $6 ||  ' as dataset_type
- FROM 
- (
-SELECT DISTINCT
+ EXECUTE 'INSERT INTO temp1
+ SELECT DISTINCT
  dv1.sourceid,
  dv1.periodid,
  dv1.dataelementid,
  dv1.categoryoptioncomboid,
  dv1.attributeoptioncomboid,
- dv1.value ,
- dv1.lastupdated,
- dv3.lastupdated,
- COALESCE(dv3.lastupdated >= dv1.lastupdated,FALSE) as resolved,
- 1 as group_count
+ trim(dv1.value) ,''PURE''::character varying(20) as duplicate_type,
+ dv1.lastupdated
  from datavalue dv1
-INNER JOIN  (
-
- SELECT sourceid,dataelementid,periodid,categoryoptioncomboid
- FROM datavalue dv
- INNER JOIN _orgunitstructure ous on dv.sourceid = ous.organisationunitid and ous.uidlevel3 = ''' || $1  || '''
- WHERE dv.dataelementid IN (
+ INNER JOIN  datavalue dv2 on 
+ dv1.sourceid = dv2.sourceid
+ AND 
+ dv1.periodid = dv2.periodid
+ AND 
+ dv1.dataelementid = dv2.dataelementid
+ AND 
+ dv1.categoryoptioncomboid = dv2.categoryoptioncomboid
+ AND 
+ dv1.attributeoptioncomboid  != dv2.attributeoptioncomboid 
+ INNER JOIN _orgunitstructure ous on dv1.sourceid = ous.organisationunitid
+ and ous.uidlevel3 = ''' ||  $1 || '''
+ WHERE dv1.dataelementid IN (
  SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
  SELECT datasetid from dataset where uid in (
 ''qRvKHvlzNdv'',''vYEbELCknv'',''tCIW2VFd8uu'', ''ovYEbELCknv'',
- ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'') ' || dataset_filter || 
- '))  
-AND dv.periodid = (SELECT DISTINCT periodid from _periodstructure
-where iso = ''' || $2 || ''' LIMIT 1) 
-and dv.attributeoptioncomboid != (SELECT categoryoptioncomboid
-FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00001''))
-GROUP BY 
-sourceid,dataelementid,periodid,categoryoptioncomboid
-HAVING COUNT(*) > 1 
+ ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'')'  || dataset_filter ||
+ ' ) ) AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
+ where iso = ''' || $2 || ''' LIMIT 1)';
 
-) dv2 on 
- dv1.sourceid = dv2.sourceid
- AND                                  
- dv1.periodid = dv2.periodid
- AND                                                  
- dv1.dataelementid = dv2.dataelementid
- AND                                                       
- dv1.categoryoptioncomboid = dv2.categoryoptioncomboid
-LEFT JOIN  (
-SELECT sourceid,dataelementid,periodid,categoryoptioncomboid,lastupdated 
-FROM datavalue dv
- INNER JOIN _orgunitstructure ous on dv.sourceid = ous.organisationunitid and ous.uidlevel3 = ''' || $1  || ''' 
- AND dv.periodid = (SELECT DISTINCT periodid from _periodstructure
- where iso = ''' || $2 || ''' LIMIT 1) 
- and attributeoptioncomboid = (SELECT categoryoptioncomboid
-  FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00000 De-duplication adjustment''))) dv3 on 
- dv1.sourceid = dv3.sourceid
- AND                                  
- dv1.periodid = dv3.periodid
- AND                                                  
- dv1.dataelementid = dv3.dataelementid
- AND                                                       
- dv1.categoryoptioncomboid = dv3.categoryoptioncomboid
+  
+/*Group ID. This will be used to group duplicates. */
+ALTER TABLE temp1 ADD COLUMN group_id text;
+UPDATE temp1 SET group_id = dataelementid::text ||  categoryoptioncomboid::text || sourceid::text  ;
+--CREATE INDEX idx_group_ids ON temp1 (group_id);
 
- WHERE dv1.attributeoptioncomboid != (SELECT categoryoptioncomboid
- FROM _categoryoptioncomboname where categoryoptioncomboname ~*(''00001''))
- AND COALESCE(dv3.lastupdated >= dv1.lastupdated,FALSE) = FALSE
- ) a
-INNER JOIN organisationunit ou on a.sourceid = ou.organisationunitid
-INNER JOIN dataelement de on a.dataelementid = de.dataelementid
-INNER JOIN _categoryoptioncomboname _coc on a.categoryoptioncomboid = _coc.categoryoptioncomboid
-INNER JOIN categoryoptioncombo coc on _coc.categoryoptioncomboid = coc.categoryoptioncomboid
-INNER JOIN _categoryoptioncomboname acoc on a.attributeoptioncomboid = acoc.categoryoptioncomboid
-LEFT JOIN ( SELECT _cocg.categoryoptioncomboid,_cog.name as partner from categoryoptiongroup _cog
-INNER JOIN categoryoptiongroupsetmembers _cogsm on _cog.categoryoptiongroupid=_cogsm.categoryoptiongroupid 
-INNER JOIN categoryoptiongroupmembers _cogm on _cog.categoryoptiongroupid=_cogm.categoryoptiongroupid 
-INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=_cocg.categoryoptionid
-WHERE _cogsm.categoryoptiongroupsetid= 481662 ) partner on a.attributeoptioncomboid = partner.categoryoptioncomboid ) f
-where group_id >= ' || start_group || ' AND ' || ' group_id <= ' || end_group ;
 
+/*We need to filter out sketchy values and then determine if there are any phantom groups */
+DELETE FROM temp1 where value !~ ('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
+
+/*Get rid of any DSD-TA crosswalk. This should never happen*/
+DELETE FROM temp1 where attributeoptioncomboid =
+ (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(00001'));
+/*Delete any zeros. They should not be part of the crosswalk*/
+DELETE FROM temp1 where attributeoptioncomboid !=
+ (SELECT categoryoptioncomboid from _categoryoptioncomboname where categoryoptioncomboname ~('^\(00000'))
+AND value = '0';
+
+/*Get rid of any dangling dupes*/
+DELETE FROM temp1 where group_id IN (SELECT group_id from temp1 GROUP BY group_id HAVING COUNT(*) = 1);
+/*Get rid of any groups which remain with less than two members*/
+DELETE FROM temp1 where group_id IN (SELECT group_id from temp1   
+  WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
+FROM _categoryoptioncomboname where categoryoptioncomboname ~('00000 De-duplication adjustment')) 
+ GROUP BY group_id HAVING COUNT(*) < 2);
+
+
+/*Duplication status*/
+ 
+ ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT 'UNRESOLVED';
+/*Only resolve non-legacy dedupes*/
+ UPDATE temp1 set duplication_status = 'RESOLVED'
+ where group_id IN (SELECT DISTINCT group_id FROM temp1
+ WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment')))
+AND group_id NOT IN (SELECT a.group_id FROM (
+SELECT group_id,MAX(lastupdated) as dedupe_time from temp1 
+WHERE attributeoptioncomboid = (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
+GROUP BY group_id ) a
+INNER JOIN (
+SELECT group_id,MAX(lastupdated) as data_time from temp1 
+WHERE attributeoptioncomboid != (SELECT categoryoptioncomboid
+FROM _categoryoptioncomboname where categoryoptioncomboname ~*('00000 De-duplication adjustment'))
+GROUP BY group_id ) b
+on a.group_id = b.group_id
+WHERE a.dedupe_time <= b.data_time)
+AND group_id IN (SELECT DISTINCT group_id from temp1 where value ~('^[-|0]') and attributeoptioncomboid = (SELECT categoryoptioncomboid
+  FROM _categoryoptioncomboname where categoryoptioncomboname ~('00000 De-duplication adjustment'))); 
+ 
 END IF;
 /*End PURE Dedupe logic*/
 
@@ -241,7 +230,7 @@ on a.group_id = b.group_id
 WHERE a.dedupe_time <= b.data_time); 
  
 
-
+END IF;
 /*End CROSSWALK Dedupe logic*/
 
 
@@ -256,11 +245,6 @@ WHERE a.dedupe_time <= b.data_time);
  UPDATE temp1 set dataelement = b.name from dataelement b
  where temp1.dataelementid = b.dataelementid;
  
-/*Targets and results*/
-
-ALTER TABLE temp1 ADD COLUMN dataset_type character varying(50) DEFAULT 'TARGETS';
-UPDATE temp1 SET dataset_type = 'RESULTS' where 
-dataelement ~('RESULT');
 
 /*Data element uids*/
  ALTER TABLE temp1 ADD COLUMN de_uid character varying(11);
@@ -272,7 +256,8 @@ dataelement ~('RESULT');
  ALTER TABLE temp1 ADD COLUMN total_groups integer;
 
 UPDATE temp1 a set group_count = b.group_count FROM(
-SELECT dataelementid,categoryoptioncomboid,sourceid, sum(1) OVER (ORDER BY dataelementid,categoryoptioncomboid,sourceid) as group_count
+SELECT dataelementid,categoryoptioncomboid,sourceid, 
+sum(1) OVER (ORDER BY dataelementid,categoryoptioncomboid,sourceid) as group_count
 FROM temp1
 GROUP BY dataelementid,categoryoptioncomboid,sourceid) b 
 where a.dataelementid = b.dataelementid
@@ -310,7 +295,7 @@ UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
  
  /*Mechanism*/
  ALTER TABLE temp1 ADD COLUMN mechanism character varying(250);
- UPDATE temp1 set mechanism = b.categoryoptioncomboname from _categoryoptioncomboname b
+ UPDATE temp1 set mechanism = b.code from categoryoptioncombo b
  where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
 
  UPDATE temp1 set mechanism = 'DSD Value' where attributeoptioncomboid = -1;
@@ -318,8 +303,8 @@ UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
   /*Orgunits*/
  /*Country level*/
 
-ALTER TABLE temp1 ADD COLUMN ou_name character varying(230);
-ALTER TABLE temp1 ADD COLUMN ou_uid character varying(11);
+ ALTER TABLE temp1 ADD COLUMN ou_name character varying(230);
+ ALTER TABLE temp1 ADD COLUMN ou_uid character varying(11);
 
 
 UPDATE temp1 a set ou_name =  b.name from organisationunit b where a.sourceid = b.organisationunitid;
@@ -342,6 +327,8 @@ UPDATE temp1 set partner = 'Dedupe adjustment' where attributeoptioncomboid IN (
 where categoryoptioncomboname ~ '^\(00000');
 UPDATE temp1 set partner = 'DSD Value' where attributeoptioncomboid = -1;
 
+ 
+
 CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
  
 EXECUTE 'INSERT INTO temp2 SELECT 
@@ -357,13 +344,10 @@ ou_uid,
 de_uid,
 coc_uid,
 group_count,
-total_groups,
-dataset_type
+total_groups
 FROM temp1'; 
-
-END IF;
-
-/*Return the records*/
+  
+   /*Return the records*/
    FOR returnrec IN SELECT * FROM temp2 ORDER BY group_count LOOP
      RETURN NEXT returnrec;
      END LOOP;
