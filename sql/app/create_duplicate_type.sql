@@ -13,5 +13,4 @@ ou_uid character varying (11),
 de_uid character varying (11),
 coc_uid character varying (11),
 group_count integer,
-total_groups integer,
-dataset_type character varying(50) );
+total_groups integer );

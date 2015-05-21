@@ -57,7 +57,7 @@ ou.uid as ou_uid,
 de.uid as de_uid,
 coc.uid as coc_uid,
 dense_rank() OVER (ORDER BY a.sourceid,a.dataelementid,a.periodid,a.categoryoptioncomboid) as group_id,
-SUM(group_count) OVER (PARTITION BY a.periodid) as total_groups,' || $6 ||  ' as dataset_type
+SUM(group_count) OVER (PARTITION BY a.periodid) as total_groups
  FROM 
  (
 SELECT DISTINCT
