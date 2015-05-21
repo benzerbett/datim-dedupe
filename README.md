@@ -81,6 +81,20 @@ The `dhisDeployDirectory` is the directory on disk where the app should be copie
 ```
 
 ### Install the dependencies
+We make use of some tools to build the application, that you would need to install before being able to do any of the commands needed. You need to run `nodejs` or `io.js` and have `bower` and `gulp` installed as global modules. Additionally to pre-process the sass files to css you need to have `sass` for `ruby` installed as well. All these can be installed using the following commands.
+
+```bash
+#Install bower for dependency management
+npm install -g bower
+
+#Install gulp to run build tasks
+npm install -g gulp
+
+#You might have to use sudo to install the ruby gem.
+gem install sass 
+#or
+sudo gem install sass 
+```
 
 Run the following command to install the nodejs dependencies (This requires you to have nodejs installed)
 ```bash
