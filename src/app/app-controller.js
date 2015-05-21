@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').controller('appController', appController);
 
-function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notify, $log, DEDUPE_PAGE_SIZE) { //jshint maxstatements:42
+function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notify, $log, DEDUPE_PAGE_SIZE) { //jshint maxstatements:44
     var ctrl = this;
     var dedupeFilters = {
         includeResolved: false,
@@ -21,6 +21,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
     ctrl.pageToGoTo = ctrl.pager.current;
     ctrl.goToPage = goToPage;
     ctrl.maxPageNumber = maxPageNumber;
+    ctrl.maxPageSize = maxPageSize;
 
     //Controller methods
     ctrl.useMax = useMax;
@@ -133,6 +134,9 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
     function adjustPager(total) {
         if (total) {
             ctrl.pager.total = total;
+            if (total < ctrl.pager.pageSize) {
+                ctrl.customPageSize = total;
+            }
         }
     }
 
@@ -234,5 +238,12 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
 
     function maxPageNumber() {
         return Math.ceil(ctrl.pager.total / ctrl.pager.pageSize);
+    }
+
+    function maxPageSize() {
+        if (ctrl.pager.total < ctrl.pager.pageSize) {
+            return ctrl.pager.total;
+        }
+        return ctrl.pager.pageSize;
     }
 }
