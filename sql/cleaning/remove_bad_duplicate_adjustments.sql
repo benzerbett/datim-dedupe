@@ -1,21 +1,38 @@
 
 CREATE OR REPLACE FUNCTION resolve_bad_duplication_adjustments() RETURNS integer AS $$ 
-
+ DECLARE
+this_date date;
 
  BEGIN 
 
+this_date := now()::date;
+
+ --Do not delete these for now, until we are sure all this mojo works
+
+CREATE TEMP TABLE  datavalueaudit_dedupes_temp
+( datavalueaudit_dedupes_tempid integer NOT NULL ,
+  dataelementid integer NOT NULL,
+  periodid integer NOT NULL,
+  sourceid integer NOT NULL,
+  categoryoptioncomboid integer NOT NULL,
+  value character varying(50000),
+  storedby character varying(100),
+  lastupdated timestamp without time zone,
+  comment character varying(50000),
+  followup boolean,
+  attributeoptioncomboid integer NOT NULL,
+  created timestamp without time zone,
+  CONSTRAINT datavalueaudit_dedupes_temp_pkey PRIMARY KEY (datavalueaudit_dedupes_tempid)
+) ON COMMIT DROP;
+
  --Section for removal of 00000 dedupe adjustments which are no longer valid.
 --Orphaned dupes. These are ones which were a duplicate pair at some point in time, but are no longer
-
-DELETE
-FROM datavalue d USING
-  (SELECT a.dataelementid,
-          a.periodid,
-          a.sourceid,
-          a.categoryoptioncomboid
-   FROM datavalue a
-   INNER JOIN
-     (SELECT DISTINCT dataelementid,
+INSERT INTO datavalueaudit_dedupes_temp
+SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, a.sourceid, a.categoryoptioncomboid, a.value, 
+       a.storedby, a.lastupdated, a.comment, a.followup, a.attributeoptioncomboid, 
+       a.created FROM datavalue a 
+INNER JOIN (
+SELECT DISTINCT dataelementid,
                       periodid,
                       sourceid,
                       categoryoptioncomboid
@@ -23,37 +40,29 @@ FROM datavalue d USING
       WHERE attributeoptioncomboid =
           (SELECT categoryoptioncomboid
            FROM _categoryoptioncomboname
-           WHERE categoryoptioncomboname ~('^\(00000'))) b ON a.dataelementid = b.dataelementid
-   AND a.periodid = b.periodid
-   AND a.categoryoptioncomboid = b.categoryoptioncomboid
-   AND a.sourceid = b.sourceid
-   WHERE a.value != '0'
-     OR a.value != ''
-     OR a.value IS NULL
-     OR
-     AND a.attributeoptioncomboid !=
-       (SELECT categoryoptioncomboid
-        FROM _categoryoptioncomboname
-        WHERE categoryoptioncomboname ~('^\(00001'))
-   GROUP BY a.dataelementid,
-            a.periodid,
-            a.sourceid,
-            a.categoryoptioncomboid HAVING COUNT(*) < 3) c
-WHERE c.dataelementid = d.dataelementid
-  AND c.periodid = d.periodid
-  AND c.sourceid = d.sourceid
-  AND c.categoryoptioncomboid = d.categoryoptioncomboid
-  AND d.attributeoptioncomboid =
-    (SELECT categoryoptioncomboid
-     FROM _categoryoptioncomboname
-     WHERE categoryoptioncomboname ~('^\(00000')); 
+           WHERE categoryoptioncomboname ~('^\(00000'))
+INTERSECT
+SELECT dataelementid,periodid,sourceid,categoryoptioncomboid from datavalue
+WHERE attributeoptioncomboid NOT IN (SELECT categoryoptioncomboid
+           FROM _categoryoptioncomboname
+           WHERE categoryoptioncomboname ~('^\(0000[0|1]'))
+GROUP BY dataelementid,periodid,sourceid,categoryoptioncomboid
+HAVING COUNT(*) < 2 ) as b
+ON a.dataelementid = b.dataelementid
+and a.periodid = b.periodid
+and a.sourceid = b.sourceid
+and a.categoryoptioncomboid = b.categoryoptioncomboid
+and a.attributeoptioncomboid =  (SELECT categoryoptioncomboid
+           FROM _categoryoptioncomboname
+           WHERE categoryoptioncomboname ~('^\(00000'));
 
 --Vintage pure dupes. Occurs when datavalues are updated after the dedupe happened.
 --This SHOULD be re-deduped, but in situations when this occurs, these must be deleted.
-
-  DELETE
-  FROM datavalue d USING
-    (SELECT a.dataelementid,
+INSERT INTO datavalueaudit_dedupes_temp
+SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, a.sourceid, a.categoryoptioncomboid, a.value, 
+       a.storedby, a.lastupdated, a.comment, a.followup, a.attributeoptioncomboid, 
+       a.created FROM datavalue a  INNER JOIN ( 
+    SELECT a.dataelementid,
             a.periodid,
             a.sourceid,
             a.categoryoptioncomboid,
@@ -82,14 +91,14 @@ WHERE c.dataelementid = d.dataelementid
          (SELECT categoryoptioncomboid
           FROM _categoryoptioncomboname
           WHERE categoryoptioncomboname ~('^\(00000'))
-       AND a.lastupdated < b.value_timestamp) c WHERE c.dataelementid = d.dataelementid
-  AND c.periodid = d.periodid
-  AND c.sourceid = d.sourceid
-  AND c.categoryoptioncomboid = d.categoryoptioncomboid
-  AND d.attributeoptioncomboid =
-    (SELECT categoryoptioncomboid
-     FROM _categoryoptioncomboname
-     WHERE categoryoptioncomboname ~('^\(00000'));
+       AND a.lastupdated < b.value_timestamp) b 
+ON a.dataelementid = b.dataelementid
+and a.periodid = b.periodid
+and a.sourceid = b.sourceid
+and a.categoryoptioncomboid = b.categoryoptioncomboid
+and a.attributeoptioncomboid =  (SELECT categoryoptioncomboid
+           FROM _categoryoptioncomboname
+           WHERE categoryoptioncomboname ~('^\(00000'));
 
 --Begin resolution of dangling DSD-TA dedupes
  --Every DSD-TA duplicate needs a TA conjugate
@@ -97,48 +106,11 @@ WHERE c.dataelementid = d.dataelementid
  --TODO: Need to work out the issue with duplicate zero values.
 --Orphaned DSD-TA Crosswalks duplication adjustments
 
-  DELETE
-  FROM datavalue d USING
-    (SELECT a.dataelementid,
-            a.periodid,
-            a.sourceid,
-            a.categoryoptioncomboid
-     FROM datavalue a
-     INNER JOIN
-       (SELECT DISTINCT dataelementid,
-                        periodid,
-                        sourceid,
-                        categoryoptioncomboid
-        FROM datavalue
-        WHERE attributeoptioncomboid =
-            (SELECT categoryoptioncomboid
-             FROM _categoryoptioncomboname
-             WHERE categoryoptioncomboname ~('^\(00001'))) b ON a.dataelementid = b.dataelementid
-     AND a.periodid = b.periodid
-     AND a.categoryoptioncomboid = b.categoryoptioncomboid
-     AND a.sourceid = b.sourceid
-     WHERE a.value != '0'
-       OR a.value != ''
-       OR a.value IS NULL
-       OR
-       AND a.attributeoptioncomboid !=
-         (SELECT categoryoptioncomboid
-          FROM _categoryoptioncomboname
-          WHERE categoryoptioncomboname ~('^\(00000'))
-     GROUP BY a.dataelementid,
-              a.periodid,
-              a.sourceid,
-              a.categoryoptioncomboid HAVING COUNT(*) < 3) c WHERE c.dataelementid = d.dataelementid
-  AND c.periodid = d.periodid
-  AND c.sourceid = d.sourceid
-  AND c.categoryoptioncomboid = d.categoryoptioncomboid
-  AND d.attributeoptioncomboid =
-    (SELECT categoryoptioncomboid
-     FROM _categoryoptioncomboname
-     WHERE categoryoptioncomboname ~('^\(00000'));
-  DELETE
-  FROM datavalue b USING
-    ( SELECT DISTINCT dataelementid,
+INSERT INTO datavalueaudit_dedupes_temp
+SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, a.sourceid, a.categoryoptioncomboid, a.value, 
+       a.storedby, a.lastupdated, a.comment, a.followup, a.attributeoptioncomboid, 
+       a.created FROM datavalue a INNER JOIN ( 
+   SELECT DISTINCT dataelementid,
                       periodid,
                       sourceid,
                       categoryoptioncomboid
@@ -147,7 +119,8 @@ WHERE c.dataelementid = d.dataelementid
          (SELECT categoryoptioncomboid
           FROM _categoryoptioncomboname
           WHERE categoryoptioncomboname ~('^\(00001'))
-       AND value !='0' EXCEPT
+       AND value !='0' 
+       EXCEPT
        SELECT DISTINCT dataelementid,
                        periodid,
                        sourceid,
@@ -158,14 +131,18 @@ WHERE c.dataelementid = d.dataelementid
           WHERE categoryoptioncomboname ~('^\(0000[0|1]'))
        AND NOT (value = '0'
                 OR value =''
-                OR VALUE IS NULL)) c WHERE b.dataelementid = c.dataelementid
-  AND b.periodid = c.periodid
-  AND b.sourceid = c.sourceid
-  AND b.categoryoptioncomboid = c.categoryoptioncomboid
-  AND b.attributeoptioncomboid =
+                OR VALUE IS NULL)) b
+  ON a.dataelementid = b.dataelementid
+  AND a.periodid = b.periodid
+  AND a.sourceid = b.sourceid
+  AND a.categoryoptioncomboid = b.categoryoptioncomboid
+  AND a.attributeoptioncomboid =
     (SELECT categoryoptioncomboid
      FROM _categoryoptioncomboname
-     WHERE categoryoptioncomboname ~('^\(00001') LIMIT 1); --Vintage DSD-TA CROSSWALKS
+     WHERE categoryoptioncomboname ~('^\(00001') LIMIT 1);
+
+
+      --Vintage DSD-TA CROSSWALKS
 
   CREATE TEMP TABLE temp1 (sourceid integer, 
     periodid integer, 
@@ -255,7 +232,7 @@ WHERE c.dataelementid = d.dataelementid
   AND a.periodid = b.periodid
   AND a.categoryoptioncomboid = b.categoryoptioncomboid;
 
-  --Set the TA audit timestamp. Must be youngerr than the dupe adjustment
+  --Set the TA audit timestamp. Must be younger than the dupe adjustment
   UPDATE temp1 a
   SET ta_audit_timestamp = b.ta_audit_timestamp
   FROM
@@ -280,21 +257,41 @@ WHERE c.dataelementid = d.dataelementid
   AND a.sourceid = b.sourceid
   AND a.periodid = b.periodid
   AND a.categoryoptioncomboid = b.categoryoptioncomboid;
-  DELETE
-  FROM datavalue b USING
+  
+
+
+
+INSERT INTO datavalueaudit_dedupes_temp
+SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, a.sourceid, a.categoryoptioncomboid, a.value, 
+       a.storedby, a.lastupdated, a.comment, a.followup, a.attributeoptioncomboid, 
+       a.created FROM datavalue a INNER JOIN
     (SELECT sourceid,
             periodid,
             dataelementid,
             categoryoptioncomboid
      FROM temp1
-     WHERE lastupdated < GREATEST(dsd_timestamp,dsd_audit_timestamp,ta_audit_timestamp)) a WHERE a.sourceid = b.sourceid
+     WHERE lastupdated < GREATEST(dsd_timestamp,dsd_audit_timestamp,ta_audit_timestamp)) b 
+
+   ON a.sourceid = b.sourceid
   AND a.periodid = b.periodid
   AND a.dataelementid = b.dataelementid
   AND a.categoryoptioncomboid = b.categoryoptioncomboid
-  AND b.attributeoptioncomboid =
+  WHERE a.attributeoptioncomboid =
     (SELECT categoryoptioncomboid
      FROM _categoryoptioncomboname
      WHERE categoryoptioncomboname ~('^\(00001') LIMIT 1); 
+
+
+
+EXECUTE 'INSERT INTO datavalueaudit_dedupes  SELECT a.*,$1 FROM datavalueaudit_dedupes_temp a' USING this_date;
+
+EXECUTE 'DELETE FROM datavalue a USING datavalueaudit_dedupes b 
+WHERE a.sourceid = b.sourceid
+and a.periodid = b.periodid
+and a.dataelementid = b.dataelementid
+and a.categoryoptioncomboid = b.categoryoptioncomboid
+and a.attributeoptioncomboid = b.attributeoptioncomboid
+and b.deleted_on = $1' USING this_date;
 
      RETURN(1); 
      END; 
