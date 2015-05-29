@@ -23,9 +23,9 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
             .then(function (sqlViewId) {
                 return [
                     [webappManifest.activities.dhis.href, 'api', 'sqlViews', sqlViewId, 'data.csv'].join('/'),
-                    getFilterArrayFromFilters(filters).map(function (value) {
+                    (getFilterArrayFromFilters(filters).map(function (value) {
                         return 'var=' + value;
-                    }).join('&')
+                    }).concat('cacheBuster=' + (new Date()).getTime())).join('&')
                 ].join('?');
             });
     }
@@ -40,7 +40,7 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
     }
 
     function executeSqlViewOnApi(filters) {
-        var queryParameters = {var: getFilterArrayFromFilters(filters)};
+        var queryParameters = {var: getFilterArrayFromFilters(filters), cacheBuster: (new Date()).getTime()};
 
         return getSqlViewIdFromSystemSettings()
             .then(function (sqlViewId) {

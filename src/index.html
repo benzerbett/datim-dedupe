@@ -81,7 +81,7 @@
                     </label>
                     <label>
                         <span>Page size (min 1, max {{app.pager.total}}):</span>
-                        <input class="form-control" name="page-goto" min="1" max="{{app.pager.total}}" type="number" ng-model="app.customPageSize" />
+                        <input class="form-control" name="page-goto" min="1" max="{{app.maxPageSize()}}" type="number" ng-model="app.customPageSize" />
                     </label>
                     <div>
                         <button type="button" class="btn btn-default" ng-click="app.goToPage()">Go!</button>
