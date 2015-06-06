@@ -119,7 +119,6 @@ SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, 
          (SELECT categoryoptioncomboid
           FROM _categoryoptioncomboname
           WHERE categoryoptioncomboname ~('^\(00001'))
-       AND value !='0' 
        EXCEPT
        SELECT DISTINCT dataelementid,
                        periodid,
@@ -128,10 +127,7 @@ SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, 
        FROM datavalue WHERE attributeoptioncomboid NOT IN
          (SELECT categoryoptioncomboid
           FROM _categoryoptioncomboname
-          WHERE categoryoptioncomboname ~('^\(0000[0|1]'))
-       AND NOT (value = '0'
-                OR value =''
-                OR VALUE IS NULL)) b
+          WHERE categoryoptioncomboname ~('^\(0000[0|1]'))) b
   ON a.dataelementid = b.dataelementid
   AND a.periodid = b.periodid
   AND a.sourceid = b.sourceid
@@ -204,19 +200,21 @@ SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, 
   FROM
     (SELECT dv.organisationunitid AS sourceid ,
             dv.periodid,
-            dv.dataelementid,
+            c.dataelementid,
             dv.categoryoptioncomboid,
-            max(dv.TIMESTAMP) AS dsd_audit_timestamp
+            max(dv.timestamp) AS dsd_audit_timestamp
      FROM datavalueaudit dv
      INNER JOIN
        (SELECT a.sourceid,
                a.periodid,
-               b.dsd_dataelementid AS dataelementid,
+               b.dsd_dataelementid AS dsd_dataelementid,
+               a.dataelementid as dataelementid,
                a.categoryoptioncomboid
         FROM temp1 a
         INNER JOIN
           (SELECT *
-           FROM _view_dsd_ta_crosswalk) b ON a.dataelementid = b.ta_dataelementid) c ON c.dataelementid = dv.dataelementid
+           FROM _view_dsd_ta_crosswalk) b ON a.dataelementid = b.ta_dataelementid) c 
+     ON c.dsd_dataelementid = dv.dataelementid
      AND c.sourceid = dv.organisationunitid
      AND c.periodid = dv.periodid
      AND c.categoryoptioncomboid = dv.categoryoptioncomboid
@@ -226,8 +224,9 @@ SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, 
           WHERE categoryoptioncomboname ~*('0000[0|1]'))
      GROUP BY dv.organisationunitid,
               dv.periodid,
-              dv.dataelementid,
-              dv.categoryoptioncomboid) b WHERE a.dataelementid = b.dataelementid
+              c.dataelementid,
+              dv.categoryoptioncomboid) b WHERE 
+  a.dataelementid = b.dataelementid
   AND a.sourceid = b.sourceid
   AND a.periodid = b.periodid
   AND a.categoryoptioncomboid = b.categoryoptioncomboid;
@@ -282,8 +281,9 @@ SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, 
      WHERE categoryoptioncomboname ~('^\(00001') LIMIT 1); 
 
 
+INSERT INTO datavalueaudit_dedupes  SELECT * FROM datavalueaudit_dedupes_temp;
 
-EXECUTE 'INSERT INTO datavalueaudit_dedupes  SELECT a.*,$1 FROM datavalueaudit_dedupes_temp a' USING this_date;
+EXECUTE 'UPDATE datavalueaudit_dedupes SET deleted_on =  $1 WHERE deleted_on IS NULL' USING this_date; 
 
 EXECUTE 'DELETE FROM datavalue a USING datavalueaudit_dedupes b 
 WHERE a.sourceid = b.sourceid
