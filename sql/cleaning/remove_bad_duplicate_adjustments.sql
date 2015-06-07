@@ -2,11 +2,14 @@
 CREATE OR REPLACE FUNCTION resolve_bad_duplication_adjustments() RETURNS integer AS $$ 
  DECLARE
 this_date date;
-
+this_id integer;
  BEGIN 
 
 this_date := now()::date;
 
+SELECT COALESCE(MAX(datavalueaudit_dedupes_serialid),0) + 1 into this_id FROM datavalueaudit_dedupes ;
+
+EXECUTE 'CREATE TEMPORARY SEQUENCE datavalueaudit_dedupes_serialid START ' || this_id;
  --Do not delete these for now, until we are sure all this mojo works
 
 CREATE TEMP TABLE  datavalueaudit_dedupes_temp
@@ -292,6 +295,8 @@ and a.dataelementid = b.dataelementid
 and a.categoryoptioncomboid = b.categoryoptioncomboid
 and a.attributeoptioncomboid = b.attributeoptioncomboid
 and b.deleted_on = $1' USING this_date;
+
+DROP SEQUENCE datavalueaudit_dedupes_serialid;
 
      RETURN(1); 
      END; 
