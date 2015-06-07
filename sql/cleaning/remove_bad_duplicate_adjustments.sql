@@ -286,15 +286,20 @@ SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, 
 
 INSERT INTO datavalueaudit_dedupes  SELECT * FROM datavalueaudit_dedupes_temp;
 
+--Update the dates in the main audit table
 EXECUTE 'UPDATE datavalueaudit_dedupes SET deleted_on =  $1 WHERE deleted_on IS NULL' USING this_date; 
+--Delete anything in the temporary table which is not a dedupe adjustment
+DELETE FROM datavalueaudit_dedupes_temp where attributeoptioncomboid NOT IN (SELECT categoryoptioncomboid
+          FROM _categoryoptioncomboname
+          WHERE categoryoptioncomboname ~*('0000[0|1]'));
 
-EXECUTE 'DELETE FROM datavalue a USING datavalueaudit_dedupes b 
+--Perform the main deletion operation from the data value table
+DELETE FROM datavalue a USING datavalueaudit_dedupes_temp b 
 WHERE a.sourceid = b.sourceid
 and a.periodid = b.periodid
 and a.dataelementid = b.dataelementid
 and a.categoryoptioncomboid = b.categoryoptioncomboid
-and a.attributeoptioncomboid = b.attributeoptioncomboid
-and b.deleted_on = $1' USING this_date;
+and a.attributeoptioncomboid = b.attributeoptioncomboid;
 
 DROP SEQUENCE datavalueaudit_dedupes_serialid;
 
