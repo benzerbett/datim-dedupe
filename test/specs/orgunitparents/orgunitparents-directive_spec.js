@@ -4,7 +4,6 @@ describe('Dedupe orgunit parents', function () {
     var $rootScope;
     var $httpBackend;
 
-    beforeEach(module('dedupe/dedupe.html'));
     beforeEach(module('PEPFAR.dedupe'));
 
     beforeEach(inject(function ($injector) {

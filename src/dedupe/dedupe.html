@@ -1,8 +1,8 @@
 <div class="dedupe-wrap well" ng-form name="dedupeRecordForm">
     <div class="dedupe-details">
         <div class="row">
-            <div class="dataelement-name col-sm-8">
-                <span ng-bind="::dedupeCtrl.dedupeRecord.details.dataElementName"></span>
+            <div class="dataelement-name col-sm-8" dataelement-info dataelement-id="::dedupeCtrl.dedupeRecord.details.dataElementId">
+                <span ng-bind="::dedupeCtrl.dedupeRecord.details.dataElementName"></span><i class="info-icon fa fa-info-circle"></i>
             </div>
             <div class="disaggregation-name col-sm-4">
                 <span ng-bind="::dedupeCtrl.dedupeRecord.details.disaggregation"></span>
