@@ -13,9 +13,9 @@ describe('Dedupe data element description', function () {
         $httpBackend = $injector.get('$httpBackend');
         element = angular.element('<div dataelement-info dataelement-id="dataElementId"></div>');
 
-        displayDescriptionRequest = $httpBackend.expectGET('/dhis/api/dataElements/N4TfJIX2bNK/displayDescription')
+        displayDescriptionRequest = $httpBackend.expectGET('/dhis/api/dataElements/N4TfJIX2bNK?fields=description,displayDescription')
             .respond(200, {
-                displayDescription: 'Target the total number of blood units that were donated in the country network.'
+                description: 'Target the total number of blood units that were donated in the country network.'
             });
 
         $scope = $rootScope.$new();

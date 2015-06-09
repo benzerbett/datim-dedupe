@@ -14,9 +14,9 @@
                 var eventHandler = element.on('mouseover', function () {
                     return Restangular
                         .all('dataElements').withHttpConfig({cache: true})
-                        .get([dataElementId, 'displayDescription'].join('/'))
+                        .get([dataElementId, 'fields=description,displayDescription'].join('?'))
                         .then(function (data) {
-                            scope.dataElementDescription = data.displayDescription || 'No description found.';
+                            scope.dataElementDescription = data.displayDescription || data.description || 'No description found.';
 
                             element
                                 .find('.data-element-hover')
