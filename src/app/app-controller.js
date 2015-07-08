@@ -224,13 +224,13 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
         if (isValidPageChange()) {
             ctrl.pager.current = ctrl.pageToGoTo;
         } else {
-            $log.log(ctrl.pageToGoTo, ' is not a valid page to navigate to.');
+            $log.log(ctrl.pageToGoTo, ' did not change or is not a valid page to navigate to.');
         }
 
         if (isValidPageSize()) {
             ctrl.pager.pageSize = ctrl.customPageSize;
         } else {
-            $log.log(ctrl.customPageSize, ' is not a valid page size.');
+            $log.log(ctrl.customPageSize, ' did not change or is not a valid page size.');
         }
 
         ctrl.pageChanged();
@@ -241,7 +241,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
     }
 
     function maxPageSize() {
-        if (ctrl.pager.total < ctrl.pager.pageSize) {
+        if (ctrl.pager.total > ctrl.pager.pageSize) {
             return ctrl.pager.total;
         }
         return ctrl.pager.pageSize;
