@@ -74,7 +74,7 @@
                             boundary-links="true"
                             rotate="false">
                 </pagination>
-                <div class="page-goto ng-hide" ng-show="app.dedupeRecords.length">
+                <div ng-cloak class="page-goto" ng-show="app.dedupeRecords.length">
                     <label>
                         <span>Page number (min 1, max {{app.maxPageNumber()}}):</span>
                         <input class="form-control" name="page-goto" min="1" max="{{app.maxPageNumber()}}" type="number" ng-model="app.pageToGoTo" />

@@ -174,9 +174,9 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
                 })
                 .map(pickValueColumn)
                 .reduce(add, 0) - getNonCrosswalkDedupeRows(rows)
-                .filter(isDSDValueRow)
-                .map(pickValueColumn)
-                .reduce(add, 0);
+                                    .filter(isDSDValueRow)
+                                    .map(pickValueColumn)
+                                    .reduce(add, 0);
 
             if (defaultValue > 0) {
                 return defaultValue;
