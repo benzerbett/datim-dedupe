@@ -1050,8 +1050,7 @@
         importResponse: {
             "status": "SUCCESS",
             "description": "Import process completed successfully",
-            "dataValueCount": {"imported": 1, "updated": 0, "ignored": 0, "deleted": 0},
-            "importCount": {"imported": 0, "updated": 0, "ignored": 0, "deleted": 0},
+            "importCount": {"imported": 1, "updated": 0, "ignored": 0, "deleted": 0},
             "dataSetComplete": "false"
         },
 

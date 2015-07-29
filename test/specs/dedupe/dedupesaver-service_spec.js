@@ -270,7 +270,7 @@ describe('Dedupe saver service', function () {
                 it('should return an object with the number of success', function () {
                     var promiseResult;
                     var importResponse = fixtures.get('importResponse');
-                    importResponse.dataValueCount.imported = 2;
+                    importResponse.importCount.imported = 2;
 
                     $httpBackend.expectPOST('/dhis/api/dataValueSets?preheatCache=false').respond(200, importResponse);
 
@@ -311,8 +311,8 @@ describe('Dedupe saver service', function () {
                 it('should add the conflicts as errors', function () {
                     var promiseResult;
                     var importResponse = fixtures.get('importResponse');
-                    importResponse.dataValueCount.imported = 1;
-                    importResponse.dataValueCount.ignored = 1;
+                    importResponse.importCount.imported = 1;
+                    importResponse.importCount.ignored = 1;
                     importResponse.conflicts = [
                         {value:'Data element not found or not acccessible'}
                     ];

@@ -50,8 +50,8 @@ function dedupeSaverService($q, Restangular,
             })
             .then(function (importResult) {
                 return getResponseStructure(
-                    importResult.dataValueCount.imported + importResult.dataValueCount.updated,
-                    errorCount + importResult.dataValueCount.ignored,
+                    importResult.importCount.imported + importResult.importCount.updated,
+                    errorCount + importResult.importCount.ignored,
                     _.union(errors, (importResult.conflicts || []))
                         .map(function (error) {
                             if (angular.isString(error.value) && !(error instanceof Error)) {
