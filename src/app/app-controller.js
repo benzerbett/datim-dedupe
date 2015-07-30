@@ -195,6 +195,10 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
         dedupeService.resolveDuplicates(ctrl.dedupeRecords)
             .then(function (saveStatus) {
                 reportStatusToUser(saveStatus);
+
+                if (!saveStatus.errorCount) {
+                    ctrl.dedupeRecords = [];
+                }
             })
             .catch(function (errorMessage) {
                 notify.error(errorMessage);

@@ -65,7 +65,7 @@
         <form name="deduplication">
             <div class="dedupe-records">
                 <dedupe dedupe-record="dedupeRecord" ng-repeat="dedupeRecord in app.dedupeRecords"></dedupe>
-                <pagination ng-show="app.dedupeRecords.length"
+                <pagination ng-show="app.dedupeRecords.length || app.maxPageNumber() > 1"
                             total-items="app.pager.total"
                             ng-model="app.pager.current"
                             items-per-page="app.pager.pageSize"

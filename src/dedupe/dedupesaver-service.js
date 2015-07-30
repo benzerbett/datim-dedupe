@@ -45,9 +45,7 @@ function dedupeSaverService($q, Restangular,
         }
 
         return Restangular.all('dataValueSets')
-            .post(dataValueSet, {
-                preheatCache: false
-            })
+            .post(dataValueSet, {preheatCache: false})
             .then(function (importResult) {
                 return getResponseStructure(
                     importResult.importCount.imported + importResult.importCount.updated,
