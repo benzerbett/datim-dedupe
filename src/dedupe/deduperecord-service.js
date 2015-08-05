@@ -156,8 +156,9 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
         dedupeRecord.resolve.isResolved = true;
 
         if (isCrosswalkResolved(rows)) {
-            dedupeRecord.resolve.type = getDedupeType(rows);
-            dedupeRecord.resolve.value = calculateActualCrosswalkDedupedValue(rows);
+            dedupeRecord.resolve.type = getDedupeType(rows, true);
+            //Exclude DSD Value records from the crosswalk calculation
+            dedupeRecord.resolve.value = calculateActualCrosswalkDedupedValue(_.reject(rows, isDSDValueRow));
         } else {
             dedupeRecord.resolve.type = 'custom';
             dedupeRecord.resolve.value = getDefaultResolvedValue(rows);
@@ -244,15 +245,7 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
     }
 
     function getDedupeType(dataRows, isCrosswalk) {
-        if (isCrosswalk) {
-            switch (calculateActualCrosswalkDedupedValue(dataRows)) {
-                case getTotalOfAllRows(getNonDedupeRows(dataRows)):
-                    return 'sum';
-                case getMaxOfAllNonDedupedRows(getNonDedupeRows(dataRows)):
-                    return 'max';
-            }
-            return 'custom';
-        }
+        if (isCrosswalk) { return 'custom'; }
 
         switch (calculateActualDedupedValue(dataRows)) {
             case getTotalOfAllRows(getNonDedupeRows(dataRows)):

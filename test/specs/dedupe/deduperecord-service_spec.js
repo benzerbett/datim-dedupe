@@ -356,4 +356,41 @@ describe('Dedupe record service', function () {
             $httpBackend.flush();
         });
     });
+
+    describe('getCrossWalkRecords', function () {
+        var dedupeRecords;
+
+        beforeEach(function () {
+            $httpBackend.resetExpectations();
+
+            $httpBackend.expectGET('/dhis/api/systemSettings/keyDedupeSqlViewId')
+                .respond(200, {
+                    id: 'AuL6zTSLxNc'
+                });
+
+            $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?cacheBuster=1432214364597&var=ty:CROSSWALK')
+                .respond(200, fixtures.get('crosswalkresolved'));
+
+            dedupeRecordService.getRecords({ty: 'CROSSWALK'})
+                .then(function (records) {
+                    dedupeRecords = records;
+                });
+
+            $httpBackend.flush();
+        });
+
+        it('should resolve the crosswalk record with the correct value', function () {
+            expect(dedupeRecords[0].resolve.isResolved).toEqual(true);
+            expect(dedupeRecords[0].resolve.type).toEqual('custom');
+            expect(dedupeRecords[0].resolve.value).toEqual(0);
+
+            expect(dedupeRecords[1].resolve.isResolved).toEqual(true);
+            expect(dedupeRecords[1].resolve.type).toEqual('custom');
+            expect(dedupeRecords[1].resolve.value).toEqual(156);
+
+            expect(dedupeRecords[2].resolve.isResolved).toEqual(true);
+            expect(dedupeRecords[2].resolve.type).toEqual('custom');
+            expect(dedupeRecords[2].resolve.value).toEqual(270);
+        });
+    });
 });
