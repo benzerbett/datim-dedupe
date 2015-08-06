@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').controller('appController', appController);
 
-function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notify, $log, DEDUPE_PAGE_SIZE) { //jshint maxstatements:44
+function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notify, $log, DEDUPE_PAGE_SIZE) { //jshint maxstatements:45
     var ctrl = this;
     var dedupeFilters = {
         includeResolved: false,
@@ -47,6 +47,8 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
         });
 
         reportStatusToUser(saveStatus);
+
+        loadNextPageIfNoMoreDupes();
     });
 
     $scope.$on('DEDUPE_RECORDFILTER_SERVICE.updated', function (event, dedupeRecordFilters) {
@@ -137,6 +139,9 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
             if (total < ctrl.pager.pageSize) {
                 ctrl.customPageSize = total;
             }
+        } else {
+            ctrl.pager.total = 0;
+            ctrl.customPageSize = ctrl.customPageSize || DEDUPE_PAGE_SIZE;
         }
     }
 
@@ -203,7 +208,10 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
             .catch(function (errorMessage) {
                 notify.error(errorMessage);
             })
-            .finally(setProcessingToFalse);
+            .finally(function () {
+                setProcessingToFalse();
+                loadNextPageIfNoMoreDupes();
+            });
     }
 
     function setProcessingToFalse() {
@@ -249,5 +257,15 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
             return ctrl.pager.total;
         }
         return ctrl.pager.pageSize;
+    }
+
+    function loadNextPageIfNoMoreDupes() {
+        if (ctrl.dedupeRecords.length === 0 && ctrl.pager.total > ctrl.pager.pageSize) {
+            window.console.info('More pages available, loading next page');
+            ctrl.pager.current = 1; //Always load page 1. As page count could change.
+            getDuplicateRecords();
+        } else {
+            window.console.info('Still more dupes on this page');
+        }
     }
 }

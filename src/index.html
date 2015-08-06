@@ -52,7 +52,7 @@
                                 ng-click="app.filters.changeIsCrosswalk(false);">Show Normal Dupes</button>
                         <button class="btn btn-default"
                                 ng-class="{active: app.isShowingCrosswalkDedupes()}"
-                                ng-disabled="app.isShowingCrosswalkDedupes() || app.dedupeRecords.length || app.noLoadDone"
+                                ng-disabled="app.isShowingCrosswalkDedupes() || app.dedupeRecords.length || app.pager.total > app.dedupeRecords.length || app.noLoadDone"
                                 ng-click="app.filters.changeIsCrosswalk(true);">Show DSD/TA Dupes</button>
                     </div>
                 </div>
@@ -62,6 +62,11 @@
         <div ng-show="app.csvSettings.show && app.dedupeRecords.length" class="dedupe-download-csv">
             <a class="btn btn-default" ng-href="{{app.csvSettings.url}}" target="_blank" download="dedupes.csv" translate>Download all dedupes as CSV</a>
         </div>
+
+        <div ng-cloak ng-show="app.dedupeRecords.length === 0 && app.pager.total === 0 && !app.noLoadDone && !app.isProcessing">
+            <div class="message-all-resolved"><i class="fa fa-check-circle"></i>No more {{app.isShowingCrosswalkDedupes() ? 'crosswalk' : 'normal'}} duplicates to resolve for {{app.filters.getPeriodDisplayName()}}.</div>
+        </div>
+
         <form name="deduplication">
             <div class="dedupe-records">
                 <dedupe dedupe-record="dedupeRecord" ng-repeat="dedupeRecord in app.dedupeRecords"></dedupe>
