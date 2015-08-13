@@ -17,7 +17,7 @@ function periodSelectorDirective(periodService, dedupeRecordFilters) {
             }, function (newVal, oldVal) {
                 var periodType = 'FinancialOct';
 
-                if (!angular.isString(newVal)  || angular.isUndefined(newVal) || newVal === oldVal) { return;}
+                if (!angular.isString(newVal)  || angular.isUndefined(newVal) || newVal === oldVal) { return; }
 
                 if (newVal.toLowerCase() === 'results') {
                     periodType = 'Quarterly';
@@ -28,11 +28,7 @@ function periodSelectorDirective(periodService, dedupeRecordFilters) {
                         scope.period.periodsRecentFirst = periodService.getPastPeriodsRecentFirst();
                         if (scope.period.periodsRecentFirst.length > 0) {
 
-                            if (newVal.toLowerCase() === 'targets') {
-                                scope.period.selectedPeriod = scope.period.periodsRecentFirst[1];
-                            } else {
-                                scope.period.selectedPeriod = scope.period.periodsRecentFirst[0];
-                            }
+                            scope.period.selectedPeriod = scope.period.periodsRecentFirst[1];
                             scope.changePeriod(scope.period.selectedPeriod);
                         }
                     });
