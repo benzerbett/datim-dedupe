@@ -150,6 +150,23 @@ describe('Dedupe directive', function () {
 
             expect(textElement.textContent).toEqual('FY 2014');
         });
+
+        it('should not add the dedupe-is-resolved class to the dedupe-details', function () {
+            var dedupeDetailsElement = element[0].querySelectorAll('.dedupe-details');
+
+            expect(dedupeDetailsElement[0].classList.contains('dedupe-is-resolved')).toEqual(false);
+        });
+
+        it('should add the dedupe-is-resolved class to the dedupe-details', function () {
+            var dedupeDetailsElement;
+
+            $scope.firstDedupeRecord.resolve.isResolved = true;
+            $scope.$apply();
+
+            dedupeDetailsElement = element[0].querySelectorAll('.dedupe-details');
+
+            expect(dedupeDetailsElement[0].classList.contains('dedupe-is-resolved')).toEqual(true);
+        });
     });
 
     describe('dedupe data', function () {

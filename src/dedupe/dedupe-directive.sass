@@ -32,10 +32,15 @@
     margin-top: 20px
     width: 100%
 
-  &.ng-valid .dedupe-details
-    background-color: green
+  &.ng-valid > .dedupe-details
+    background-color: #FBE008
+    color: #555555
 
-  &.ng-invalid.ng-dirty .dedupe-details
+  &.ng-valid > .dedupe-details.dedupe-is-resolved
+    background-color: green
+    color: #FFFFFF
+
+  &.ng-invalid.ng-dirty > .dedupe-details
     background-color: #CA0000
 
   .dedupe-details
@@ -48,6 +53,11 @@
     -moz-box-shadow: 0px 2px 4px #888
     box-shadow: 0px 2px 4px #888
     margin-bottom: 20px
+
+    .ng-valid.ng-dirty > &.dedupe-is-resolved
+      background-color: #FBE008
+      color: #555555
+
 
     &:before
       content: ' '
@@ -94,3 +104,23 @@
 
       .value
         text-align: right
+
+.icon-saved
+  color: green
+
+.icon-error
+  color: red
+
+.icon-new
+  color: orange
+
+.icon-pending
+  color: #FBE008
+
+.dedupe-status-icon
+  position: absolute
+  right: 5px
+  bottom: 5px
+
+  .fa-circle
+    color: #FFFFFF
