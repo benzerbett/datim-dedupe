@@ -59,6 +59,37 @@
             </div>
         </div>
 
+        <div class="dedupe-status-icons">
+            <div class="dedupe-status-icon">
+                <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x"></i>
+                    <i title="New dedupe" class="fa fa-pencil fa-stack-1x icon-new"></i>
+                </span>
+                <span class="dedupe-status-icon-text">New dedupe</span>
+            </div>
+            <div class="dedupe-status-icon">
+                <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x"></i>
+                    <i title="Ready to be saved" class="fa fa-cloud-upload fa-stack-1x icon-pending"></i>
+                </span>
+                <span class="dedupe-status-icon-text">Ready to be saved</span>
+            </div>
+            <div class="dedupe-status-icon">
+                <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x"></i>
+                    <i title="Saved to server" class="fa fa-check fa-stack-1x icon-saved"></i>
+                </span>
+                <span class="dedupe-status-icon-text">Saved to server</span>
+            </div>
+            <div class="dedupe-status-icon">
+                <span class="fa-stack fa-lg">
+                    <i class="fa fa-circle fa-stack-2x"></i>
+                    <i title="Resolve value not valid" class="fa fa-times fa-stack-1x icon-error"></i>
+                </span>
+                <span class="dedupe-status-icon-text">Not valid</span>
+            </div>
+        </div>
+
         <div ng-show="app.csvSettings.show && app.dedupeRecords.length" class="dedupe-download-csv">
             <a class="btn btn-default" ng-href="{{app.csvSettings.url}}" target="_blank" download="dedupes.csv" translate>Download all dedupes as CSV</a>
         </div>
