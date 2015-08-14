@@ -152,8 +152,7 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
     function createCrosswalkDedupeRecord(rows) {
         var dedupeRecord = getBasicRecord(rows);
 
-        //Crosswalk records will always be marked as resolved
-        dedupeRecord.resolve.isResolved = true;
+        dedupeRecord.resolve.isResolved = isCrosswalkResolved(rows);
 
         if (isCrosswalkResolved(rows)) {
             dedupeRecord.resolve.type = getDedupeType(rows, true);
