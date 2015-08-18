@@ -169,7 +169,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
         }
 
         if (saveStatus.errorCount > 0) {
-            notify.error(['Unable to resolve', saveStatus.successCount, 'dedupe(s).'].join(' '));
+            notify.error(['Unable to resolve', saveStatus.errorCount, 'dedupe(s).'].join(' '));
         }
 
         (saveStatus.errors || []).forEach(function (error) {

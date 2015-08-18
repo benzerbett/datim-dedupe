@@ -69,7 +69,8 @@ function dedupeSaverService($q, Restangular,
                     return getResponseStructure(1, 0, []);
                 })
                 .catch(function (response) {
-                    return $q.reject(getResponseStructure(0, 1, [new Error('Saving failed (' + response.status + ': ' + response.data + ')')]));
+                    var statusMessage = response.data && response.data.message ? ' (' + response.data.message + ')' : '' ;
+                    return $q.reject(getResponseStructure(0, 1, [new Error('Saving failed' + statusMessage)]));
                 });
         } catch (e) {
             return $q.reject(e.message);

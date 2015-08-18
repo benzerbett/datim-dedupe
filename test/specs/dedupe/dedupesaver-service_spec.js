@@ -133,13 +133,13 @@ describe('Dedupe saver service', function () {
                     var catchFunction = jasmine.createSpy('catchFunction');
 
                     $httpBackend.expectPOST('/dhis/api/dataValues?cc=wUpfppgjEza&co=HllvX50cXC0&cp=xEzelmtHWPn&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
-                        .respond(409, 'html error message');
+                        .respond(409, {httpStatus: 'Conflict', httpStatusCode: 409, status: 'ERROR', message: 'Data set is locked'});
 
                     dedupeSaverService.saveDeduplication([dedupeRecordOne])
                         .catch(catchFunction);
                     $httpBackend.flush();
 
-                    expect(catchFunction).toHaveBeenCalledWith({successCount: 0, errorCount: 1, errors: [new Error('Saving failed (409: html error message)')]});
+                    expect(catchFunction).toHaveBeenCalledWith({successCount: 0, errorCount: 1, errors: [new Error('Saving failed (Data set is locked)')]});
                 });
 
                 describe('crosswalk', function () {
