@@ -38,7 +38,8 @@ CREATE TEMP TABLE  datavalueaudit_dedupes_temp
     dsd_timestamp TIMESTAMP WITHOUT time ZONE, 
     dsd_audit_timestamp TIMESTAMP WITHOUT time ZONE,
     ta_timestamp TIMESTAMP WITHOUT time zone, 
-    ta_audit_timestamp TIMESTAMP WITHOUT time ZONE) 
+    ta_audit_timestamp TIMESTAMP WITHOUT time ZONE,
+    group_count integer) 
   ON COMMIT DROP;
 
   INSERT INTO temp1
@@ -51,6 +52,20 @@ CREATE TEMP TABLE  datavalueaudit_dedupes_temp
     (SELECT categoryoptioncomboid
      FROM _categoryoptioncomboname
      WHERE categoryoptioncomboname ~('^\(00000'));
+
+UPDATE temp1 a set group_count = b.group_count from (
+SELECT dv.sourceid ,dv.periodid,dv.dataelementid,
+dv.categoryoptioncomboid,count(*) as group_count from
+datavalue dv
+WHERE dv.attributeoptioncomboid NOT IN (SELECT categoryoptioncomboid
+           FROM _categoryoptioncomboname
+           WHERE categoryoptioncomboname ~('^\(0000[0|1]'))
+GROUP BY dv.sourceid,dv.periodid,dv.dataelementid,dv.categoryoptioncomboid) b 
+WHERE a.sourceid = b.sourceid
+and a.periodid = b.periodid
+and a.dataelementid = b.dataelementid
+and a.categoryoptioncomboid = b.categoryoptioncomboid;
+
 
 UPDATE temp1 a set dsd_timestamp = b.timestamp from (
 SELECT dv.sourceid ,dv.periodid,dv.dataelementid,
@@ -89,7 +104,16 @@ SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, 
             dataelementid,
             categoryoptioncomboid
      FROM temp1
-     WHERE lastupdated < GREATEST(dsd_timestamp,dsd_audit_timestamp)) b 
+     WHERE lastupdated < GREATEST(dsd_timestamp,dsd_audit_timestamp)
+     UNION
+     SELECT sourceid,
+            periodid,
+            dataelementid,
+            categoryoptioncomboid
+     FROM temp1
+     WHERE group_count IS NULL OR group_count <2
+     
+     ) b 
 
    ON a.sourceid = b.sourceid
   AND a.periodid = b.periodid
