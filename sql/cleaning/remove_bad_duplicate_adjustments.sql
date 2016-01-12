@@ -112,6 +112,7 @@ TRUNCATE _temp_dedupe_adjustments;
 
 
 --Materialized the DSD/TA view
+DROP TABLE IF EXISTS _temp_dsd_ta_crosswalk;
 CREATE TABLE _temp_dsd_ta_crosswalk (
   dsd_dataelementid integer REFERENCES dataelement (dataelementid),
   ta_dataelementid integer REFERENCES dataelement (dataelementid)
@@ -143,8 +144,36 @@ SELECT dsd_dataelementid,ta_dataelementid from _view_dsd_ta_crosswalk;
      FROM _categoryoptioncomboname
      WHERE categoryoptioncomboname ~('^\(00001'));
 
-
-
+--Completely orphaned adjustments. These are values with no
+--DSD or TA components and should be removed.
+WITH y as (
+WITH foo as (SELECT DISTINCT dv.sourceid,dv.periodid,dv.dataelementid,dv.categoryoptioncomboid 
+  FROM datavalue dv INNER JOIN 
+ _temp_dedupe_adjustments a
+ ON a.sourceid = dv.sourceid
+AND a.periodid = dv.periodid
+AND a.dataelementid = dv.dataelementid
+AND a.categoryoptioncomboid = dv.categoryoptioncomboid
+WHERE dv.attributeoptioncomboid NOT IN (2210817,3993514)
+UNION
+SELECT DISTINCT dv.sourceid,dv.periodid,MAP.ta_dataelementid,dv.categoryoptioncomboid FROM datavalue dv
+INNER JOIN
+ _temp_dedupe_adjustments a
+ ON a.sourceid = dv.sourceid
+AND a.periodid = dv.periodid
+AND a.dataelementid = dv.dataelementid
+AND a.categoryoptioncomboid = dv.categoryoptioncomboid
+INNER JOIN _temp_dsd_ta_crosswalk MAP ON dv.dataelementid = MAP.ta_dataelementid
+WHERE dv.attributeoptioncomboid NOT IN (2210817,3993514))
+SELECT sourceid,periodid,dataelementid,categoryoptioncomboid,1 as group_count FROM _temp_dedupe_adjustments
+EXCEPT
+SELECT sourceid,periodid,dataelementid,categoryoptioncomboid,1 as group_count from foo)
+  UPDATE _temp_dedupe_adjustments x
+  SET group_count = 1
+  FROM  y WHERE x.dataelementid = y.dataelementid
+  AND x.sourceid = y.sourceid
+  AND x.periodid = y.periodid
+  AND x.categoryoptioncomboid = y.categoryoptioncomboid;
 
   --Set the DSD current timestamp. If this value is NULL, then the 
   -- crosswalk is unattached to DSD and should be removed. If the age
@@ -210,9 +239,6 @@ SELECT dsd_dataelementid,ta_dataelementid from _view_dsd_ta_crosswalk;
 
 
 
-
-
-
 INSERT INTO datavalueaudit_dedupes_temp
 SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid,
  a.sourceid, 
@@ -227,6 +253,7 @@ a.categoryoptioncomboid, a.value,
      WHERE lastupdated < GREATEST(dsd_timestamp,ta_timestamp)
       OR  dsd_timestamp IS NULL
       OR ta_timestamp IS NULL
+      OR group_count IS NOT NULL
      ) b
    ON a.sourceid = b.sourceid
   AND a.periodid = b.periodid
