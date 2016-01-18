@@ -3,9 +3,11 @@ CREATE OR REPLACE FUNCTION resolve_bad_duplication_adjustments() RETURNS integer
  DECLARE
 this_date date;
 this_id integer;
+dupes_removed integer;
  BEGIN 
 
 this_date := now()::date;
+dupes_removed := 0;
 
 SELECT COALESCE(MAX(datavalueaudit_dedupes_serialid),0) + 1 into this_id FROM datavalueaudit_dedupes ;
 
@@ -52,10 +54,7 @@ ALTER TABLE _temp_dedupe_adjustments
                   dataelementid,
                   categoryoptioncomboid,
                   lastupdated
-  FROM datavalue WHERE attributeoptioncomboid =
-    (SELECT categoryoptioncomboid
-     FROM _categoryoptioncomboname
-     WHERE categoryoptioncomboname ~('^\(00000'));
+  FROM datavalue WHERE attributeoptioncomboid = 2210817;
 
 UPDATE _temp_dedupe_adjustments a set group_count = b.group_count from (
 SELECT dv.sourceid ,dv.periodid,dv.dataelementid,
@@ -72,7 +71,7 @@ and a.categoryoptioncomboid = b.categoryoptioncomboid;
 UPDATE _temp_dedupe_adjustments a set dsd_timestamp = b.timestamp from (
 SELECT dv.sourceid ,dv.periodid,dv.dataelementid,
 dv.categoryoptioncomboid,max(dv.lastupdated) as timestamp from 
-datavalue dv 
+datavalue dv
 WHERE dv.attributeoptioncomboid NOT IN (2210817,3993514)
 GROUP BY dv.sourceid,dv.periodid,dv.dataelementid,dv.categoryoptioncomboid) b 
 WHERE a.sourceid = b.sourceid
@@ -80,7 +79,9 @@ and a.periodid = b.periodid
 and a.dataelementid = b.dataelementid
 and a.categoryoptioncomboid = b.categoryoptioncomboid;
 
-
+--TODO: Data value audits. This needs to happen in situations 
+--when there may be three duplicates, one of which has been deleted, which
+--Still results in a duplicate, but the dedupe adjustment is now aged.
 
 
 INSERT INTO datavalueaudit_dedupes_temp
@@ -90,7 +91,7 @@ SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, 
     (SELECT sourceid,
             periodid,
             dataelementid,
-            categoryoptioncomboid
+            categoryoptioncomboid,group_count
      FROM _temp_dedupe_adjustments
      WHERE lastupdated < dsd_timestamp
      OR dsd_timestamp IS NULL
@@ -102,10 +103,7 @@ SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, 
   AND a.periodid = b.periodid
   AND a.dataelementid = b.dataelementid
   AND a.categoryoptioncomboid = b.categoryoptioncomboid
-  WHERE a.attributeoptioncomboid =
-    (SELECT categoryoptioncomboid
-     FROM _categoryoptioncomboname
-     WHERE categoryoptioncomboname ~('^\(00000') LIMIT 1); 
+  WHERE a.attributeoptioncomboid = 2210817;
 
 --Truncate these records
 TRUNCATE _temp_dedupe_adjustments;
@@ -139,10 +137,7 @@ SELECT dsd_dataelementid,ta_dataelementid from _view_dsd_ta_crosswalk;
                   dataelementid,
                   categoryoptioncomboid,
                   lastupdated
-  FROM datavalue WHERE attributeoptioncomboid =
-    (SELECT categoryoptioncomboid
-     FROM _categoryoptioncomboname
-     WHERE categoryoptioncomboname ~('^\(00001'));
+  FROM datavalue WHERE attributeoptioncomboid = 3993514;
 
 --Completely orphaned adjustments. These are values with no
 --DSD or TA components and should be removed.
@@ -259,10 +254,7 @@ a.categoryoptioncomboid, a.value,
   AND a.periodid = b.periodid
   AND a.dataelementid = b.dataelementid
   AND a.categoryoptioncomboid = b.categoryoptioncomboid
-  WHERE a.attributeoptioncomboid =
-    (SELECT categoryoptioncomboid
-     FROM _categoryoptioncomboname
-     WHERE categoryoptioncomboname ~('^\(00001') LIMIT 1);
+  WHERE a.attributeoptioncomboid = 3993514;
 
 --INSERT into the main table
 INSERT INTO datavalueaudit_dedupes  SELECT * FROM datavalueaudit_dedupes_temp;
@@ -270,10 +262,9 @@ INSERT INTO datavalueaudit_dedupes  SELECT * FROM datavalueaudit_dedupes_temp;
 --Update the dates in the main audit table
 EXECUTE 'UPDATE datavalueaudit_dedupes SET deleted_on =  $1 WHERE deleted_on IS NULL' USING this_date; 
 --Delete anything in the temporary table which is not a dedupe adjustment
-DELETE FROM datavalueaudit_dedupes_temp where attributeoptioncomboid NOT IN (SELECT categoryoptioncomboid
-          FROM _categoryoptioncomboname
-          WHERE categoryoptioncomboname ~*('0000[0|1]'));
+DELETE FROM datavalueaudit_dedupes_temp where attributeoptioncomboid NOT IN (2210817,3993514);
 
+SELECT COUNT(*) INTO dupes_removed FROM datavalueaudit_dedupes_temp;
 --Perform the main deletion operation from the data value table
 DELETE FROM datavalue a USING datavalueaudit_dedupes_temp b 
 WHERE a.sourceid = b.sourceid
@@ -284,7 +275,7 @@ and a.attributeoptioncomboid = b.attributeoptioncomboid;
 
 DROP SEQUENCE datavalueaudit_dedupes_serialid;
 
-     RETURN(1); 
+     RETURN dupes_removed; 
      END; 
 
      $$ LANGUAGE plpgsql VOLATILE;
