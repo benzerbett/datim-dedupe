@@ -11,27 +11,81 @@ RETURNS setof duplicate_records AS  $$
  start_group integer;
  end_group integer;
  dataset_filter character varying (100);
+ this_exists boolean;
  --Internal ID of the pure mechanism
 pure_id integer;
  --Internal ID of the crosswalk mechanism
 crosswalk_id integer;
 
  BEGIN
+--Validation
 
- start_group := pg * ps - ps + 1;
- end_group := pg * ps;
- 
 --Pure dedupe mech
 pure_id:= (SELECT categoryoptioncomboid from categoryoptioncombo where uid = 'X8hrDf6bLDC');
+IF pure_id IS NULL THEN
+  RAISE EXCEPTION 'Pure dedupe mech not found';
+END IF;
+
 --Crosswalk dedupe mech
 crosswalk_id:=(SELECT categoryoptioncomboid from categoryoptioncombo where uid = 'YGT1o7UxfFu');
+
+IF crosswalk_id IS NULL THEN
+  RAISE EXCEPTION 'Crosswalk dedupe mech not found';
+END IF;
+
+EXECUTE 'SELECT ''' || $1  || '''  IN (SELECT DISTINCT uid from organisationunit);' into this_exists;
+
+IF this_exists != true THEN
+  RAISE EXCEPTION 'Invalid organisationunit';
+END IF;
+
+EXECUTE 'SELECT ''' || $2 || '''  IN (SELECT DISTINCT iso from _periodstructure);' into this_exists;
+
+IF this_exists != true THEN
+  RAISE EXCEPTION 'Invalid period';
+END IF;
+
+--Should be impossible
+EXECUTE 'SELECT ''' || $3 || '''  IN (SELECT true UNION SELECT false);' into this_exists;
+IF this_exists != true THEN
+  RAISE EXCEPTION 'Invalid result type';
+END IF;
+
+--Page size must be greater than zero
+EXECUTE 'SELECT ''' || $4 || '''  > 0;' into this_exists;
+IF this_exists != true THEN
+  RAISE EXCEPTION 'Invalid page size';
+END IF;
+
+--Page size must be greater than zero
+EXECUTE 'SELECT ''' || $5 || '''  > 0;' into this_exists;
+IF this_exists != true THEN
+  RAISE EXCEPTION 'Invalid page';
+END IF;
+
+--Must either be targets or results or both
+EXECUTE 'SELECT ''' || $6 || '''  IN (''RESULTS'',''TARGETS'',''ALL'');' into this_exists;
+IF this_exists != true THEN
+  RAISE EXCEPTION 'Invalid dataset type. Must be RESULTS or TARGETS or ALL';
+END IF;
+
+--Must either be either PURE or CROSSWALK
+EXECUTE 'SELECT ''' || $7 || '''  IN (''PURE'',''CROSSWALK'');' into this_exists;
+IF this_exists != true THEN
+  RAISE EXCEPTION 'Invalid dedupe type. Must be PURE or CROSSWALK';
+END IF;
+
+--End validation, begin business logic
+ start_group := pg * ps - ps + 1;
+ end_group := pg * ps;
+
 
 CASE dt
  WHEN 'RESULTS' THEN
  dataset_filter := ' AND name ~*(''RESULTS'') ';
 WHEN 'TARGETS' THEN
   dataset_filter := ' AND name ~*(''TARGETS'') ';
-ELSE
+WHEN 'ALL' THEN
   dataset_filter := ' ';
 END CASE;
 
@@ -232,22 +286,10 @@ END IF;
 /*End CROSSWALK Dedupe logic*/
 
 
- IF rs = FALSE THEN 
+ IF rs = FALSE THEN
  DELETE FROM temp1 where duplication_status ='RESOLVED';
  END IF;
 
-
- /*Data element names*/
- 
- ALTER TABLE temp1 ADD COLUMN dataelement character varying(230);
- UPDATE temp1 set dataelement = b.name from dataelement b
- where temp1.dataelementid = b.dataelementid;
- 
-
-/*Data element uids*/
- ALTER TABLE temp1 ADD COLUMN de_uid character varying(11);
- UPDATE temp1 set de_uid = b.uid from dataelement b
- where temp1.dataelementid = b.dataelementid;
 
   /*Paging*/
  ALTER TABLE temp1 ADD COLUMN group_count integer;
@@ -270,6 +312,18 @@ UPDATE temp1 set total_groups =  ( SELECT max(group_count) from temp1 );
    WHERE group_count < $1
    OR group_count > $2
    ' USING start_group, end_group;
+
+  /*Data element names*/
+ 
+ ALTER TABLE temp1 ADD COLUMN dataelement character varying(230);
+ UPDATE temp1 set dataelement = b.name from dataelement b
+ where temp1.dataelementid = b.dataelementid;
+ 
+
+/*Data element uids*/
+ ALTER TABLE temp1 ADD COLUMN de_uid character varying(11);
+ UPDATE temp1 set de_uid = b.uid from dataelement b
+ where temp1.dataelementid = b.dataelementid;
 
   /*Disagg*/
  ALTER TABLE temp1 ADD COLUMN disaggregation character varying(250);
