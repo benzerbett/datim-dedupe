@@ -130,7 +130,10 @@ IF ty = 'PURE'::character varying(50) THEN
  SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
  SELECT datasetid from dataset where uid in (
 ''qRvKHvlzNdv'',''vYEbELCknv'',''tCIW2VFd8uu'', ''ovYEbELCknv'',
- ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'')'  || dataset_filter ||
+ ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'',''xJ06pxmxfU6'',
+''LBSk271pP7J'',''rDAUgkkexU1'',''IOarm0ctDVL'',''PHyD22loBQH'')
+
+ )'  || dataset_filter ||
  ' ) ) AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $2 || ''' LIMIT 1)';
 
@@ -205,7 +208,8 @@ EXECUTE 'INSERT INTO temp1
 SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
  SELECT datasetid from dataset where uid in (
 ''qRvKHvlzNdv'',''vYEbELCknv'',''tCIW2VFd8uu'', ''ovYEbELCknv'',
- ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'')'  || dataset_filter ||
+ ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'',''xJ06pxmxfU6'',
+''LBSk271pP7J'',''rDAUgkkexU1'',''IOarm0ctDVL'',''PHyD22loBQH'')'  || dataset_filter ||
  '  ) ) ) map
  on dv1.dataelementid = map.dsd_dataelementid ) dsd
  on ta.sourceid = dsd.sourceid
