@@ -131,9 +131,7 @@ IF ty = 'PURE'::character varying(50) THEN
  SELECT datasetid from dataset where uid in (
 ''qRvKHvlzNdv'',''vYEbELCknv'',''tCIW2VFd8uu'', ''ovYEbELCknv'',
  ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'',''xJ06pxmxfU6'',
-''LBSk271pP7J'',''rDAUgkkexU1'',''IOarm0ctDVL'',''PHyD22loBQH'')
-
- )'  || dataset_filter ||
+''LBSk271pP7J'',''rDAUgkkexU1'',''IOarm0ctDVL'',''PHyD22loBQH'')'  || dataset_filter ||
  ' ) ) AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $2 || ''' LIMIT 1)';
 
