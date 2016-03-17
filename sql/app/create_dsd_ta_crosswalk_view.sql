@@ -439,12 +439,6 @@ SELECT 'RzjTaqLbMO4' as dsd_de_uid,
 SELECT 'I3tRWWhXx87' as dsd_de_uid,
            (SELECT dataelementid from dataelement where uid ='I3tRWWhXx87') as dsd_dataelementid ,'OtgxJklJjHp' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'OtgxJklJjHp') as ta_dataelementid from dataelement where uid = 'I3tRWWhXx87'
  UNION 
-SELECT 'CDCH3ZYQZ8n' as dsd_de_uid,
-           (SELECT dataelementid from dataelement where uid ='CDCH3ZYQZ8n') as dsd_dataelementid ,'hc8MlRJudaG' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'hc8MlRJudaG') as ta_dataelementid from dataelement where uid = 'CDCH3ZYQZ8n'
- UNION 
-SELECT 'R1uRzdfcnJd' as dsd_de_uid,
-           (SELECT dataelementid from dataelement where uid ='R1uRzdfcnJd') as dsd_dataelementid ,'aIjA2XWM8j2' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'aIjA2XWM8j2') as ta_dataelementid from dataelement where uid = 'R1uRzdfcnJd'
- UNION 
 SELECT 'bfHk9MX9mqy' as dsd_de_uid,
            (SELECT dataelementid from dataelement where uid ='bfHk9MX9mqy') as dsd_dataelementid ,'OVZPaBBTo5e' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'OVZPaBBTo5e') as ta_dataelementid from dataelement where uid = 'bfHk9MX9mqy'
  UNION 
@@ -1022,4 +1016,4 @@ SELECT 'UossaY2RAd4' as dsd_de_uid,
            (SELECT dataelementid from dataelement where uid ='UossaY2RAd4') as dsd_dataelementid ,'io1hfUu6Hbf' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'io1hfUu6Hbf') as ta_dataelementid from dataelement where uid = 'UossaY2RAd4'
  UNION 
 SELECT 'LbmWd1fLXkP' as dsd_de_uid,
-           (SELECT dataelementid from dataelement where uid ='LbmWd1fLXkP') as dsd_dataelementid ,'BV4c3RVJY9Y' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'BV4c3RVJY9Y') as ta_dataelementid from dataelement where uid = 'LbmWd1fLXkP') A;
+           (SELECT dataelementid from dataelement where uid ='LbmWd1fLXkP') as dsd_dataelementid ,'BV4c3RVJY9Y' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'BV4c3RVJY9Y') as ta_dataelementid from dataelement where uid = 'LbmWd1fLXkP') A ;
