@@ -157,12 +157,12 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify) {
                 });
         }
 
+        var periodsToReturn = [].concat(dhis2.period.generator.generatePeriods(periodType, 0));
+        var yearsAheadGenerated = 0;
+
         function generateMore(periodType, i) {
             return periodsToReturn.concat(dhis2.period.generator.generatePeriods(periodType, i));
         }
-
-        var periodsToReturn = [].concat(dhis2.period.generator.generatePeriods(periodType, 0));
-        var yearsAheadGenerated = 0;
 
         function needsMorePeriods() {
             if (periodsToReturn.length - 1 >= 0) {
