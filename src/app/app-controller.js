@@ -261,11 +261,8 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
 
     function loadNextPageIfNoMoreDupes() {
         if (ctrl.dedupeRecords.length === 0 && ctrl.pager.total > ctrl.pager.pageSize) {
-            window.console.info('More pages available, loading next page');
             ctrl.pager.current = 1; //Always load page 1. As page count could change.
             getDuplicateRecords();
-        } else {
-            window.console.info('Still more dupes on this page');
         }
     }
 }

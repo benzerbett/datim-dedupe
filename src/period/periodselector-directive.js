@@ -23,12 +23,29 @@ function periodSelectorDirective(periodService, dedupeRecordFilters) {
                     periodType = 'Quarterly';
                 }
 
-                periodService.setPeriodType(periodType)
-                    .then(function () {
+                periodService.setPeriodType(periodType, dedupeRecordFilters.getResultsTargetsFilter())
+                    .then(function (periodSettings) {
                         scope.period.periodsRecentFirst = periodService.getPastPeriodsRecentFirst();
-                        if (scope.period.periodsRecentFirst.length > 0) {
 
-                            scope.period.selectedPeriod = scope.period.periodsRecentFirst[1];
+                        function getDefaultPeriod(periodsRecentFirst) {
+                            return periodsRecentFirst
+                                .filter(function (period) {
+                                    return period.iso === periodSettings.default;
+                                })
+                                .reduce(function (acc, period) {
+                                    return period;
+                                }, undefined);
+                        }
+
+                        function hasDefaultPeriod(periodsRecentFirst, periodSettings) {
+                            return periodSettings.default && getDefaultPeriod(periodsRecentFirst);
+                        }
+
+                        if (hasDefaultPeriod(scope.period.periodsRecentFirst, periodSettings)) {
+                            scope.period.selectedPeriod = getDefaultPeriod(scope.period.periodsRecentFirst);
+                            scope.changePeriod(scope.period.selectedPeriod);
+                        } else {
+                            scope.period.selectedPeriod = scope.period.periodsRecentFirst[periodSettings.future || 0];
                             scope.changePeriod(scope.period.selectedPeriod);
                         }
                     });

@@ -128,25 +128,108 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify) {
         return generatedPeriods;
     }
 
-    function setPeriodType(periodType) {
-        return calendarLoaded.promise.then(function () {
-            if (_(periodTypes).contains(periodType)) {
-                var d2peGen = dhis2.period.generator;
-                generatedPeriods = d2peGen.filterFuturePeriodsExceptCurrent(d2peGen.generateReversedPeriods(periodType, 0));
+    function getDedupePeriodSettings() {
+        if (getDedupePeriodSettings.periodSettingsCache) {
+            return getDedupePeriodSettings.periodSettingsCache;
+        }
 
-                if (/FinancialOct/.test(periodType)) {
-                    generatedPeriods = d2peGen.generateReversedPeriods(periodType, 0).slice(5);
-                }
+        getDedupePeriodSettings.periodSettingsCache = Restangular
+            .all('dataStore')
+            .all('dedupe')
+            .get('periodSettings');
 
-                if (/Quarterly/.test(periodType)) {
-                    var additionalYearsToGenerate = 3;
-                    var i;
-                    for (i = -1; i >= (0 - additionalYearsToGenerate); i -= 1) {
-                        generatedPeriods = generatedPeriods.concat(d2peGen.generateReversedPeriods(periodType, i));
-                    }
-                }
+        return getDedupePeriodSettings.periodSettingsCache;
+    }
+
+    function hasPeriodSettings(periodSettings, resultsTargets) {
+        return periodSettings && Object.keys(periodSettings).length && periodSettings[(resultsTargets || '').toLowerCase()];
+    }
+
+    function getPeriodSettings(periodSettings, resultsTargets) {
+        return periodSettings[resultsTargets.toLowerCase()];
+    }
+
+    function getCurrentAndFuturePeriods(periodType, numberOfFuturePeriods) {
+        if (['Yearly', 'FinancialApril', 'FinancialJuly', 'FinancialOct'].indexOf(periodType) >= 0) {
+            return dhis2.period.generator.generatePeriods(periodType, 5)
+                .filter(function (period, index) {
+                    return (numberOfFuturePeriods || 0) >= index;
+                });
+        }
+
+        function generateMore(periodType, i) {
+            return periodsToReturn.concat(dhis2.period.generator.generatePeriods(periodType, i));
+        }
+
+        var periodsToReturn = [].concat(dhis2.period.generator.generatePeriods(periodType, 0));
+        var yearsAheadGenerated = 0;
+
+        function needsMorePeriods() {
+            if (periodsToReturn.length - 1 >= 0) {
+                return periodsToReturn.length - 1 < numberOfFuturePeriods;
             }
-        });
+            return false;
+        }
+
+        while (needsMorePeriods()) {
+            periodsToReturn = generateMore(periodType, yearsAheadGenerated += 1);
+        }
+
+        return periodsToReturn
+            .filter(function (period, index) {
+                return index <= numberOfFuturePeriods;
+            });
+    }
+
+    function getPastPeriods(periodType, numberOfPastPeriods) {
+        if (['Yearly', 'FinancialApril', 'FinancialJuly', 'FinancialOct'].indexOf(periodType) >= 0) {
+            return dhis2.period.generator.generateReversedPeriods(periodType, -6)
+                .filter(function (period, index) {
+                    return ((numberOfPastPeriods > 0 ? numberOfPastPeriods : 0)) > index;
+                })
+                .reverse();
+        }
+
+        var periodsToReturn = [];
+        var yearsAgoGenerated = 0;
+
+        function needsMorePeriods() {
+            return numberOfPastPeriods !== 0 && periodsToReturn.length < numberOfPastPeriods;
+        }
+
+        function generateMore(periodType, i) {
+            return periodsToReturn.concat(dhis2.period.generator.generateReversedPeriods(periodType, i));
+        }
+
+        while (needsMorePeriods()) {
+            periodsToReturn = generateMore(periodType, 0 - (yearsAgoGenerated += 1));
+        }
+
+        return periodsToReturn
+            .filter(function (period, index) {
+                return index < numberOfPastPeriods;
+            })
+            .reverse();
+    }
+
+    function setPeriodType(periodType, resultsTargets) {
+        return $q.all([calendarLoaded.promise, getDedupePeriodSettings()])
+            .then(function (responses) {
+                var periodSettingsResponse = responses[1];
+
+                if (_(periodTypes).contains(periodType) && hasPeriodSettings(periodSettingsResponse, resultsTargets)) {
+                    var periodSettings = getPeriodSettings(periodSettingsResponse, resultsTargets);
+
+                    generatedPeriods = []
+                        .concat(
+                            getPastPeriods(periodType, periodSettings.past),
+                            getCurrentAndFuturePeriods(periodType, periodSettings.future)
+                        )
+                        .reverse();
+
+                    return periodSettings;
+                }
+            });
     }
 
     function loadCalendarScript(calendarType) {

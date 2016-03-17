@@ -4,6 +4,7 @@ describe('Period service', function () {
     var $rootScope;
     var systemInfoRequest;
     var periodGeneratorMock;
+    var periodSettingsRequest;
 
     beforeEach(module('PEPFAR.dedupe'));
     beforeEach(inject(function ($injector) {
@@ -20,8 +21,18 @@ describe('Period service', function () {
         };
 
         periodGeneratorMock = {
+            generatePeriods: jasmine.createSpy('dhis2.period.generator.generatePeriods')
+                .and.returnValue([
+                    {iso: '2016'},
+                    {iso: '2015'},
+                    {iso: '2014'}
+                ]),
             generateReversedPeriods: jasmine.createSpy('dhis2.period.generator.generateReversedPeriods')
-                .and.returnValue([]),
+                .and.returnValue([
+                    {iso: '2016'},
+                    {iso: '2015'},
+                    {iso: '2014'}
+                ]),
             filterFuturePeriodsExceptCurrent: jasmine.createSpy('dhis2.period.generator.filterFuturePeriodsExceptCurrent')
                 .and.returnValue([])
         };
@@ -39,6 +50,19 @@ describe('Period service', function () {
             .respond(200, {
                 calendar: 'iso8601',
                 dateFormat: 'yyyy-mm-dd'
+            });
+
+        periodSettingsRequest = $httpBackend.whenGET('/dhis/api/dataStore/dedupe/periodSettings')
+            .respond(200, {
+                targets: {
+                    default: '2016Oct',
+                    future: 2,
+                    past: 1
+                },
+                results: {
+                    future: 2,
+                    past: 3
+                }
             });
 
         service = $injector.get('periodService');
@@ -62,23 +86,19 @@ describe('Period service', function () {
         });
 
         it('should return the correct generated periods for FinancialOct', function () {
-            service.setPeriodType('FinancialOct');
-            $rootScope.$apply();
+            service.setPeriodType('FinancialOct', 'Targets');
+            $httpBackend.flush();
 
-            expect(periodGeneratorMock.generateReversedPeriods).toHaveBeenCalledWith('FinancialOct', 0);
-            expect(periodGeneratorMock.filterFuturePeriodsExceptCurrent.calls.count()).toEqual(1);
+            expect(periodGeneratorMock.generatePeriods).toHaveBeenCalledWith('FinancialOct', 5);
+            expect(periodGeneratorMock.generateReversedPeriods).toHaveBeenCalledWith('FinancialOct', -6);
         });
 
         it('should return the correct generated periods for Quarterly', function () {
-            service.setPeriodType('Quarterly');
-            $rootScope.$apply();
+            service.setPeriodType('Quarterly', 'Results');
+            $httpBackend.flush();
 
-            expect(periodGeneratorMock.generateReversedPeriods).toHaveBeenCalledWith('Quarterly', 0);
+            expect(periodGeneratorMock.generatePeriods).toHaveBeenCalledWith('Quarterly', 0);
             expect(periodGeneratorMock.generateReversedPeriods).toHaveBeenCalledWith('Quarterly', -1);
-            expect(periodGeneratorMock.generateReversedPeriods).toHaveBeenCalledWith('Quarterly', -2);
-            expect(periodGeneratorMock.generateReversedPeriods).toHaveBeenCalledWith('Quarterly', -3);
-
-            expect(periodGeneratorMock.filterFuturePeriodsExceptCurrent.calls.count()).toEqual(1);
         });
     });
 
@@ -96,8 +116,8 @@ describe('Period service', function () {
         });
 
         it('should call the dhis2 period object for the periods to use', function () {
-            service.setPeriodType('Monthly');
-            $rootScope.$apply();
+            service.setPeriodType('Monthly', 'Targets');
+            $httpBackend.flush();
 
             expect(window.dhis2.period.generator.generateReversedPeriods).toHaveBeenCalled();
         });

@@ -89,7 +89,7 @@ describe('Organisation unit select directive', function () {
             dedupeRecordFiltersMock.getResultsTargetsFilter.and.returnValue('Results');
             $scope.$apply();
 
-            expect(periodServiceMock.setPeriodType).toHaveBeenCalledWith('Quarterly');
+            expect(periodServiceMock.setPeriodType).toHaveBeenCalledWith('Quarterly', 'Results');
         });
     });
 });
