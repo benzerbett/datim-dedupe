@@ -889,7 +889,7 @@ describe('Dedupe directive', function () {
 
     describe('getMax for CROSSWALK', function () {
         var dedupeCtrl;
-        var dedupeService
+        var dedupeService;
 
         beforeEach(inject(function ($injector) {
             dedupeService = $injector.get('dedupeService');
