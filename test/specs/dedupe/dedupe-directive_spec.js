@@ -604,6 +604,26 @@ describe('Dedupe directive', function () {
                             expect(inputBox.nodeName).toBe('INPUT');
                         });
                     });
+
+                    describe('min and max values of custom', function () {
+                        var customValueElement;
+
+                        beforeEach(function () {
+                            customValueElement = actionsCustom.querySelector('span.value');
+                        });
+
+                        it('should have a min limitation of 0 to cancel out all values', function () {
+                            var inputBox = customValueElement.querySelector('input');
+
+                            expect(inputBox.getAttribute('min')).toEqual('0');
+                        });
+
+                        it('should have a max limitation of the sum of all values', function () {
+                            var inputBox = customValueElement.querySelector('input');
+
+                            expect(inputBox.getAttribute('max')).toEqual('130');
+                        });
+                    });
                 });
 
                 describe('resolve button row', function () {
