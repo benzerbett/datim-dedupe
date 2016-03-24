@@ -149,70 +149,31 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify) {
         return periodSettings[resultsTargets.toLowerCase()];
     }
 
-    function getCurrentAndFuturePeriods(periodType, numberOfFuturePeriods) {
+    function getPeriod(periodType, periodIdentifier, yearDifferenceForPeriodGenerator) {
+        var generatedPeriods;
+
         if (['Yearly', 'FinancialApril', 'FinancialJuly', 'FinancialOct'].indexOf(periodType) >= 0) {
-            return dhis2.period.generator.generatePeriods(periodType, 5)
-                .filter(function (period, index) {
-                    return (numberOfFuturePeriods || 0) >= index;
-                });
+            generatedPeriods = dhis2.period.generator.generatePeriods(periodType, yearDifferenceForPeriodGenerator + 5);
+        } else {
+            generatedPeriods = dhis2.period.generator.generatePeriods(periodType, yearDifferenceForPeriodGenerator);
         }
 
-        var periodsToReturn = [].concat(dhis2.period.generator.generatePeriods(periodType, 0));
-        var yearsAheadGenerated = 0;
-
-        function generateMore(periodType, i) {
-            return periodsToReturn.concat(dhis2.period.generator.generatePeriods(periodType, i));
-        }
-
-        function needsMorePeriods() {
-            if (periodsToReturn.length - 1 >= 0) {
-                return periodsToReturn.length - 1 < numberOfFuturePeriods;
-            }
-            return false;
-        }
-
-        while (needsMorePeriods()) {
-            periodsToReturn = generateMore(periodType, yearsAheadGenerated += 1);
-        }
-
-        return periodsToReturn
-            .filter(function (period, index) {
-                return index <= numberOfFuturePeriods;
-            });
+        return generatedPeriods
+            .reduce(function (acc, period) {
+                if (period.iso === periodIdentifier) {
+                    return period;
+                }
+                return acc;
+            }, undefined);
     }
 
-    function getPastPeriods(periodType, numberOfPastPeriods) {
-        if (['Yearly', 'FinancialApril', 'FinancialJuly', 'FinancialOct'].indexOf(periodType) >= 0) {
-            return dhis2.period.generator.generateReversedPeriods(periodType, -6)
-                .filter(function (period, index) {
-                    return ((numberOfPastPeriods > 0 ? numberOfPastPeriods : 0)) > index;
-                })
-                .reverse();
-        }
-
-        var periodsToReturn = [];
-        var yearsAgoGenerated = 0;
-
-        function needsMorePeriods() {
-            return numberOfPastPeriods !== 0 && periodsToReturn.length < numberOfPastPeriods;
-        }
-
-        function generateMore(periodType, i) {
-            return periodsToReturn.concat(dhis2.period.generator.generateReversedPeriods(periodType, i));
-        }
-
-        while (needsMorePeriods()) {
-            periodsToReturn = generateMore(periodType, 0 - (yearsAgoGenerated += 1));
-        }
-
-        return periodsToReturn
-            .filter(function (period, index) {
-                return index < numberOfPastPeriods;
-            })
-            .reverse();
+    function getYearFromPeriodIdentifier(periodIdentifier) {
+        return parseInt(periodIdentifier.slice(0, 4), 10);
     }
 
     function setPeriodType(periodType, resultsTargets) {
+        var currentYear = new Date().getFullYear();
+
         return $q.all([calendarLoaded.promise, getDedupePeriodSettings()])
             .then(function (responses) {
                 var periodSettingsResponse = responses[1];
@@ -220,12 +181,15 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify) {
                 if (_(periodTypes).contains(periodType) && hasPeriodSettings(periodSettingsResponse, resultsTargets)) {
                     var periodSettings = getPeriodSettings(periodSettingsResponse, resultsTargets);
 
-                    generatedPeriods = []
-                        .concat(
-                            getPastPeriods(periodType, periodSettings.past),
-                            getCurrentAndFuturePeriods(periodType, periodSettings.future)
-                        )
-                        .reverse();
+                    generatedPeriods = periodSettings
+                        .map(function (periodIdentifier) {
+                            var yearDifferenceForPeriodGenerator = getYearFromPeriodIdentifier(periodIdentifier) - currentYear;
+
+                            return getPeriod(periodType, periodIdentifier, yearDifferenceForPeriodGenerator);
+                        })
+                        .filter(function (period) {
+                            return period;
+                        });
 
                     return periodSettings;
                 }
