@@ -162,22 +162,20 @@ EXECUTE format('DELETE FROM temp1 where group_id IN (SELECT group_id from temp1
 /*Only resolve non-legacy dedupes*/
  ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT 'UNRESOLVED';
 /*Only resolve non-legacy dedupes*/
-EXECUTE 'UPDATE temp1 set duplication_status = ''RESOLVED''
- where group_id IN (SELECT DISTINCT group_id FROM temp1
- WHERE attributeoptioncomboid = $1)
-AND group_id NOT IN (SELECT a.group_id FROM (
-SELECT group_id,MAX(lastupdated) as dedupe_time from temp1 
-WHERE attributeoptioncomboid = $1
-GROUP BY group_id ) a
+EXECUTE format('UPDATE temp1 set duplication_status = ''RESOLVED''
+WHERE group_id NOT IN (SELECT a.group_id FROM (
+SELECT group_id,lastupdated as dedupe_time from temp1 
+WHERE attributeoptioncomboid = %L ) a
 INNER JOIN (
 SELECT group_id,MAX(lastupdated) as data_time from temp1 
-WHERE attributeoptioncomboid != $1
+WHERE attributeoptioncomboid != %L
 GROUP BY group_id ) b
 on a.group_id = b.group_id
-WHERE a.dedupe_time <= b.data_time)
-AND group_id IN (SELECT DISTINCT group_id from temp1 where value ~(''^[-|0]'') and 
-  attributeoptioncomboid = $1)' USING pure_id;  
- 
+WHERE a.dedupe_time <= b.data_time
+ )
+AND group_id IN (SELECT DISTINCT group_id from temp1 where value ~(''^[-|0]'') and
+  attributeoptioncomboid = %L)',pure_id,pure_id,pure_id); 
+
 END IF;
 /*End PURE Dedupe logic*/
 
@@ -288,12 +286,15 @@ END IF;
 /*End CROSSWALK Dedupe logic*/
 
 
- IF rs = FALSE THEN
+ IF rs = 'false' THEN
  DELETE FROM temp1 where duplication_status ='RESOLVED';
  END IF;
 
+EXECUTE 'SELECT COUNT(*) > 0 FROM temp1;' into this_exists;
 
-  /*Paging*/
+IF this_exists = TRUE THEN
+
+/*Paging*/
  ALTER TABLE temp1 ADD COLUMN group_count integer;
  ALTER TABLE temp1 ADD COLUMN total_groups integer;
 
@@ -317,6 +318,7 @@ UPDATE temp1 set total_groups =  ( SELECT max(group_count) from temp1 );
 
   /*Data element names*/
  
+
  ALTER TABLE temp1 ADD COLUMN dataelement character varying(230);
  UPDATE temp1 set dataelement = b.name from dataelement b
  where temp1.dataelementid = b.dataelementid;
@@ -377,6 +379,8 @@ IN (%L,%L)',pure_id,crosswalk_id);
 
 UPDATE temp1 set partner = 'DSD Value' where attributeoptioncomboid = -1;
 
+--End check for empty table
+END IF; 
 
 CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
  
