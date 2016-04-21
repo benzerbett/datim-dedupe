@@ -101,7 +101,9 @@ END CASE;
  lastupdated timestamp without time zone,
  PRIMARY KEY (sourceid, periodid,dataelementid,categoryoptioncomboid,attributeoptioncomboid)
  ) ON COMMIT DROP;
- 
+
+CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
+
 IF ty = 'PURE'::character varying(50) THEN
  
  EXECUTE 'INSERT INTO temp1
@@ -380,10 +382,6 @@ IN (%L,%L)',pure_id,crosswalk_id);
 UPDATE temp1 set partner = 'DSD Value' where attributeoptioncomboid = -1;
 
 --End check for empty table
-END IF; 
-
-CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
- 
 EXECUTE 'INSERT INTO temp2 SELECT 
 ou_name,
 dataelement ,
@@ -399,6 +397,8 @@ coc_uid,
 group_count,
 total_groups
 FROM temp1';
+
+END IF; 
 
    /*Return the records*/
    FOR returnrec IN SELECT * FROM temp2 ORDER BY group_count LOOP
