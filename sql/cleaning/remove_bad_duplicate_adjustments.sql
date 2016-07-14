@@ -4,7 +4,7 @@ CREATE OR REPLACE FUNCTION resolve_bad_duplication_adjustments() RETURNS integer
 this_date date;
 this_id integer;
 dupes_removed integer;
- BEGIN 
+ BEGIN                                                             
 
 this_date := now()::date;
 dupes_removed := 0;
@@ -15,21 +15,7 @@ EXECUTE 'CREATE TEMPORARY SEQUENCE datavalueaudit_dedupes_serialid START ' || th
  --Do not delete these for now, until we are sure all this mojo works
 
 DROP TABLE IF EXISTS datavalueaudit_dedupes_temp;
-CREATE TABLE  datavalueaudit_dedupes_temp
-( datavalueaudit_dedupes_tempid integer NOT NULL ,
-  dataelementid integer NOT NULL,
-  periodid integer NOT NULL,
-  sourceid integer NOT NULL,
-  categoryoptioncomboid integer NOT NULL,
-  value character varying(50000),
-  storedby character varying(100),
-  lastupdated timestamp without time zone,
-  comment character varying(50000),
-  followup boolean,
-  attributeoptioncomboid integer NOT NULL,
-  created timestamp without time zone,
-  CONSTRAINT datavalueaudit_dedupes_temp_pkey PRIMARY KEY (datavalueaudit_dedupes_tempid)
-) ;
+
 
 --Create a real table, as we can leverage foreign key references then
   DROP TABLE IF EXISTS _temp_dedupe_adjustments;
@@ -84,7 +70,7 @@ and a.categoryoptioncomboid = b.categoryoptioncomboid;
 
 UPDATE _temp_dedupe_adjustments a set pure_audit_timestamp = b.timestamp from (
 SELECT dv.organisationunitid as sourceid ,dv.periodid,dv.dataelementid,
-dv.categoryoptioncomboid,max(dv.created) as timestamp from 
+dv.categoryoptioncomboid,max(dv.timestamp) as timestamp from 
 datavalueaudit dv
 WHERE dv.attributeoptioncomboid NOT IN (2210817,3993514)
 GROUP BY dv.organisationunitid,dv.periodid,dv.dataelementid,dv.categoryoptioncomboid) b 
@@ -255,7 +241,7 @@ SELECT sourceid,periodid,dataelementid,categoryoptioncomboid,1 as group_count fr
             dv.periodid,
             dv.dataelementid,
             dv.categoryoptioncomboid,
-            max(dv.created) AS cw_audit_timestamp
+            max(dv.timestamp) AS cw_audit_timestamp
      FROM datavalueaudit dv
      INNER JOIN _temp_dedupe_adjustments a on a.dataelementid = dv.dataelementid
      and a.periodid = dv.periodid
@@ -281,7 +267,7 @@ SELECT sourceid,periodid,dataelementid,categoryoptioncomboid,1 as group_count fr
            b.dsd_dataelementid,
            b.ta_dataelementid,
             dv.categoryoptioncomboid,
-            max(dv.created) AS cw_audit_timestamp
+            max(dv.timestamp) AS cw_audit_timestamp
     FROM datavalueaudit dv
     INNER JOIN (
     SELECT a.sourceid,a.periodid,MAP.dsd_dataelementid, MAP.ta_dataelementid,
@@ -311,7 +297,7 @@ SELECT sourceid,periodid,dataelementid,categoryoptioncomboid,1 as group_count fr
             dv.periodid,
             dv.dataelementid,
             dv.categoryoptioncomboid,
-            max(dv.created) AS pure_audit_timestamp
+            max(dv.timestamp) AS pure_audit_timestamp
      FROM datavalueaudit dv
      INNER JOIN _temp_dedupe_adjustments a on a.dataelementid = dv.dataelementid
      and a.periodid = dv.periodid
