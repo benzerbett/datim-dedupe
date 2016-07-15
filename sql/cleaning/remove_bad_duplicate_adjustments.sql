@@ -8,14 +8,31 @@ dupes_removed integer;
 
 this_date := now()::date;
 dupes_removed := 0;
-
+--Get the starting audit id for the new dedupes.
 SELECT COALESCE(MAX(datavalueaudit_dedupes_serialid),0) + 1 into this_id FROM datavalueaudit_dedupes ;
-
 EXECUTE 'CREATE TEMPORARY SEQUENCE datavalueaudit_dedupes_serialid START ' || this_id;
- --Do not delete these for now, until we are sure all this mojo works
+
+--Create two tables. 
+--datavalueaudit_dedupes_temp will be for both pure as well as crosswalks. 
+-- _temp_dedupe_adjustments will be a table to hold temporarily pure and crosswalks 
+-- before combining  them into the datavalueaudit_dedupes_temp staging table
 
 DROP TABLE IF EXISTS datavalueaudit_dedupes_temp;
-
+CREATE TABLE  datavalueaudit_dedupes_temp
+( datavalueaudit_dedupes_tempid integer NOT NULL ,
+  dataelementid integer NOT NULL,
+  periodid integer NOT NULL,
+  sourceid integer NOT NULL,
+  categoryoptioncomboid integer NOT NULL,
+  value character varying(50000),
+  storedby character varying(100),
+  lastupdated timestamp without time zone,
+  comment character varying(50000),
+  followup boolean,
+  attributeoptioncomboid integer NOT NULL,
+  created timestamp without time zone,
+  CONSTRAINT datavalueaudit_dedupes_temp_pkey PRIMARY KEY (datavalueaudit_dedupes_tempid)
+) ;
 
 --Create a real table, as we can leverage foreign key references then
   DROP TABLE IF EXISTS _temp_dedupe_adjustments;
