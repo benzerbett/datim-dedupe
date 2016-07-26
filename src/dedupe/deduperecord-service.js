@@ -205,7 +205,7 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
         var value = getColumnValue('value', record);
         var mechanismNumber;
 
-        //Do not show the DSD Value row as a mechanism number
+        // Do not show the DSD Value row as a mechanism number
         if (isDSDValueRow(record)) {
             mechanismNumber = '';
         } else {
