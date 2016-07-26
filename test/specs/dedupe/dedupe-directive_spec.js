@@ -613,10 +613,10 @@ describe('Dedupe directive', function () {
                             customValueElement = actionsCustom.querySelector('span.value');
                         });
 
-                        it('should have a min limitation of 0 to cancel out all values', function () {
+                        it('should have a min limitation of that is equal to the max of the values', function () {
                             var inputBox = customValueElement.querySelector('input');
 
-                            expect(inputBox.getAttribute('min')).toEqual('0');
+                            expect(inputBox.getAttribute('min')).toEqual('60');
                         });
 
                         it('should have a max limitation of the sum of all values', function () {
