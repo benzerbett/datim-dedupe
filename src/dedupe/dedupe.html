@@ -102,7 +102,7 @@
                         <span class="value">
                             <input name="resolveNumber"
                                    type="number"
-                                   min="0"
+                                   min="{{::dedupeCtrl.getMax()}}"
                                    max="{{::dedupeCtrl.getSum()}}"
                                    ng-model="dedupeCtrl.dedupeRecord.resolve.value"
                                    ng-required="dedupeCtrl.dedupeRecord.resolve.type == 'custom'"
@@ -113,7 +113,7 @@
                                 When selecting to use a custom value you have to provide a value.
                             </div>
                             <div ng-message="min">
-                                This value should be a positive number (not decimal)
+                                A value smaller than {{::dedupeCtrl.getMax()}} is not allowed.
                             </div>
                             <div ng-message="max">
                                 A value larger than the sum is not allowed.

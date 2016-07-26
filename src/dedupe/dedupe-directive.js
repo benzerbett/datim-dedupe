@@ -24,7 +24,30 @@ function dedupeDirectiveController(dedupeService, $scope, $q) {
     ctrl.isProcessing = false;
     ctrl.isCrosswalkRecord = isCrosswalkRecord;
 
+    function getDSDValue(dedupeData) {
+        return dedupeData
+            .filter(function (dupeData) {
+                return dupeData.agency === 'DSD Value' && dupeData.partner === 'DSD Value';
+            })
+            .reduce(function (acc, dupe) {
+                return acc + dupe.value;
+            }, 0);
+    }
+
+    function getCrossWalkMax(dedupeRecordData) {
+        var crossWalkMax = dedupeService.getSum(dedupeRecordData) - getDSDValue(dedupeRecordData);
+
+        if (crossWalkMax > 0) {
+            return crossWalkMax;
+        }
+        return 0;
+    }
+
     function getMax() {
+        // When the dedupe type is crosswalk the max value is: the sum of all TA values - the DSDValue (with a min of 0)
+        if (ctrl.dedupeRecord.getDedupeType() === 'CROSSWALK') {
+            return getCrossWalkMax(ctrl.dedupeRecord.data);
+        }
         return dedupeService.getMax(ctrl.dedupeRecord.data);
     }
 

@@ -48,10 +48,11 @@ describe('Dedupe directive', function () {
             resolve: {
                 type: undefined,
                 value: undefined
-            }
+            },
+            getDedupeType: jasmine.createSpy('getDedupeType').and.returnValue('PURE')
         };
 
-        $compile(element)($scope);
+        element = $compile(element)($scope);
         $scope.$digest();
     }));
 
@@ -876,6 +877,7 @@ describe('Dedupe directive', function () {
 
     describe('crosswalk dedupe', function () {
         beforeEach(function () {
+            $scope.firstDedupeRecord.getDedupeType = jasmine.createSpy('getDedupeType').and.returnValue('CROSSWALK');
             $scope.firstDedupeRecord.details.dedupeType = 'CROSSWALK';
             $scope.$apply();
         });
@@ -902,6 +904,48 @@ describe('Dedupe directive', function () {
             var resolveInfo = angular.element(element[0].querySelector('.dedupe-resolve-crosswalk-info'));
 
             expect(resolveInfo.hasClass('ng-hide')).toBe(false);
+        });
+    });
+
+    describe('getMax for CROSSWALK', function () {
+        var dedupeCtrl;
+        var dedupeService;
+
+        beforeEach(inject(function ($injector) {
+            dedupeService = $injector.get('dedupeService');
+
+            $scope.firstDedupeRecord.getDedupeType = jasmine.createSpy('getDedupeType').and.returnValue('CROSSWALK');
+            $scope.firstDedupeRecord.details.dedupeType = 'CROSSWALK';
+            $scope.firstDedupeRecord.data = [
+                {agency: 'USAID', partner: 'PartnerA', value: 10, display: true, calculate: true, mechanismNumber: '10000'},
+                {agency: 'USAID', partner: 'PartnerB', value: 10, display: true, calculate: true, mechanismNumber: '20000'},
+                {agency: 'USAID', partner: 'PartnerC', value: 10, display: true, calculate: true, mechanismNumber: '30000'},
+                {agency: 'DSD Value', partner: 'DSD Value', value: 50, display: false, calculate: false, mechanismNumber: '0000'}
+            ];
+
+            $scope.$apply();
+
+            dedupeCtrl = angular.element(element[0].querySelector('.dataelement-name')).scope().dedupeCtrl;
+        }));
+
+        it('should return the correct value when TA is lower than DSD', function () {
+            dedupeService.getSum = dedupeService.getSum.and.returnValue(30);
+
+            expect(dedupeCtrl.getMax()).toEqual(0);
+        });
+
+        it('should return the correct value when the TA is higher than DSD', function () {
+            dedupeService.getSum = dedupeService.getSum.and.returnValue(90);
+
+            $scope.firstDedupeRecord.data = [
+                {agency: 'USAID', partner: 'PartnerA', value: 40, display: true, calculate: true, mechanismNumber: '10000'},
+                {agency: 'USAID', partner: 'PartnerB', value: 20, display: true, calculate: true, mechanismNumber: '20000'},
+                {agency: 'USAID', partner: 'PartnerC', value: 30, display: true, calculate: true, mechanismNumber: '30000'},
+                {agency: 'DSD Value', partner: 'DSD Value', value: 50, display: false, calculate: false, mechanismNumber: '0000'}
+            ];
+            $scope.$apply();
+
+            expect(dedupeCtrl.getMax()).toEqual(40);
         });
     });
 });
