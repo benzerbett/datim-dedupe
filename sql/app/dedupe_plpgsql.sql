@@ -183,6 +183,20 @@ END IF;
 
 IF ty = 'CROSSWALK'::character varying(50) THEN
 
+
+--Materialized the DSD/TA view
+DROP TABLE IF EXISTS _temp_dsd_ta_crosswalk;
+CREATE TEMPORARY TABLE _temp_dsd_ta_crosswalk (
+  dsd_dataelementid integer ,
+  ta_dataelementid integer
+) ON COMMIT DROP;
+
+
+INSERT INTO _temp_dsd_ta_crosswalk
+SELECT dsd_id,ta_id FROM( 
+  SELECT (json_populate_recordset(null::crosswalks,value::JSON)).* 
+  FROM keyjsonvalue where namespace='dedupe' and namespacekey='crosswalks') as foo;
+
 EXECUTE 'INSERT INTO temp1 
  SELECT DISTINCT
  ta.sourceid,
@@ -202,7 +216,7 @@ EXECUTE 'INSERT INTO temp1
  dv1.categoryoptioncomboid,
  dv1.attributeoptioncomboid
  from datavalue dv1
- INNER JOIN  (SELECT * FROM _view_dsd_ta_crosswalk where dsd_dataelementid in (
+ INNER JOIN  (SELECT * FROM _temp_dsd_ta_crosswalk where dsd_dataelementid in (
 SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
  SELECT datasetid from dataset where uid in (
 ''qRvKHvlzNdv'',''vYEbELCknv'',''tCIW2VFd8uu'', ''ovYEbELCknv'',
@@ -235,13 +249,13 @@ max(dsd.lastupdated) as lastupdated
 from datavalue dsd
 INNER JOIN (SELECT DISTINCT ta.sourceid,ta.periodid,ta.dataelementid,ta.categoryoptioncomboid,map.dsd_dataelementid
 FROM temp1 ta
-INNER JOIN _view_dsd_ta_crosswalk map
+INNER JOIN _temp_dsd_ta_crosswalk map
 on ta.dataelementid = map.ta_dataelementid) ta
 ON dsd.sourceid=ta.sourceid
 and dsd.periodid = ta.periodid
 and dsd.dataelementid = ta.dsd_dataelementid
 and dsd.categoryoptioncomboid = ta.categoryoptioncomboid
-WHERE dsd.dataelementid IN (SELECT dsd_dataelementid FROM _view_dsd_ta_crosswalk)
+WHERE dsd.dataelementid IN (SELECT dsd_dataelementid FROM _temp_dsd_ta_crosswalk)
 AND dsd.value  ~ (''^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$'')
 AND attributeoptioncomboid != %L
 GROUP BY dsd.sourceid,dsd.periodid,ta.dataelementid,dsd.categoryoptioncomboid) foo',crosswalk_id);
