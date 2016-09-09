@@ -17,6 +17,7 @@ pure_id integer;
  --Internal ID of the crosswalk mechanism
 crosswalk_id integer;
 
+
  BEGIN
 --Validation
 
@@ -104,6 +105,7 @@ END CASE;
 
 CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
 
+
 IF ty = 'PURE'::character varying(50) THEN
  
  EXECUTE 'INSERT INTO temp1
@@ -116,28 +118,27 @@ IF ty = 'PURE'::character varying(50) THEN
  trim(dv1.value) ,''PURE''::character varying(20) as duplicate_type,
  dv1.lastupdated
  from datavalue dv1
- INNER JOIN  datavalue dv2 on 
+ INNER JOIN  datavalue dv2 on
  dv1.sourceid = dv2.sourceid
- AND 
+ AND
  dv1.periodid = dv2.periodid
- AND 
+ AND
  dv1.dataelementid = dv2.dataelementid
- AND 
+ AND
  dv1.categoryoptioncomboid = dv2.categoryoptioncomboid
- AND 
- dv1.attributeoptioncomboid  != dv2.attributeoptioncomboid 
+ AND
+ dv1.attributeoptioncomboid  != dv2.attributeoptioncomboid
  INNER JOIN _orgunitstructure ous on dv1.sourceid = ous.organisationunitid
  and ous.uidlevel3 = ''' ||  $1 || '''
  WHERE dv1.dataelementid IN (
  SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
- SELECT datasetid from dataset where uid in (
-''qRvKHvlzNdv'',''vYEbELCknv'',''tCIW2VFd8uu'', ''ovYEbELCknv'',
- ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'',''xJ06pxmxfU6'',
-''LBSk271pP7J'',''rDAUgkkexU1'',''IOarm0ctDVL'',''PHyD22loBQH'')'  || dataset_filter ||
+ SELECT datasetid from dataset where uid in ( 
+SELECT replace(json_array_elements(value::json->lower(''' || $6  || ''')->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
+  from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ')'
+|| dataset_filter ||
  ' ) ) AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $2 || ''' LIMIT 1)';
 
-  
 /*Group ID. This will be used to group duplicates. */
 ALTER TABLE temp1 ADD COLUMN group_id text;
 UPDATE temp1 SET group_id = dataelementid::text ||  categoryoptioncomboid::text || sourceid::text  ;
@@ -218,11 +219,9 @@ EXECUTE 'INSERT INTO temp1
  from datavalue dv1
  INNER JOIN  (SELECT * FROM _temp_dsd_ta_crosswalk where dsd_dataelementid in (
 SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
- SELECT datasetid from dataset where uid in (
-''qRvKHvlzNdv'',''vYEbELCknv'',''tCIW2VFd8uu'', ''ovYEbELCknv'',
- ''i29foJcLY9Y'',''xxo1G5V1JG2'', ''STL4izfLznL'',''xJ06pxmxfU6'',
-''LBSk271pP7J'',''rDAUgkkexU1'',''IOarm0ctDVL'',''PHyD22loBQH'')'  || dataset_filter ||
- '  ) ) ) map
+ SELECT datasetid from dataset where uid in in (
+SELECT replace(json_array_elements(value::json->lower(''' || $6  || ''')->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
+  from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ' ) map
  on dv1.dataelementid = map.dsd_dataelementid ) dsd
  on ta.sourceid = dsd.sourceid
  AND ta.periodid = dsd.periodid
