@@ -1,8 +1,8 @@
 <div class="organisation-unit-select">
     <ui-select ng-required="true" ng-model="organisationUnit" on-select="selectbox.onSelect($item, $model)">
-        <ui-select-match placeholder="{{selectbox.placeholder}}">{{$select.selected.name}}</ui-select-match>
+        <ui-select-match placeholder="{{selectbox.placeholder}}">{{$select.selected.displayName}}</ui-select-match>
         <ui-select-choices repeat="item in selectbox.items | filter: $select.search">
-            <div>{{item.name}}</div>
+            <div>{{item.displayName}}</div>
         </ui-select-choices>
     </ui-select>
 </div>

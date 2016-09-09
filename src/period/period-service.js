@@ -181,7 +181,7 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify) {
                 if (_(periodTypes).contains(periodType) && hasPeriodSettings(periodSettingsResponse, resultsTargets)) {
                     var periodSettings = getPeriodSettings(periodSettingsResponse, resultsTargets);
 
-                    generatedPeriods = periodSettings
+                    generatedPeriods = Object.keys(periodSettings)
                         .map(function (periodIdentifier) {
                             var yearDifferenceForPeriodGenerator = getYearFromPeriodIdentifier(periodIdentifier) - currentYear;
 

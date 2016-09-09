@@ -7,6 +7,20 @@ describe('Period service', function () {
     var periodSettingsRequest;
     var currentYear = new Date().getFullYear();
 
+    function createFakePeriodSettingsResponseFor(settingsConfig) {
+        return Object
+            .keys(settingsConfig) // `results` or `targets`
+            .reduce(function (acc, key) {
+                acc[key] = settingsConfig[key]
+                    .reduce(function (periodSettings, periodName) {
+                        periodSettings[periodName] = {};
+                        return periodSettings;
+                    }, {});
+
+                return acc;
+            }, {});
+    }
+
     beforeEach(module('PEPFAR.dedupe'));
     beforeEach(inject(function ($injector) {
         jQuery.ajax = jQuery.getScript = jasmine.createSpy('jQuery.getScript')
@@ -54,10 +68,10 @@ describe('Period service', function () {
             });
 
         periodSettingsRequest = $httpBackend.whenGET('/dhis/api/dataStore/dedupe/periodSettings')
-            .respond(200, {
+            .respond(200, createFakePeriodSettingsResponseFor({
                 targets: [currentYear + 'Oct'],
                 results:[currentYear + 'Q1']
-            });
+            }));
 
         service = $injector.get('periodService');
     }));
@@ -96,10 +110,10 @@ describe('Period service', function () {
 
     describe('getPastPeriodsRecentFirst with a year in the past', function () {
         it('should return the periods from the periodSettings', function () {
-            periodSettingsRequest.respond(200, {
+            periodSettingsRequest.respond(200, createFakePeriodSettingsResponseFor({
                 targets: [(currentYear - 1) + 'Oct'],
                 results:[currentYear + 'Q1']
-            });
+            }));
 
             periodGeneratorMock.generatePeriods.and.returnValue([
                 {iso: (currentYear - 1) + 'Oct'},
@@ -119,10 +133,10 @@ describe('Period service', function () {
         });
 
         it('should call the period generator for multiple years', function () {
-            periodSettingsRequest.respond(200, {
+            periodSettingsRequest.respond(200, createFakePeriodSettingsResponseFor({
                 targets: [(currentYear - 1) + 'Oct', (currentYear - 2) + 'Oct'],
                 results:[currentYear + 'Q1']
-            });
+            }));
 
             periodGeneratorMock.generatePeriods.and.returnValue([
                 {iso: (currentYear - 1) + 'Oct'},
@@ -144,10 +158,10 @@ describe('Period service', function () {
         });
 
         it('should call the period generator correctly for Quarterly periods', function () {
-            periodSettingsRequest.respond(200, {
+            periodSettingsRequest.respond(200, createFakePeriodSettingsResponseFor({
                 targets: [(currentYear - 1) + 'Oct', (currentYear - 2) + 'Oct'],
                 results:[(currentYear - 1) + 'Q2']
-            });
+            }));
 
             periodGeneratorMock.generatePeriods.and.returnValue([
                 {iso: (currentYear - 1) + 'Q1'},
@@ -166,10 +180,10 @@ describe('Period service', function () {
         });
 
         it('should call the period generator correctly for Quarterly periods with multiple values', function () {
-            periodSettingsRequest.respond(200, {
+            periodSettingsRequest.respond(200, createFakePeriodSettingsResponseFor({
                 targets: [(currentYear - 1) + 'Oct', (currentYear - 2) + 'Oct'],
                 results:[(currentYear - 1) + 'Q2', (currentYear - 5) + 'Q3']
-            });
+            }));
 
             periodGeneratorMock.generatePeriods.and.callFake(function (p, yearDifference) {
                 if (yearDifference === -5) {
@@ -201,9 +215,9 @@ describe('Period service', function () {
 
     describe('getPastPeriodsRecentFirst with a year in the future', function () {
         it('should return the periods from the periodSettings', function () {
-            periodSettingsRequest.respond(200, {
+            periodSettingsRequest.respond(200, createFakePeriodSettingsResponseFor({
                 targets: [(currentYear + 1) + 'Oct']
-            });
+            }));
 
             periodGeneratorMock.generatePeriods.and.returnValue([
                 {iso: (currentYear + 1) + 'Oct'},
@@ -223,10 +237,10 @@ describe('Period service', function () {
         });
 
         it('should call the period generator correctly for Quarterly periods with multiple values', function () {
-            periodSettingsRequest.respond(200, {
+            periodSettingsRequest.respond(200, createFakePeriodSettingsResponseFor({
                 targets: [(currentYear + 1) + 'Oct', (currentYear + 2) + 'Oct'],
                 results:[(currentYear + 1) + 'Q2', (currentYear + 5) + 'Q3']
-            });
+            }));
 
             periodGeneratorMock.generatePeriods.and.callFake(function (p, yearDifference) {
                 if (yearDifference === +5) {
@@ -257,9 +271,9 @@ describe('Period service', function () {
         });
 
         it('should filter out the periods that resulted into undefined', function () {
-            periodSettingsRequest.respond(200, {
+            periodSettingsRequest.respond(200, createFakePeriodSettingsResponseFor({
                 results:[(currentYear + 1) + 'Q22']
-            });
+            }));
 
             periodGeneratorMock.generatePeriods.and.returnValue([
                 {iso: (currentYear + 1) + 'Q1'},

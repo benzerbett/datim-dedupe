@@ -33,7 +33,7 @@ describe('Organisation unit service', function () {
         var orgUnitResponse;
 
         beforeEach(function () {
-            orgUnitResponse = $httpBackend.expectGET('/dhis/api/organisationUnits?level=3')
+            orgUnitResponse = $httpBackend.expectGET('/dhis/api/organisationUnits?fields=displayName,id&level=3&paging=false')
                 .respond(window.fixtures.get('organisationUnits'));
         });
 
@@ -58,7 +58,7 @@ describe('Organisation unit service', function () {
                 });
             $httpBackend.flush();
 
-            expect(organisationUnits.length).toBe(37);
+            expect(organisationUnits.length).toBe(36);
         });
 
         it('should return a list with name and id', function () {
@@ -70,7 +70,7 @@ describe('Organisation unit service', function () {
                 });
             $httpBackend.flush();
 
-            expect(organisationUnit.name).toEqual('Angola');
+            expect(organisationUnit.displayName).toEqual('Angola');
             expect(organisationUnit.id).toEqual('XOivy2uDpMF');
         });
 

@@ -9,13 +9,15 @@ function organisationUnitService(Restangular, notify) {
         return Restangular
             .one('organisationUnits').withHttpConfig({cache: true})
             .get({
-                level: level || 1
+                fields: 'displayName,id',
+                level: level || 1,
+                paging: false
             })
             .then(function (response) {
                 return response.organisationUnits || [];
             })
             .then(function (organisationUnits) {
-                return _.sortBy(organisationUnits, 'name');
+                return _.sortBy(organisationUnits, 'displayName');
             })
             .catch(function (error) {
                 notify.error(error.data + ' (' + error.status + ')');
