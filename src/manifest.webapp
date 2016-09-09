@@ -1,1 +1,1 @@
-{"version":"1.0.0","name":"Data Deduplication","description":"Pepfar deduplication app","icons":{"48":"images/icons/dedupe.png"},"developer":{"url":"","name":"Mark Polak, Jason Pickering"},"launch_path":"index.html?v=1.0.0","default_locale":"en","activities":{"dhis":{"href":"*"}}}
+{"version":"1.1.0","name":"Data Deduplication","description":"Pepfar deduplication app","icons":{"48":"images/icons/dedupe.png"},"developer":{"url":"","name":"Mark Polak, Jason Pickering"},"launch_path":"index.html?v=1.1.0","default_locale":"en","activities":{"dhis":{"href":"*"}}}
