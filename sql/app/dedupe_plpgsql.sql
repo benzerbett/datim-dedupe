@@ -16,8 +16,10 @@ RETURNS setof duplicate_records AS  $$
 pure_id integer;
  --Internal ID of the crosswalk mechanism
 crosswalk_id integer;
-
-
+startdate timestamp with time zone;
+enddate timestamp with time zone;
+good_to_go boolean;
+period_exists boolean;
  BEGIN
 --Validation
 
@@ -105,6 +107,21 @@ END CASE;
 
 CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
 
+
+EXECUTE 'SELECT to_timestamp(foo) from (SELECT (value::json->lower(''' || $6  || ''')->''' || $2 || '''->''start'')::text::bigint as
+ foo from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings'' ) as startdate' INTO startdate;
+
+EXECUTE 'SELECT to_timestamp(foo) from (SELECT (value::json->lower(''' || $6  || ''')->''' || $2 || '''->''end'')::text::bigint as
+ foo from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings'' ) as enddate' INTO enddate;
+
+EXECUTE 'SELECT (value::json->lower(''' || $6  || ''')->''' || $2 || ''') IS NOT NULL as
+ foo from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' INTO period_exists;
+
+
+good_to_go:= (SELECT COALESCE(startdate<=now(),true) AND  COALESCE(enddate>=now(),true) AND period_exists);
+
+
+IF good_to_go = true THEN
 
 IF ty = 'PURE'::character varying(50) THEN
  
@@ -411,7 +428,9 @@ group_count,
 total_groups
 FROM temp1';
 
-END IF; 
+END IF;
+
+END IF; --Timestamp check
 
    /*Return the records*/
    FOR returnrec IN SELECT * FROM temp2 ORDER BY group_count LOOP
