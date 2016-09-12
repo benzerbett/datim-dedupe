@@ -142,11 +142,11 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify) {
     }
 
     function hasPeriodSettings(periodSettings, resultsTargets) {
-        return periodSettings && Object.keys(periodSettings).length && periodSettings[(resultsTargets || '').toLowerCase()];
+        return periodSettings && Object.keys(periodSettings).length && periodSettings[(resultsTargets || '').toUpperCase()];
     }
 
     function getPeriodSettings(periodSettings, resultsTargets) {
-        return periodSettings[resultsTargets.toLowerCase()];
+        return periodSettings[resultsTargets.toUpperCase()];
     }
 
     function getPeriod(periodType, periodIdentifier, yearDifferenceForPeriodGenerator) {
