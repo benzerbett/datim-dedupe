@@ -145,8 +145,8 @@ IF ty = 'PURE'::character varying(50) THEN
  dv1.categoryoptioncomboid = dv2.categoryoptioncomboid
  AND
  dv1.attributeoptioncomboid  != dv2.attributeoptioncomboid
- INNER JOIN _orgunitstructure ous on dv1.sourceid = ous.organisationunitid
- and ous.uidlevel3 = ''' ||  $1 || '''
+ INNER JOIN organisationunit ous on dv1.sourceid = ous.organisationunitid
+ and ous.path ~ ''' ||  $1 || '''
  WHERE dv1.dataelementid IN (
  SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
  SELECT datasetid from dataset where uid in ( 
@@ -167,7 +167,7 @@ DELETE FROM temp1 where value !~ ('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
 
 /*Get rid of any DSD-TA crosswalk. This should never happen*/
 EXECUTE format('DELETE FROM temp1 where attributeoptioncomboid = %L',crosswalk_id);
-/*Delete any zeros. They should not be part of the crosswalk*/
+/*Delete any zeros. They should not be part of a duplicate*/
 EXECUTE format('DELETE FROM temp1 where attributeoptioncomboid != %L AND value = ''0''',pure_id);
 
 /*Get rid of any dangling dupes*/
@@ -244,8 +244,8 @@ SELECT replace(json_array_elements(value::json->lower(''' || $6  || ''')->''' ||
  AND ta.periodid = dsd.periodid
  and ta.dataelementid = dsd.ta_dataelementid
  and ta.categoryoptioncomboid = dsd.categoryoptioncomboid
- INNER JOIN _orgunitstructure ous on ta.sourceid = ous.organisationunitid
- and ous.uidlevel3 = ''' || $1 || '''
+ INNER JOIN organisationunit ous on dv1.sourceid = ous.organisationunitid
+ and ous.path ~ ''' ||  $1 || '''
   AND ta.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $2 || ''')';
 
