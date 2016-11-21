@@ -1,7 +1,7 @@
 /* global dhis2 */
 angular.module('PEPFAR.dedupe').factory('periodService', periodService);
 
-function periodService(Restangular, $q, $timeout, webappManifest, notify) {
+function periodService(Restangular, $q, $timeout, webappManifest, notify, dataStore) {
     var dependencies = [
         '/dhis-web-commons/javascripts/jQuery/calendars/jquery.calendars.min.js',
         '/dhis-web-commons/javascripts/jQuery/calendars/jquery.calendars.plus.min.js',
@@ -129,16 +129,7 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify) {
     }
 
     function getDedupePeriodSettings() {
-        if (getDedupePeriodSettings.periodSettingsCache) {
-            return getDedupePeriodSettings.periodSettingsCache;
-        }
-
-        getDedupePeriodSettings.periodSettingsCache = Restangular
-            .all('dataStore')
-            .all('dedupe')
-            .get('periodSettings');
-
-        return getDedupePeriodSettings.periodSettingsCache;
+        return dataStore.getPeriodSettings();
     }
 
     function hasPeriodSettings(periodSettings, resultsTargets) {
@@ -193,6 +184,8 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify) {
 
                     return periodSettings;
                 }
+
+                notify.warn('Could not find periodSettings for :' + periodType);
             });
     }
 

@@ -1,7 +1,7 @@
 <div class="results-targets-select">
-    <ui-select ng-required="false" ng-model="selectbox.resultsTargets" on-select="selectbox.onSelect($item, $model)">
+    <ui-select ng-required="false" ng-model="ctrl.resultsTargets" on-select="selectbox.onSelect($item, $model)">
         <ui-select-match placeholder="{{selectbox.placeholder}}">{{$select.selected.name}}</ui-select-match>
-        <ui-select-choices repeat="item in selectbox.items | filter: $select.search">
+        <ui-select-choices repeat="item in ctrl.items | filter: $select.search">
             <div>{{item.name}}</div>
         </ui-select-choices>
     </ui-select>
