@@ -925,6 +925,15 @@ SELECT 'EbMKKRePz9g' as dsd_de_uid,
 SELECT 'rTMD2o9X19l' as dsd_de_uid,
            (SELECT dataelementid from dataelement where uid ='rTMD2o9X19l') as dsd_dataelementid ,'v7D9uD9UDyq' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'v7D9uD9UDyq') as ta_dataelementid from dataelement where uid = 'rTMD2o9X19l'
  UNION 
+SELECT 'l2d5ZuEXkT3' as dsd_de_uid,
+           (SELECT dataelementid from dataelement where uid ='l2d5ZuEXkT3') as dsd_dataelementid ,'iXVWon4R1yD' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'iXVWon4R1yD') as ta_dataelementid from dataelement where uid = 'l2d5ZuEXkT3'
+ UNION 
+SELECT 'Na3p0RLAiRl' as dsd_de_uid,
+           (SELECT dataelementid from dataelement where uid ='Na3p0RLAiRl') as dsd_dataelementid ,'PI2PRbQKaRq' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'PI2PRbQKaRq') as ta_dataelementid from dataelement where uid = 'Na3p0RLAiRl'
+ UNION 
+SELECT 'm7Y1db8PnZT' as dsd_de_uid,
+           (SELECT dataelementid from dataelement where uid ='m7Y1db8PnZT') as dsd_dataelementid ,'AoXWif7NZQr' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'AoXWif7NZQr') as ta_dataelementid from dataelement where uid = 'm7Y1db8PnZT'
+ UNION 
 SELECT 'uUZqgHNWKD7' as dsd_de_uid,
            (SELECT dataelementid from dataelement where uid ='uUZqgHNWKD7') as dsd_dataelementid ,'BadU4WZATLv' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'BadU4WZATLv') as ta_dataelementid from dataelement where uid = 'uUZqgHNWKD7'
  UNION 
@@ -1016,4 +1025,4 @@ SELECT 'UossaY2RAd4' as dsd_de_uid,
            (SELECT dataelementid from dataelement where uid ='UossaY2RAd4') as dsd_dataelementid ,'io1hfUu6Hbf' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'io1hfUu6Hbf') as ta_dataelementid from dataelement where uid = 'UossaY2RAd4'
  UNION 
 SELECT 'LbmWd1fLXkP' as dsd_de_uid,
-           (SELECT dataelementid from dataelement where uid ='LbmWd1fLXkP') as dsd_dataelementid ,'BV4c3RVJY9Y' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'BV4c3RVJY9Y') as ta_dataelementid from dataelement where uid = 'LbmWd1fLXkP') A ;
+           (SELECT dataelementid from dataelement where uid ='LbmWd1fLXkP') as dsd_dataelementid ,'BV4c3RVJY9Y' as ta_de_uid, (SELECT dataelementid from dataelement where uid = 'BV4c3RVJY9Y') as ta_dataelementid from dataelement where uid = 'LbmWd1fLXkP') ) A ;

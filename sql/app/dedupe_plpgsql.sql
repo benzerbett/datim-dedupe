@@ -54,8 +54,8 @@ IF this_exists != true THEN
   RAISE EXCEPTION 'Invalid result type';
 END IF;
 
---Page size must be greater than zero
-EXECUTE 'SELECT ''' || $4 || '''  > 0;' into this_exists;
+--Page size must be greater than zero OR NULL for no paging
+EXECUTE 'SELECT ''' || $4 || '''  >= 0 ;' into this_exists;
 IF this_exists != true THEN
   RAISE EXCEPTION 'Invalid page size';
 END IF;
@@ -79,6 +79,12 @@ IF this_exists != true THEN
 END IF;
 
 --End validation, begin business logic
+--Support large page sizes when the page size is 0
+CASE ps
+ WHEN 0 THEN
+   ps := 500000 ;
+END CASE;
+
  start_group := pg * ps - ps + 1;
  end_group := pg * ps;
 
