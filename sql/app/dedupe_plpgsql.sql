@@ -246,15 +246,15 @@ EXECUTE 'INSERT INTO temp1
  from datavalue dv1
  INNER JOIN  (SELECT * FROM _temp_dsd_ta_crosswalk where dsd_dataelementid in (
 SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
- SELECT datasetid from dataset where uid in in (
+ SELECT datasetid from dataset where uid in (
 SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
-  from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ' ) map
+  from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ' )))) map
  on dv1.dataelementid = map.dsd_dataelementid ) dsd
  on ta.sourceid = dsd.sourceid
  AND ta.periodid = dsd.periodid
  and ta.dataelementid = dsd.ta_dataelementid
  and ta.categoryoptioncomboid = dsd.categoryoptioncomboid
- INNER JOIN organisationunit ous on dv1.sourceid = ous.organisationunitid
+ INNER JOIN organisationunit ous on ta.sourceid = ous.organisationunitid
  and ous.path ~ ''' ||  $1 || '''
   AND ta.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $2 || ''')';
