@@ -83,6 +83,8 @@ END IF;
 CASE ps
  WHEN 0 THEN
    ps := 500000 ;
+   ELSE
+
 END CASE;
 
  start_group := pg * ps - ps + 1;
@@ -96,6 +98,8 @@ WHEN 'TARGETS' THEN
   dataset_filter := ' AND name ~*(''TARGETS'') ';
 WHEN 'ALL' THEN
   dataset_filter := ' ';
+ ELSE
+ RAISE EXCEPTION 'Invalid dataset type. Must be RESULTS or TARGETS or ALL';
 END CASE;
 
 
@@ -114,13 +118,13 @@ END CASE;
 CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
 
 
-EXECUTE 'SELECT to_timestamp(foo) from (SELECT (value::json->lower(''' || $6  || ''')->''' || $2 || '''->''start'')::text::bigint as
+EXECUTE 'SELECT to_timestamp(foo) from (SELECT (value::json->''' || $6  || '''->''' || $2 || '''->''start'')::text::bigint as
  foo from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings'' ) as startdate' INTO startdate;
 
-EXECUTE 'SELECT to_timestamp(foo) from (SELECT (value::json->lower(''' || $6  || ''')->''' || $2 || '''->''end'')::text::bigint as
+EXECUTE 'SELECT to_timestamp(foo) from (SELECT (value::json->''' || $6  || '''->''' || $2 || '''->''end'')::text::bigint as
  foo from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings'' ) as enddate' INTO enddate;
 
-EXECUTE 'SELECT (value::json->lower(''' || $6  || ''')->''' || $2 || ''') IS NOT NULL as
+EXECUTE 'SELECT (value::json->''' || $6  || '''->''' || $2 || ''') IS NOT NULL as
  foo from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' INTO period_exists;
 
 
@@ -156,7 +160,7 @@ IF ty = 'PURE'::character varying(50) THEN
  WHERE dv1.dataelementid IN (
  SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
  SELECT datasetid from dataset where uid in ( 
-SELECT replace(json_array_elements(value::json->lower(''' || $6  || ''')->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
+SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
   from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ')'
 || dataset_filter ||
  ' ) ) AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
@@ -243,7 +247,7 @@ EXECUTE 'INSERT INTO temp1
  INNER JOIN  (SELECT * FROM _temp_dsd_ta_crosswalk where dsd_dataelementid in (
 SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
  SELECT datasetid from dataset where uid in in (
-SELECT replace(json_array_elements(value::json->lower(''' || $6  || ''')->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
+SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
   from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ' ) map
  on dv1.dataelementid = map.dsd_dataelementid ) dsd
  on ta.sourceid = dsd.sourceid
