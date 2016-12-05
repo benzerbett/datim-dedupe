@@ -83,6 +83,8 @@ END IF;
 CASE ps
  WHEN 0 THEN
    ps := 500000 ;
+   ELSE
+   
 END CASE;
 
  start_group := pg * ps - ps + 1;
@@ -96,6 +98,8 @@ WHEN 'TARGETS' THEN
   dataset_filter := ' AND name ~*(''TARGETS'') ';
 WHEN 'ALL' THEN
   dataset_filter := ' ';
+ ELSE
+ RAISE EXCEPTION 'Invalid dataset type. Must be RESULTS or TARGETS or ALL';
 END CASE;
 
 
