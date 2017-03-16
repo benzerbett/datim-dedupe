@@ -6,6 +6,7 @@ describe('Period service', function () {
     var periodGeneratorMock;
     var periodSettingsRequest;
     var currentYear = new Date().getFullYear();
+    var timeStampForNow = Math.floor(Date.now() / 1000);
 
     function createFakePeriodSettingsResponseFor(settingsConfig) {
         return Object
@@ -13,7 +14,10 @@ describe('Period service', function () {
             .reduce(function (acc, key) {
                 acc[key] = settingsConfig[key]
                     .reduce(function (periodSettings, periodName) {
-                        periodSettings[periodName] = {};
+                        periodSettings[periodName] = {
+                            start: timeStampForNow - 2000,
+                            end: timeStampForNow + 2000
+                        };
                         return periodSettings;
                     }, {});
 
@@ -130,6 +134,54 @@ describe('Period service', function () {
             expect(service.getPastPeriodsRecentFirst()).toEqual([
                 {iso: (currentYear - 1) + 'Oct'}
             ]);
+        });
+
+        it('should not return the the period when the data dedupe period has expired', function () {
+            var targets = {};
+            targets[(currentYear - 1) + 'Oct'] = {
+                start: timeStampForNow - 200,
+                end: timeStampForNow - 100
+            };
+            periodSettingsRequest.respond(200, {
+                TARGETS: targets
+            });
+
+            periodGeneratorMock.generatePeriods.and.returnValue([
+                {iso: (currentYear - 1) + 'Oct'},
+                {iso: (currentYear - 2) + 'Oct'},
+                {iso: (currentYear - 3) + 'Oct'},
+                {iso: (currentYear - 4) + 'Oct'},
+                {iso: (currentYear - 5) + 'Oct'}
+            ]);
+
+            service.setPeriodType('FinancialOct', 'Targets');
+            $httpBackend.flush();
+
+            expect(service.getPastPeriodsRecentFirst()).toEqual([]);
+        });
+
+        it('should not return the the period when the data dedupe period has not yet started', function () {
+            var targets = {};
+            targets[(currentYear - 1) + 'Oct'] = {
+                start: timeStampForNow + 500,
+                end: timeStampForNow + 600
+            };
+            periodSettingsRequest.respond(200, {
+                TARGETS: targets
+            });
+
+            periodGeneratorMock.generatePeriods.and.returnValue([
+                {iso: (currentYear - 1) + 'Oct'},
+                {iso: (currentYear - 2) + 'Oct'},
+                {iso: (currentYear - 3) + 'Oct'},
+                {iso: (currentYear - 4) + 'Oct'},
+                {iso: (currentYear - 5) + 'Oct'}
+            ]);
+
+            service.setPeriodType('FinancialOct', 'Targets');
+            $httpBackend.flush();
+
+            expect(service.getPastPeriodsRecentFirst()).toEqual([]);
         });
 
         it('should call the period generator for multiple years', function () {

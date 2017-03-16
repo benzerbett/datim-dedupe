@@ -173,6 +173,20 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify, dataSt
                     var periodSettings = getPeriodSettings(periodSettingsResponse, resultsTargets);
 
                     generatedPeriods = Object.keys(periodSettings)
+                        .filter(function (periodIdentifier) {
+                            var periodSetting = periodSettings[periodIdentifier];
+
+                            // Check if we have a start and end time
+                            if (periodSetting && periodSetting.start && periodSetting.end) {
+                                // Start and end timestamps are in seconds not milliseconds so we create a timestamp for the current date
+                                var timeStampForNow = Math.floor(Date.now() / 1000);
+
+                                // We will only show periods that are open for dedupe
+                                return (timeStampForNow > periodSetting.start && timeStampForNow < periodSetting.end);
+                            }
+
+                            return false;
+                        })
                         .map(function (periodIdentifier) {
                             var yearDifferenceForPeriodGenerator = getYearFromPeriodIdentifier(periodIdentifier) - currentYear;
 
