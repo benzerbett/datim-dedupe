@@ -163,8 +163,18 @@ IF ty = 'PURE'::character varying(50) THEN
 SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
   from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ')'
 || dataset_filter ||
- ' ) ) AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure
- where iso = ''' || $2 || ''' LIMIT 1)';
+ ' ) 
+ INTERSECT (SELECT dataelementid from dataelement where valuetype IN 
+    (''NUMBER'',
+   ''UNIT_INTERVAL'',
+    ''PERCENTAGE'',
+    ''INTEGER'',
+    ''INTEGER_POSITIVE'',
+    ''INTEGER_NEGATIVE'',
+    ''INTEGER_ZERO_OR_POSITIVE'')
+    AND optionsetid IS  NULL )
+ 
+ ) AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure where iso = ''' || $2 || ''' LIMIT 1)';
 
 /*Group ID. This will be used to group duplicates. */
 ALTER TABLE temp1 ADD COLUMN group_id text;
@@ -257,7 +267,16 @@ SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || 
  INNER JOIN organisationunit ous on ta.sourceid = ous.organisationunitid
  and ous.path ~ ''' ||  $1 || '''
   AND ta.periodid = (SELECT DISTINCT periodid from _periodstructure
- where iso = ''' || $2 || ''')';
+ where iso = ''' || $2 || ''')
+ AND ta.dataelementid IN (SELECT dataelementid from dataelement where valuetype IN 
+    (''NUMBER'',
+   ''UNIT_INTERVAL'',
+    ''PERCENTAGE'',
+    ''INTEGER'',
+    ''INTEGER_POSITIVE'',
+    ''INTEGER_NEGATIVE'',
+    ''INTEGER_ZERO_OR_POSITIVE'')
+    AND optionsetid IS  NULL )';
 
 /*Join with the DSD values*/
 
