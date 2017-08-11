@@ -1,50 +1,51 @@
+/* global xit */
 describe('DataStore Service', function () {
     var $httpBackend;
     var $rootScope;
     var dataStore;
     var periodSettingsFixture =
         {
-            "RESULTS": {
-                "2017Q1": {
-                    "start": 1490986800,
-                    "end": 1492196400,
-                    "datasets": ["MqNLEXmzIzr",
-                        "kkXf2zXqTM0",
-                        "CGoi5wjLHDy",
-                        "tG2hjDIaYQD"
+            RESULTS: {
+                '2017Q1': {
+                    start: 1490986800,
+                    end: 1492196400,
+                    datasets: ['MqNLEXmzIzr',
+                        'kkXf2zXqTM0',
+                        'CGoi5wjLHDy',
+                        'tG2hjDIaYQD'
                     ]
                 }
             },
 
-            "TARGETS": {
-                "2017Oct": {
-                    "start": 1485554400,
-                    "end": 1517090400,
-                    "datasets": [
-                        "YWZrOj5KS1c",
-                        "BuRoS9i851o",
-                        "ePndtmDbOJj",
-                        "AitXBHsC7RA"
+            TARGETS: {
+                '2017Oct': {
+                    start: 1485554400,
+                    end: 1517090400,
+                    datasets: [
+                        'YWZrOj5KS1c',
+                        'BuRoS9i851o',
+                        'ePndtmDbOJj',
+                        'AitXBHsC7RA'
                     ]
                 },
-                "2016Oct": {
-                    "start": 1485554400,
-                    "end": 1517090400,
-                    "datasets": [
-                        "Dd5c9117ukD",
-                        "tCIW2VFd8uu",
-                        "qRvKHvlzNdv",
-                        "Om3TJBRH8G8",
-                        "xxo1G5V1JG2"
+                '2016Oct': {
+                    start: 1485554400,
+                    end: 1517090400,
+                    datasets: [
+                        'Dd5c9117ukD',
+                        'tCIW2VFd8uu',
+                        'qRvKHvlzNdv',
+                        'Om3TJBRH8G8',
+                        'xxo1G5V1JG2'
                     ]
                 }
             }
         };
 
     beforeEach(module('PEPFAR.dedupe'));
-    beforeEach(inject(function (_$rootScope_, _dataStore_) {
-        dataStore = _dataStore_;
-        $rootScope = _$rootScope_;
+    beforeEach(inject(function ($injector) {
+        dataStore = $injector.get('dataStore');
+        $rootScope = $injector.get('$rootScope');
     }));
 
     it('should have a getPeriodSettings method', function () {
@@ -52,8 +53,8 @@ describe('DataStore Service', function () {
     });
 
     describe('getPeriodSettings', function () {
-        beforeEach(inject(function (_$httpBackend_) {
-            $httpBackend = _$httpBackend_;
+        beforeEach(inject(function ($injector) {
+            $httpBackend = $injector.get('$httpBackend');
 
             $httpBackend.expectGET('/dhis/api/dataStore/dedupe/periodSettings')
                 .respond(200, periodSettingsFixture);
