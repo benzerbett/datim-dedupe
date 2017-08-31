@@ -168,7 +168,7 @@ IF ty = 'PURE'::character varying(50) THEN
  INNER JOIN organisationunit ous on dv1.sourceid = ous.organisationunitid
  and ous.path ~ ''' ||  $1 || '''
  WHERE dv1.dataelementid IN (
- SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
+ SELECT DISTINCT dataelementid from datasetelement WHERE datasetid IN (
  SELECT datasetid from dataset where uid in ( 
 SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
   from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ')'
@@ -265,7 +265,7 @@ EXECUTE 'INSERT INTO temp1
  dv1.attributeoptioncomboid
  from datavalue dv1
  INNER JOIN  (SELECT * FROM _temp_dsd_ta_crosswalk where dsd_dataelementid in (
-SELECT DISTINCT dataelementid from datasetmembers WHERE datasetid IN (
+SELECT DISTINCT dataelementid from datasetelement WHERE datasetid IN (
  SELECT datasetid from dataset where uid in (
 SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
   from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ' )))) map
