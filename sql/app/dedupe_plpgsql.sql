@@ -414,7 +414,7 @@ UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
   /*Agency*/
  ALTER TABLE temp1 ADD COLUMN agency character varying(250);
  
- UPDATE temp1 set agency = b."Funding Agency" from _categoryoptiongroupsetstructure b
+ UPDATE temp1 set agency = b."Funding Agency" from _categorystructure b
  where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
  
  UPDATE temp1 set agency = 'DSD Value' where attributeoptioncomboid = -1;
