@@ -194,6 +194,7 @@ UPDATE temp1 SET group_id = dataelementid::text ||  categoryoptioncomboid::text 
 
 /*We need to filter out sketchy values and then determine if there are any phantom groups */
 DELETE FROM temp1 where value !~ ('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
+DELETE FROM temp1 where value = '' OR value is NULL;
 
 /*Get rid of any DSD-TA crosswalk. This should never happen*/
 EXECUTE format('DELETE FROM temp1 where attributeoptioncomboid = %L',crosswalk_id);
@@ -327,6 +328,7 @@ AND value = ''0''' ,pure_id,crosswalk_id);
 
 /*We need to filter out sketchy values and then determine if there are any phantom groups */
 DELETE FROM temp1 where value !~ ('^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$');
+DELETE FROM temp1 where value = '' OR value is NULL;
 
 /*DELETE CASES WHICH DO NOT HAVE ANY TA VALUES while ignoring the dedupe and DSD values*/
 EXECUTE format('DELETE FROM temp1 where group_id NOT IN (SELECT DISTINCT group_id from temp1
