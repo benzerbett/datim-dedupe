@@ -236,15 +236,19 @@ IF ty = 'CROSSWALK'::character varying(50) THEN
 --Materialized the DSD/TA view
 DROP TABLE IF EXISTS _temp_dsd_ta_crosswalk;
 CREATE TEMPORARY TABLE _temp_dsd_ta_crosswalk (
-  dsd_dataelementid integer ,
-  ta_dataelementid integer
+  dsd_uid character(11),
+  ta_uid character(11)
 ) ON COMMIT DROP;
 
 
 INSERT INTO _temp_dsd_ta_crosswalk
-SELECT dsd_id,ta_id FROM( 
+SELECT dsd_uid,ta_uid FROM( 
   SELECT (json_populate_recordset(null::crosswalks,value::JSON)).* 
   FROM keyjsonvalue where namespace='dedupe' and namespacekey='crosswalks') as foo;
+ALTER TABLE _temp_dsd_ta_crosswalk ADD COLUMN dsd_dataelementid integer;
+ALTER TABLE _temp_dsd_ta_crosswalk ADD COLUMN ta_dataelementid integer;
+UPDATE _temp_dsd_ta_crosswalk SET dsd_dataelementid = a.dataelementid from dataelement a where dsd_uid = a.uid;
+UPDATE _temp_dsd_ta_crosswalk SET ta_dataelementid = a.dataelementid from dataelement a where ta_uid = a.uid;
 
 EXECUTE 'INSERT INTO temp1 
  SELECT DISTINCT
