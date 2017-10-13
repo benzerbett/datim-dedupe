@@ -184,7 +184,9 @@ SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || 
     ''INTEGER_ZERO_OR_POSITIVE'')
     AND optionsetid IS  NULL )
  
- ) AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure where iso = ''' || $2 || ''' LIMIT 1)';
+ ) AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure where iso = ''' || $2 || ''' LIMIT 1)
+  AND dv1.deleted IS FALSE
+  AND dv2.deletes IS FALSE';
 
 /*Group ID. This will be used to group duplicates. */
 ALTER TABLE temp1 ADD COLUMN group_id text;
@@ -291,7 +293,9 @@ SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || 
     ''INTEGER_POSITIVE'',
     ''INTEGER_NEGATIVE'',
     ''INTEGER_ZERO_OR_POSITIVE'')
-    AND optionsetid IS  NULL )';
+    AND optionsetid IS  NULL )
+    AND dv1.deleted IS FALSE
+    ';
 
 /*Join with the DSD values*/
 
@@ -317,6 +321,7 @@ and dsd.dataelementid = ta.dsd_dataelementid
 and dsd.categoryoptioncomboid = ta.categoryoptioncomboid
 WHERE dsd.dataelementid IN (SELECT dsd_dataelementid FROM _temp_dsd_ta_crosswalk)
 AND dsd.value  ~ (''^(-?0|-?[1-9][0-9]*)(\.[0-9]+)?(E[0-9]+)?$'')
+AND dsd.deleted IS FALSE
 AND attributeoptioncomboid != %L
 GROUP BY dsd.sourceid,dsd.periodid,ta.dataelementid,dsd.categoryoptioncomboid) foo',crosswalk_id);
 

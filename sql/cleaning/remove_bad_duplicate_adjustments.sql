@@ -4,9 +4,21 @@ CREATE OR REPLACE FUNCTION resolve_bad_duplication_adjustments() RETURNS integer
 this_date date;
 this_id integer;
 dupes_removed integer;
+pure_id integer;
+crosswalk_id integer;
  BEGIN
 
 SET client_min_messages TO WARNING;
+
+--Pure dedupe mech
+pure_id:= (SELECT categoryoptioncomboid from categoryoptioncombo where uid = 'X8hrDf6bLDC');
+IF pure_id IS NULL THEN
+  RAISE EXCEPTION 'Pure dedupe mech not found';
+END IF;
+
+--Crosswalk dedupe mech
+crosswalk_id:=(SELECT categoryoptioncomboid from categoryoptioncombo where uid = 'YGT1o7UxfFu');
+
 
 this_date := now()::date;
 dupes_removed := 0;
@@ -53,54 +65,55 @@ ALTER TABLE _temp_dedupe_adjustments
   ADD CONSTRAINT temp1_datavalue_pkey PRIMARY KEY(dataelementid, periodid, sourceid, categoryoptioncomboid);
 
 --Get all of the pure adjustments
-  INSERT INTO _temp_dedupe_adjustments
+  EXECUTE format('INSERT INTO _temp_dedupe_adjustments
   SELECT DISTINCT sourceid,
                   periodid,
                   dataelementid,
                   categoryoptioncomboid,
                   lastupdated
-  FROM datavalue WHERE attributeoptioncomboid = 2210817;
+  FROM datavalue 
+  WHERE attributeoptioncomboid = %L',pure_id);
 
 --Calculate the group count. All duplicates should have at least two members
-UPDATE _temp_dedupe_adjustments a set group_count = b.group_count from (
+EXECUTE format('UPDATE _temp_dedupe_adjustments a set group_count = b.group_count from (
 SELECT dv.sourceid ,dv.periodid,dv.dataelementid,
 dv.categoryoptioncomboid,count(*) as group_count from
 datavalue dv
-WHERE dv.attributeoptioncomboid NOT IN (2210817,3993514)
+WHERE dv.attributeoptioncomboid NOT IN (%L,%L)
 GROUP BY dv.sourceid,dv.periodid,dv.dataelementid,dv.categoryoptioncomboid) b 
 WHERE a.sourceid = b.sourceid
 and a.periodid = b.periodid
 and a.dataelementid = b.dataelementid
-and a.categoryoptioncomboid = b.categoryoptioncomboid;
+and a.categoryoptioncomboid = b.categoryoptioncomboid',pure_id,crosswalk_id);
 
 --All pure duplication adjustments should be older than their components
-UPDATE _temp_dedupe_adjustments a set pure_timestamp = b.timestamp from (
+EXECUTE format('UPDATE _temp_dedupe_adjustments a set pure_timestamp = b.timestamp from (
 SELECT dv.sourceid ,dv.periodid,dv.dataelementid,
 dv.categoryoptioncomboid,max(dv.lastupdated) as timestamp from 
 datavalue dv
-WHERE dv.attributeoptioncomboid NOT IN (2210817,3993514)
+WHERE dv.attributeoptioncomboid NOT IN (%L,%L)
 GROUP BY dv.sourceid,dv.periodid,dv.dataelementid,dv.categoryoptioncomboid ) b 
 WHERE a.sourceid = b.sourceid
 and a.periodid = b.periodid
 and a.dataelementid = b.dataelementid
-and a.categoryoptioncomboid = b.categoryoptioncomboid;
+and a.categoryoptioncomboid = b.categoryoptioncomboid',pure_id,crosswalk_id);
 
 --All pure duplication adjustments should be older than any audited components as well
 --This may happen in situations where a data value has been deleted for instance
-UPDATE _temp_dedupe_adjustments a set pure_audit_timestamp = b.timestamp from (
+EXECUTE format('UPDATE _temp_dedupe_adjustments a set pure_audit_timestamp = b.timestamp from (
 SELECT dv.organisationunitid as sourceid ,dv.periodid,dv.dataelementid,
 dv.categoryoptioncomboid,max(dv.created) as timestamp from 
 datavalueaudit dv
-WHERE dv.attributeoptioncomboid NOT IN (2210817,3993514)
+WHERE dv.attributeoptioncomboid NOT IN (%L,%L)
 GROUP BY dv.organisationunitid,dv.periodid,dv.dataelementid,dv.categoryoptioncomboid) b 
 WHERE a.sourceid = b.sourceid
 and a.periodid = b.periodid
 and a.dataelementid = b.dataelementid
-and a.categoryoptioncomboid = b.categoryoptioncomboid;
+and a.categoryoptioncomboid = b.categoryoptioncomboid',pure_id,crosswalk_id);
 
 --Insert all of the records which meet the need the needed criteria
-INSERT INTO datavalueaudit_dedupes_temp
-SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid, a.sourceid, a.categoryoptioncomboid, a.value, 
+EXECUTE format('INSERT INTO datavalueaudit_dedupes_temp
+SELECT nextval(''datavalueaudit_dedupes_serialid''), a.dataelementid, a.periodid, a.sourceid, a.categoryoptioncomboid, a.value, 
        a.storedby, a.lastupdated, a.comment, a.followup, a.attributeoptioncomboid, 
        a.created FROM datavalue a INNER JOIN
     (SELECT sourceid,
@@ -118,7 +131,7 @@ ON a.sourceid = b.sourceid
 AND a.periodid = b.periodid
 AND a.dataelementid = b.dataelementid
 AND a.categoryoptioncomboid = b.categoryoptioncomboid
-WHERE a.attributeoptioncomboid = 2210817;
+WHERE a.attributeoptioncomboid = %L',pure_id);
 
 --Truncate these records
 TRUNCATE _temp_dedupe_adjustments;
@@ -149,13 +162,13 @@ ALTER TABLE _temp_dsd_ta_crosswalk
 --The  crosswalk adjustment is invalid.
 
   
-  INSERT INTO _temp_dedupe_adjustments
+  EXECUTE('INSERT INTO _temp_dedupe_adjustments
   SELECT DISTINCT sourceid,
                   periodid,
                   dataelementid,
                   categoryoptioncomboid,
                   lastupdated
-  FROM datavalue WHERE attributeoptioncomboid = 3993514;
+  FROM datavalue WHERE attributeoptioncomboid = %L',crosswalk_id);
 
 
 --This may be causing a deadlock due to the CTE expressions. 
@@ -170,7 +183,7 @@ group_count integer
 )
 ON COMMIT DROP;
 
-WITH y as (
+EXECUTE format('WITH y as (
 --All non-dedupe components, pure and crosswalks
 WITH foo as (
 --All  pure non-dedupe value. This should only be TA values
@@ -182,7 +195,7 @@ ON a.sourceid = dv.sourceid
 AND a.periodid = dv.periodid
 AND a.dataelementid = dv.dataelementid
 AND a.categoryoptioncomboid = dv.categoryoptioncomboid
-WHERE dv.attributeoptioncomboid NOT IN (2210817,3993514)
+WHERE dv.attributeoptioncomboid NOT IN (%L,%L)
 INTERSECT
 --This needs to intersect with the DSD values, otherwise the duplicate is not coupled.
 SELECT DISTINCT dv2.sourceid,dv2.periodid,c.ta_dataelementid as dataelementid, dv2.categoryoptioncomboid 
@@ -195,7 +208,7 @@ ON c.sourceid = dv2.sourceid
 AND c.periodid = dv2.periodid
 AND c.dsd_dataelementid = dv2.dataelementid
 AND c.categoryoptioncomboid = dv2.categoryoptioncomboid
-WHERE dv2.attributeoptioncomboid NOT IN (2210817,3993514) )
+WHERE dv2.attributeoptioncomboid NOT IN (%L,%L) )
 
 --Get all of the ou,pe,de,coc maps
 SELECT sourceid,periodid,dataelementid,categoryoptioncomboid,1 as group_count FROM _temp_dedupe_adjustments
@@ -205,7 +218,7 @@ SELECT sourceid,periodid,dataelementid,categoryoptioncomboid,1 as group_count fr
 )
 
 INSERT INTO _temp_dedupe_adjustments_group_count (sourceid,periodid,dataelementid,categoryoptioncomboid,group_count)
-SELECT y.sourceid,y.periodid,y.dataelementid,y.categoryoptioncomboid,y.group_count from y;
+SELECT y.sourceid,y.periodid,y.dataelementid,y.categoryoptioncomboid,y.group_count from y',pure_id,crosswalk_id,pure_id,crosswalk_id);
 
 --Only set the group count to non-null of the duplicate is not coupled.
 UPDATE _temp_dedupe_adjustments x
@@ -237,7 +250,7 @@ cw_timestamp timestamp WITHOUT time zone
 ON COMMIT DROP;
 
 --Crosswalk adjustments must be older than their components, including any possible pure adjustments
-INSERT INTO _temp_dedupe_adjustments_cw_timestamp
+EXECUTE format('INSERT INTO _temp_dedupe_adjustments_cw_timestamp
 
 SELECT sourceid,periodid,dataelementid, categoryoptioncomboid,max(cw_timestamp) FROM (
 --DSD timestamp. Normal values plus dedupe, excluding any the crosswalk adjustment
@@ -259,7 +272,7 @@ SELECT dv.sourceid,
      AND a.periodid = dv.periodid
      AND a.categoryoptioncomboid = dv.categoryoptioncomboid
      and a.dsd_dataelementid = dv.dataelementid
-     WHERE dv.attributeoptioncomboid NOT IN (3993514)
+     WHERE dv.attributeoptioncomboid NOT IN (%L)
      GROUP BY dv.sourceid,
               dv.periodid,
               a.ta_dataelementid,
@@ -277,7 +290,7 @@ SELECT dv.sourceid,
      and a.periodid = dv.periodid
      and a.sourceid = dv.sourceid
      and a.categoryoptioncomboid = dv.categoryoptioncomboid
-     WHERE dv.attributeoptioncomboid NOT IN (3993514)
+     WHERE dv.attributeoptioncomboid NOT IN (%L)
      GROUP BY dv.sourceid,
               dv.periodid,
               dv.dataelementid,
@@ -294,7 +307,7 @@ INNER JOIN _temp_dedupe_adjustments a on a.dataelementid = dv.dataelementid
 and a.periodid = dv.periodid
 and a.sourceid = dv.organisationunitid
 and a.categoryoptioncomboid = dv.categoryoptioncomboid
-WHERE dv.attributeoptioncomboid NOT IN (3993514)
+WHERE dv.attributeoptioncomboid NOT IN (%L)
 GROUP BY dv.organisationunitid,
 dv.periodid,
 dv.dataelementid,
@@ -316,13 +329,13 @@ ON b.dsd_dataelementid = dv.dataelementid
 and b.periodid = dv.periodid
 and b.sourceid = dv.organisationunitid
 and b.categoryoptioncomboid = dv.categoryoptioncomboid
-WHERE dv.attributeoptioncomboid NOT IN (3993514)
+WHERE dv.attributeoptioncomboid NOT IN (%L)
 GROUP BY dv.organisationunitid,
               dv.periodid,
               b.dsd_dataelementid,
               b.ta_dataelementid,
               dv.categoryoptioncomboid ) foo
-GROUP BY sourceid,periodid,dataelementid, categoryoptioncomboid;
+GROUP BY sourceid,periodid,dataelementid, categoryoptioncomboid',crosswalk_id,crosswalk_id,crosswalk_id,crosswalk_id);
 
 --Set the pure_timestamp to be the maximum of the components. 
 --The crosswalk adjustment must be older than this value 
@@ -341,8 +354,8 @@ GROUP BY sourceid,periodid,dataelementid, categoryoptioncomboid;
 
 
 
-INSERT INTO datavalueaudit_dedupes_temp
-SELECT nextval('datavalueaudit_dedupes_serialid'), a.dataelementid, a.periodid,
+EXECUTE format('INSERT INTO datavalueaudit_dedupes_temp
+SELECT nextval(''datavalueaudit_dedupes_serialid''), a.dataelementid, a.periodid,
  a.sourceid, 
 a.categoryoptioncomboid, a.value,
        a.storedby, a.lastupdated, a.comment, a.followup, a.attributeoptioncomboid,
@@ -360,7 +373,7 @@ a.categoryoptioncomboid, a.value,
   AND a.periodid = b.periodid
   AND a.dataelementid = b.dataelementid
   AND a.categoryoptioncomboid = b.categoryoptioncomboid
-  WHERE a.attributeoptioncomboid = 3993514;
+  WHERE a.attributeoptioncomboid = %L',crosswalk_id);
 
 --INSERT into the main table
 INSERT INTO datavalueaudit_dedupes  SELECT * FROM datavalueaudit_dedupes_temp;
@@ -368,7 +381,7 @@ INSERT INTO datavalueaudit_dedupes  SELECT * FROM datavalueaudit_dedupes_temp;
 --Update the dates in the main audit table
 EXECUTE 'UPDATE datavalueaudit_dedupes SET deleted_on =  $1 WHERE deleted_on IS NULL' USING this_date; 
 --Delete anything in the temporary table which is not a dedupe adjustment
-DELETE FROM datavalueaudit_dedupes_temp where attributeoptioncomboid NOT IN (2210817,3993514);
+EXECUTE format('DELETE FROM datavalueaudit_dedupes_temp where attributeoptioncomboid NOT IN (%L,%L)',pure_id,crosswalk_id);
 
 SELECT COUNT(*) INTO dupes_removed FROM datavalueaudit_dedupes_temp;
 
