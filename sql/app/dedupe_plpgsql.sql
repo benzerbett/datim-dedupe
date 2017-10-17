@@ -186,7 +186,7 @@ SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || 
  
  ) AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure where iso = ''' || $2 || ''' LIMIT 1)
   AND dv1.deleted IS FALSE
-  AND dv2.deletes IS FALSE';
+  AND dv2.deleted IS FALSE';
 
 /*Group ID. This will be used to group duplicates. */
 ALTER TABLE temp1 ADD COLUMN group_id text;
