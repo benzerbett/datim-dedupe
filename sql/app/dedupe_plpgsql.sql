@@ -294,7 +294,7 @@ SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || 
     ''INTEGER_NEGATIVE'',
     ''INTEGER_ZERO_OR_POSITIVE'')
     AND optionsetid IS  NULL )
-    AND dv1.deleted IS FALSE
+  and ta.deleted is FALSE
     ';
 
 /*Join with the DSD values*/
