@@ -142,6 +142,76 @@ SELECT results_eq('SELECT * FROM datavalue',
 SELECT * FROM finish();
 ROLLBACK;
 
+--Test plan for a zero value duplicate. 
+--Cleansing function should not remove anything.
+BEGIN;
+--Helper function for creation of a pure dupe which is resolved
+CREATE OR REPLACE FUNCTION puredupe() RETURNS integer AS $$
+BEGIN
+TRUNCATE datavalue;
+TRUNCATE datavalueaudit;
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',FALSE);
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:09.909',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',FALSE);
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,0,'jpickering','2016-12-25 12:17:07.733',NULL,FALSE,2210817,'2016-12-25 12:17:07.734',FALSE);
+DROP TABLE IF EXISTS dedupetests;
+CREATE TABLE dedupetests as TABLE datavalue;
+RETURN 1;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT plan(3);
+--Seed the data
+SELECT puredupe();
+--Data and test results should be the same
+SELECT results_eq('SELECT * FROM datavalue',
+'SELECT * FROM dedupetests',
+'Valid pure duplicates should remain untouched.');
+--Function should removed zero rows
+SELECT is(resolve_bad_duplication_adjustments(),0,'Should remove zero records');
+--Same test as above, but should still be valid
+SELECT results_eq('SELECT * FROM datavalue',
+'SELECT * FROM dedupetests',
+'Valid pure duplicates should remain untouched.');
+-- Finish the tests and clean up.
+SELECT * FROM finish();
+ROLLBACK;
+
+
+
+--Test plan for a positive pure deudpe adjustment.
+-- Dedupe should always be zero or negative, never positive.  
+--Cleansing function should remove the duplicate
+BEGIN;
+--Helper function for creation of a pure dupe which is resolved
+CREATE OR REPLACE FUNCTION puredupe_positive() RETURNS integer AS $$
+BEGIN
+TRUNCATE datavalue;
+TRUNCATE datavalueaudit;
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',FALSE);
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:09.909',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',FALSE);
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,15,'jpickering','2016-12-25 12:17:07.733',NULL,FALSE,2210817,'2016-12-25 12:17:07.734',FALSE);
+DROP TABLE IF EXISTS dedupetests;
+CREATE TABLE dedupetests as TABLE datavalue;
+DELETE FROM dedupetests where attributeoptioncomboid = 2210817;
+RETURN 1;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT plan(3);
+SELECT puredupe_positive();
+--The results should be different now.
+--TODO: Should really test what is different
+SELECT results_ne('SELECT * FROM datavalue',
+'SELECT * FROM dedupetests',
+'Test outcome and original data should not be the same prior to the test');
+
+SELECT is(resolve_bad_duplication_adjustments(),1,'Should remove a single record');
+--This test should remove the dedupe adjustment from the datavalue table and be equal
+SELECT results_eq('SELECT * FROM datavalue',
+'SELECT * FROM dedupetests',
+'Uncoupled duplicates should be deleted.');
+SELECT * FROM finish();
+ROLLBACK;
 
 
 
@@ -288,10 +358,79 @@ SELECT * FROM finish();
 ROLLBACK;
 
 
-
-
-
 --Test plan for a valid crosswalk duplicate. 
+--Cleansing function should not touch anything. 
+BEGIN;
+
+--Helper function for creation of a pure dupe which is resolved
+CREATE OR REPLACE FUNCTION crosswalk_dupe() RETURNS integer AS $$
+BEGIN
+TRUNCATE datavalue;
+TRUNCATE datavalueaudit;
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',FALSE);
+INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:09.909',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',FALSE);
+INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,-10,'jpickering','2016-12-25 12:17:07.733',NULL,FALSE,3993514,'2016-12-25 12:17:07.734',FALSE);
+DROP TABLE IF EXISTS dedupetests;
+CREATE TABLE dedupetests as TABLE datavalue;
+
+RETURN 1;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT plan(3);
+--Seed the data
+SELECT crosswalk_dupe();
+--Data and test results should be the same
+SELECT results_eq('SELECT * FROM datavalue',
+'SELECT * FROM dedupetests',
+'Valid crosswalk duplicates should remain untouched.');
+--Function should removed zero rows
+SELECT is(resolve_bad_duplication_adjustments(),0,'Should remove zero records');
+--Same test as above, but should still be valid
+SELECT results_eq('SELECT * FROM datavalue',
+'SELECT * FROM dedupetests',
+'Valid pure duplicates should remain untouched.');
+-- Finish the tests and clean up.
+SELECT * FROM finish();
+ROLLBACK;
+
+--Test plan for a valid zero value crosswalk duplicate. 
+--Cleansing function should not touch anything. 
+BEGIN;
+
+--Helper function for creation of a pure dupe which is resolved
+CREATE OR REPLACE FUNCTION crosswalk_dupe() RETURNS integer AS $$
+BEGIN
+TRUNCATE datavalue;
+TRUNCATE datavalueaudit;
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',FALSE);
+INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:09.909',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',FALSE);
+INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,0,'jpickering','2016-12-25 12:17:07.733',NULL,FALSE,3993514,'2016-12-25 12:17:07.734',FALSE);
+DROP TABLE IF EXISTS dedupetests;
+CREATE TABLE dedupetests as TABLE datavalue;
+
+RETURN 1;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT plan(3);
+--Seed the data
+SELECT crosswalk_dupe();
+--Data and test results should be the same
+SELECT results_eq('SELECT * FROM datavalue',
+'SELECT * FROM dedupetests',
+'Valid zero value crosswalk duplicates should remain untouched.');
+--Function should removed zero rows
+SELECT is(resolve_bad_duplication_adjustments(),0,'Should remove zero records');
+--Same test as above, but should still be valid
+SELECT results_eq('SELECT * FROM datavalue',
+'SELECT * FROM dedupetests',
+'Valid pure duplicates should remain untouched.');
+-- Finish the tests and clean up.
+SELECT * FROM finish();
+ROLLBACK;
+
+--Test plan for a positive crosswalk duplicate. 
 --Cleansing function should not touch anything. 
 BEGIN;
 

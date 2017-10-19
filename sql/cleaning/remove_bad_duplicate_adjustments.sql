@@ -55,6 +55,7 @@ CREATE TABLE  datavalueaudit_dedupes_temp
     dataelementid integer REFERENCES dataelement (dataelementid), 
     categoryoptioncomboid integer REFERENCES categoryoptioncombo (categoryoptioncomboid),
     lastupdated TIMESTAMP WITHOUT time ZONE,
+    value text,
     pure_timestamp TIMESTAMP WITHOUT time ZONE,
     cw_timestamp TIMESTAMP WITHOUT time zone,
     pure_audit_timestamp TIMESTAMP WITHOUT time ZONE,
@@ -70,7 +71,8 @@ ALTER TABLE _temp_dedupe_adjustments
                   periodid,
                   dataelementid,
                   categoryoptioncomboid,
-                  lastupdated
+                  lastupdated,
+                  value
   FROM datavalue 
   WHERE attributeoptioncomboid = %L',pure_id);
 
@@ -112,6 +114,8 @@ and a.dataelementid = b.dataelementid
 and a.categoryoptioncomboid = b.categoryoptioncomboid',pure_id,crosswalk_id);
 
 --Insert all of the records which meet the need the needed criteria
+-- Positive dedupe should be excluded
+
 EXECUTE format('INSERT INTO datavalueaudit_dedupes_temp
 SELECT nextval(''datavalueaudit_dedupes_serialid''), a.dataelementid, a.periodid, a.sourceid, a.categoryoptioncomboid, a.value, 
        a.storedby, a.lastupdated, a.comment, a.followup, a.attributeoptioncomboid, 
@@ -125,7 +129,8 @@ SELECT nextval(''datavalueaudit_dedupes_serialid''), a.dataelementid, a.periodid
      OR lastupdated < pure_audit_timestamp
      OR pure_timestamp IS NULL
      OR group_count IS NULL
-     or group_count < 2
+     OR group_count < 2
+     OR value !~(''^(0|-[1-9]\d*)$'')
      ) b 
 ON a.sourceid = b.sourceid
 AND a.periodid = b.periodid
@@ -168,12 +173,13 @@ ALTER TABLE _temp_dsd_ta_crosswalk
 --The  crosswalk adjustment is invalid.
 
   
-  EXECUTE('INSERT INTO _temp_dedupe_adjustments
+  EXECUTE format('INSERT INTO _temp_dedupe_adjustments
   SELECT DISTINCT sourceid,
                   periodid,
                   dataelementid,
                   categoryoptioncomboid,
-                  lastupdated
+                  lastupdated,
+                  value
   FROM datavalue WHERE attributeoptioncomboid = %L',crosswalk_id);
 
 
@@ -374,6 +380,7 @@ a.categoryoptioncomboid, a.value,
      WHERE lastupdated < cw_timestamp
       OR cw_timestamp IS NULL
       OR group_count IS NOT NULL
+      OR value !~(''^(0|-[1-9]\d*)$'')
      ) b
    ON a.sourceid = b.sourceid
   AND a.periodid = b.periodid
