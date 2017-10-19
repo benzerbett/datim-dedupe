@@ -130,7 +130,7 @@ SELECT nextval(''datavalueaudit_dedupes_serialid''), a.dataelementid, a.periodid
      OR pure_timestamp IS NULL
      OR group_count IS NULL
      OR group_count < 2
-     OR value !~(''^(0|-[1-9]\d*)$'')
+     OR value !~(''^(0|-\d*)(\.\d+)?$'')
      ) b 
 ON a.sourceid = b.sourceid
 AND a.periodid = b.periodid
@@ -380,7 +380,7 @@ a.categoryoptioncomboid, a.value,
      WHERE lastupdated < cw_timestamp
       OR cw_timestamp IS NULL
       OR group_count IS NOT NULL
-      OR value !~(''^(0|-[1-9]\d*)$'')
+      OR value !~(''^(0|-\d*)(\.\d+)?$'')
      ) b
    ON a.sourceid = b.sourceid
   AND a.periodid = b.periodid
