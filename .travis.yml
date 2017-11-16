@@ -5,8 +5,9 @@ node_js:
 
 before_script:
   - bower install
-
+  
 script:
+  - npm rebuild node-sass
   - gulp travis
   - cd src
   - cat ../coverage/phantomjs/lcov.info | ../node_modules/coveralls/bin/coveralls.js
