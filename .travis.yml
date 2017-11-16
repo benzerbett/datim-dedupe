@@ -7,6 +7,8 @@ before_script:
   - bower install
   
 script:
+  - rm -rf node_modules",
+  - yarn
   - npm rebuild node-sass
   - gulp travis
   - cd src
