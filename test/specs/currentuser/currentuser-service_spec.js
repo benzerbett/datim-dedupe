@@ -70,6 +70,7 @@ describe('Dedupe service', function () {
 
         it('should have the authorities set onto the currentUser', function () {
             var currentUser;
+            var authorities = [];
 
             currentUserService.getCurrentUser()
                 .then(function (result) {
@@ -77,7 +78,10 @@ describe('Dedupe service', function () {
                 });
             $httpBackend.flush();
 
-            expect(currentUser.authorities).toEqual(['ALL']);
+            currentUser.authorities.forEach(function (authority) {
+                authorities.push(authority);
+            });
+            expect(authorities).toEqual(['ALL']);
         });
     });
 });

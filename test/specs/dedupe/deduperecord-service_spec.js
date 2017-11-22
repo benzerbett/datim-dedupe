@@ -382,15 +382,15 @@ describe('Dedupe record service', function () {
         it('should resolve the crosswalk record with the correct value', function () {
             expect(dedupeRecords[0].resolve.isResolved).toEqual(true);
             expect(dedupeRecords[0].resolve.type).toEqual('custom');
-            expect(dedupeRecords[0].resolve.value).toEqual(0);
+            expect(dedupeRecords[0].resolve.value).toEqual(156);
 
             expect(dedupeRecords[1].resolve.isResolved).toEqual(true);
             expect(dedupeRecords[1].resolve.type).toEqual('custom');
-            expect(dedupeRecords[1].resolve.value).toEqual(156);
+            expect(dedupeRecords[1].resolve.value).toEqual(270);
 
             expect(dedupeRecords[2].resolve.isResolved).toEqual(true);
             expect(dedupeRecords[2].resolve.type).toEqual('custom');
-            expect(dedupeRecords[2].resolve.value).toEqual(270);
+            expect(dedupeRecords[2].resolve.value).toEqual(0);
         });
     });
 });
