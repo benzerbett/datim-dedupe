@@ -408,6 +408,7 @@ and a.attributeoptioncomboid = b.attributeoptioncomboid;
 DROP SEQUENCE IF EXISTS datavalueaudit_dedupes_serialid;
 DROP TABLE IF EXISTS datavalueaudit_dedupes_temp;
 DROP TABLE IF EXISTS _datavalueaudit_dedupes_temp;
+DROP TABLE IF EXISTS _temp_dedupe_adjustments; 
 
 RETURN dupes_removed; 
 END; 
