@@ -4,7 +4,7 @@
 --Requires the pgtap extension which can be installed with
 -- yum install pgtap95.noarch
 
-CREATE EXTENSION pgtap;
+--CREATE EXTENSION pgtap;
 TRUNCATE datavalue;
 TRUNCATE datavalueaudit;
 --Initial tests to ensure that everything is setup 
@@ -100,9 +100,28 @@ SELECT results_eq( 'SELECT COUNT(categoryoptioncomboid)::integer from categoryop
   'SELECT 1::integer',    
   'Pure dedupe adjustment categoryoptioncombo should exist' );
 
-
-
 -- Finish the tests and clean up.
+SELECT * FROM finish();
+ROLLBACK;
+
+
+BEGIN;
+--Test plan to ensure that there are no residual tables
+-- When the function is executed
+SELECT plan(11);
+TRUNCATE datavalue;
+TRUNCATE datavalueaudit;
+SELECT hasnt_table('datavalueaudit_dedupes_temp');
+SELECT hasnt_table('_temp_dedupe_adjustments');
+SELECT hasnt_table(' _temp_dsd_ta_crosswalk');
+SELECT hasnt_table('_temp_dedupe_adjustments_group_count');
+SELECT hasnt_table('_temp_dedupe_adjustments_cw_timestamp');
+SELECT hasnt_table('datavalueaudit_dedupes_temp');
+SELECT is(resolve_bad_duplication_adjustments(),0,'Should remove zero records');
+SELECT hasnt_table('datavalueaudit_dedupes_temp');
+SELECT hasnt_table('_temp_dedupe_adjustments');
+SELECT hasnt_table(' _temp_dsd_ta_crosswalk');
+SELECT hasnt_table('datavalueaudit_dedupes_temp');
 SELECT * FROM finish();
 ROLLBACK;
 
@@ -142,76 +161,6 @@ SELECT results_eq('SELECT * FROM datavalue',
 SELECT * FROM finish();
 ROLLBACK;
 
---Test plan for a zero value duplicate. 
---Cleansing function should not remove anything.
-BEGIN;
---Helper function for creation of a pure dupe which is resolved
-CREATE OR REPLACE FUNCTION puredupe() RETURNS integer AS $$
-BEGIN
-TRUNCATE datavalue;
-TRUNCATE datavalueaudit;
-INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',FALSE);
-INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:09.909',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',FALSE);
-INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,0,'jpickering','2016-12-25 12:17:07.733',NULL,FALSE,2210817,'2016-12-25 12:17:07.734',FALSE);
-DROP TABLE IF EXISTS dedupetests;
-CREATE TABLE dedupetests as TABLE datavalue;
-RETURN 1;
-END;
-$$ LANGUAGE plpgsql;
-
-SELECT plan(3);
---Seed the data
-SELECT puredupe();
---Data and test results should be the same
-SELECT results_eq('SELECT * FROM datavalue',
-'SELECT * FROM dedupetests',
-'Valid pure duplicates should remain untouched.');
---Function should removed zero rows
-SELECT is(resolve_bad_duplication_adjustments(),0,'Should remove zero records');
---Same test as above, but should still be valid
-SELECT results_eq('SELECT * FROM datavalue',
-'SELECT * FROM dedupetests',
-'Valid pure duplicates should remain untouched.');
--- Finish the tests and clean up.
-SELECT * FROM finish();
-ROLLBACK;
-
-
-
---Test plan for a positive pure deudpe adjustment.
--- Dedupe should always be zero or negative, never positive.  
---Cleansing function should remove the duplicate
-BEGIN;
---Helper function for creation of a pure dupe which is resolved
-CREATE OR REPLACE FUNCTION puredupe_positive() RETURNS integer AS $$
-BEGIN
-TRUNCATE datavalue;
-TRUNCATE datavalueaudit;
-INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',FALSE);
-INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:09.909',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',FALSE);
-INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,15,'jpickering','2016-12-25 12:17:07.733',NULL,FALSE,2210817,'2016-12-25 12:17:07.734',FALSE);
-DROP TABLE IF EXISTS dedupetests;
-CREATE TABLE dedupetests as TABLE datavalue;
-DELETE FROM dedupetests where attributeoptioncomboid = 2210817;
-RETURN 1;
-END;
-$$ LANGUAGE plpgsql;
-
-SELECT plan(3);
-SELECT puredupe_positive();
---The results should be different now.
---TODO: Should really test what is different
-SELECT results_ne('SELECT * FROM datavalue',
-'SELECT * FROM dedupetests',
-'Test outcome and original data should not be the same prior to the test');
-
-SELECT is(resolve_bad_duplication_adjustments(),1,'Should remove a single record');
---This test should remove the dedupe adjustment from the datavalue table and be equal
-SELECT results_eq('SELECT * FROM datavalue',
-'SELECT * FROM dedupetests',
-'Uncoupled duplicates should be deleted.');
-SELECT * FROM finish();
-ROLLBACK;
 
 
 
@@ -358,79 +307,10 @@ SELECT * FROM finish();
 ROLLBACK;
 
 
+
+
+
 --Test plan for a valid crosswalk duplicate. 
---Cleansing function should not touch anything. 
-BEGIN;
-
---Helper function for creation of a pure dupe which is resolved
-CREATE OR REPLACE FUNCTION crosswalk_dupe() RETURNS integer AS $$
-BEGIN
-TRUNCATE datavalue;
-TRUNCATE datavalueaudit;
-INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',FALSE);
-INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:09.909',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',FALSE);
-INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,-10,'jpickering','2016-12-25 12:17:07.733',NULL,FALSE,3993514,'2016-12-25 12:17:07.734',FALSE);
-DROP TABLE IF EXISTS dedupetests;
-CREATE TABLE dedupetests as TABLE datavalue;
-
-RETURN 1;
-END;
-$$ LANGUAGE plpgsql;
-
-SELECT plan(3);
---Seed the data
-SELECT crosswalk_dupe();
---Data and test results should be the same
-SELECT results_eq('SELECT * FROM datavalue',
-'SELECT * FROM dedupetests',
-'Valid crosswalk duplicates should remain untouched.');
---Function should removed zero rows
-SELECT is(resolve_bad_duplication_adjustments(),0,'Should remove zero records');
---Same test as above, but should still be valid
-SELECT results_eq('SELECT * FROM datavalue',
-'SELECT * FROM dedupetests',
-'Valid pure duplicates should remain untouched.');
--- Finish the tests and clean up.
-SELECT * FROM finish();
-ROLLBACK;
-
---Test plan for a valid zero value crosswalk duplicate. 
---Cleansing function should not touch anything. 
-BEGIN;
-
---Helper function for creation of a pure dupe which is resolved
-CREATE OR REPLACE FUNCTION crosswalk_dupe() RETURNS integer AS $$
-BEGIN
-TRUNCATE datavalue;
-TRUNCATE datavalueaudit;
-INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',FALSE);
-INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:09.909',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',FALSE);
-INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,0,'jpickering','2016-12-25 12:17:07.733',NULL,FALSE,3993514,'2016-12-25 12:17:07.734',FALSE);
-DROP TABLE IF EXISTS dedupetests;
-CREATE TABLE dedupetests as TABLE datavalue;
-
-RETURN 1;
-END;
-$$ LANGUAGE plpgsql;
-
-SELECT plan(3);
---Seed the data
-SELECT crosswalk_dupe();
---Data and test results should be the same
-SELECT results_eq('SELECT * FROM datavalue',
-'SELECT * FROM dedupetests',
-'Valid zero value crosswalk duplicates should remain untouched.');
---Function should removed zero rows
-SELECT is(resolve_bad_duplication_adjustments(),0,'Should remove zero records');
---Same test as above, but should still be valid
-SELECT results_eq('SELECT * FROM datavalue',
-'SELECT * FROM dedupetests',
-'Valid pure duplicates should remain untouched.');
--- Finish the tests and clean up.
-SELECT * FROM finish();
-ROLLBACK;
-
---Test plan for a positive crosswalk duplicate. 
 --Cleansing function should not touch anything. 
 BEGIN;
 
@@ -729,7 +609,7 @@ SELECT results_ne('SELECT * FROM datavalue',
 'SELECT * FROM dedupetests',
 'Datavalue and test outcome should NOT differ');
 --Function should removed zero rows
-SELECT is(resolve_bad_duplication_adjustments(),2,'Should remove noth pure and crosswalk adjustments');
+SELECT is(resolve_bad_duplication_adjustments(),2,'Should remove no pure and crosswalk adjustments');
 --Results should be equal now. 
 SELECT results_eq('SELECT * FROM datavalue',
 'SELECT * FROM dedupetests',
@@ -801,9 +681,9 @@ BEGIN
 TRUNCATE datavalue;
 TRUNCATE datavalueaudit;
 INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,'5','jpickering','2016-12-26 17:32:14.885',NULL,FALSE,2121684,'2016-12-26 17:32:14.886',FALSE);
-INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,'-5','jpickering','2016-12-26 17:32:14.885',NULL,FALSE,3993514,'2016-12-26 17:32:14.886',FALSE);
-INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,NULL,'jpickering','2016-12-26 17:32:14.885',NULL,FALSE,2121684,'2016-12-26 17:32:14.886',TRUE);
-INSERT INTO datavalueaudit VALUES(37482901,2192546,21351215,2138647,15,10,'jpickering','DELETE',2121684,'2016-12-27 06:04:22.626');
+INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,'-5','jpickering','2016-12-26 17:32:16.885',NULL,FALSE,3993514,'2016-12-26 17:35:14.886',FALSE);
+INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,'10','jpickering','2016-12-26 17:32:14.887',NULL,FALSE,2121684,'2016-12-27 17:32:14.886',TRUE);
+INSERT INTO datavalueaudit VALUES(37482901,2192546,21351215,2138647,15,'10','jpickering','DELETE',2121684,'2016-12-27 06:04:22.626');
 DROP TABLE IF EXISTS dedupetests;
 CREATE TABLE dedupetests as TABLE datavalue;
 --Delete the adjustment from the tests table
@@ -825,7 +705,7 @@ SELECT crosswalk_dupe_ta_delete();
 SELECT results_ne('SELECT * FROM datavalue',
 'SELECT * FROM dedupetests',
 'Datavalue and test outcome should differ');
---Function should removed zero rows
+--Function should the dangling crosswalk
 SELECT is(resolve_bad_duplication_adjustments(),1,'Should remove a single adjustment');
 --Results should be equal now. 
 SELECT results_eq('SELECT * FROM datavalue',
@@ -835,16 +715,19 @@ SELECT results_eq('SELECT * FROM datavalue',
 SELECT * FROM finish();
 ROLLBACK;
 
+
 BEGIN;
 --Helper function for creation of a crosswalk dupe which has had a dsd value deleted
 CREATE OR REPLACE FUNCTION crosswalk_dupe_dsd_delete() RETURNS integer AS $$
 BEGIN
 TRUNCATE datavalue;
 TRUNCATE datavalueaudit;
+RAISE NOTICE 'Resolved crosswalk dedupe with a soft deleted DSD component';
 INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,'5','jpickering','2016-12-26 17:32:14.885',NULL,FALSE,2121684,'2016-12-26 17:32:14.886',FALSE);
-INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,'-5','jpickering','2016-12-26 17:32:14.885',NULL,FALSE,3993514,'2016-12-26 17:32:14.886',FALSE);
-INSERT INTO datavalue VALUES(37482901,21351215,2138647,15,NULL,'jpickering','2016-12-26 17:32:14.885',NULL,FALSE,3993514,'2016-12-27 06:04:22.626',TRUE);
-INSERT INTO datavalueaudit VALUES(37482901,2192705,21351215,2138647,15,10,'jpickering','DELETE',2121684,'2016-12-27 06:04:22.626');
+INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,'-5','jpickering','2016-12-26 17:32:14.885',NULL,FALSE,3993514,'2016-12-28 17:32:14.886',FALSE);
+--TX_UNDETECT (N, DSD): 12 Months Viral Load < 1000
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,'10','jpickering','2016-12-27 06:04:22.626',NULL,FALSE,2121684,'2016-12-27 06:04:22.626',TRUE);
+INSERT INTO datavalueaudit VALUES(1,2192546,21351215,2138647,15,'10','jpickering','DELETE',2121684,'2016-12-28 17:32:14.888');
 DROP TABLE IF EXISTS dedupetests;
 CREATE TABLE dedupetests as TABLE datavalue;
 --Delete the adjustment from the tests table
