@@ -96,14 +96,14 @@ gulp.task('min', ['sass'], function () {
         .pipe(assets)
         .pipe(assets.restore())
         .pipe(useref())
-        .pipe(gulpif('*.css', minifyCss()))
+        .pipe(gulpif('**/*.css', minifyCss()))
         .pipe(gulpif('**/app.js', ngAnnotate({
             add: true,
             remove: true,
             single_quotes: true, //jshint ignore:line
             stats: true
         })))
-        .pipe(gulpif('*.js', uglify({
+        .pipe(gulpif('**/*.js', uglify({
             mangle: mangleJS
         })))
         .pipe(gulpif('!**/index.html', rev()))
