@@ -215,7 +215,7 @@ ROLLBACK;
 
 BEGIN;
 
---Helper function for creation of a pure dupe which is resolved
+--Helper function for creation of a crosswalk dupe which is not resolved
 CREATE OR REPLACE FUNCTION crosswalk_dupe() RETURNS integer AS $$
 BEGIN
 TRUNCATE datavalue;
@@ -240,6 +240,56 @@ SELECT * FROM finish();
 
 ROLLBACK;
 
+BEGIN;
+--Helper function for creation of a crosswalk dupe which is not resolved
+CREATE OR REPLACE FUNCTION crosswalk_dupe_deleted_dsd() RETURNS integer AS $$
+BEGIN
+TRUNCATE datavalue;
+TRUNCATE datavalueaudit;
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',TRUE);
+INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:09.909',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',FALSE);
+DROP TABLE IF EXISTS dedupetests;
+CREATE TABLE dedupetests as TABLE datavalue;
+
+RETURN 1;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT crosswalk_dupe_deleted_dsd();
+
+SELECT plan(1);
+--Should return empty
+SELECT is_empty( $$ SELECT ou_uid,de_uid,coc_uid,value,duplicate_status 
+FROM view_duplicates('XOivy2uDpMF','2016Q3',FALSE,50,1,'RESULTS', 'CROSSWALK' ) $$,'Deleted DSD component. SHould be empty');
+SELECT * FROM finish();
+ROLLBACK;
+
+BEGIN;
+--Helper function for creation of a crosswalk which has a deleted TA component
+CREATE OR REPLACE FUNCTION crosswalk_dupe_deleted_ta() RETURNS integer AS $$
+BEGIN
+TRUNCATE datavalue;
+TRUNCATE datavalueaudit;
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',FALSE);
+INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:09.909',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',TRUE);
+DROP TABLE IF EXISTS dedupetests;
+CREATE TABLE dedupetests as TABLE datavalue;
+
+RETURN 1;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT crosswalk_dupe_deleted_ta();
+
+SELECT plan(1);
+--Should return empty
+SELECT is_empty( $$ SELECT ou_uid,de_uid,coc_uid,value,duplicate_status 
+FROM view_duplicates('XOivy2uDpMF','2016Q3',FALSE,50,1,'RESULTS', 'CROSSWALK' ) $$,'Deleted TA component. SHould be empty');
+SELECT * FROM finish();
+ROLLBACK;
+
+
+--Helper function for creation of a crosswalk dupe which is resolved
 BEGIN;
 CREATE OR REPLACE FUNCTION crosswalk_dupe_resolved() RETURNS integer AS $$
 BEGIN
