@@ -276,7 +276,8 @@ SELECT DISTINCT dataelementid from datasetelement WHERE datasetid IN (
  SELECT datasetid from dataset where uid in (
 SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
   from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ' )))) map
- on dv1.dataelementid = map.dsd_dataelementid ) dsd
+ on dv1.dataelementid = map.dsd_dataelementid
+  AND dv1.deleted IS FALSE ) dsd
  on ta.sourceid = dsd.sourceid
  AND ta.periodid = dsd.periodid
  and ta.dataelementid = dsd.ta_dataelementid
