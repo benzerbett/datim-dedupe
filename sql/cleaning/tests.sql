@@ -7,6 +7,20 @@
 --CREATE EXTENSION pgtap;
 TRUNCATE datavalue;
 TRUNCATE datavalueaudit;
+
+--Be sure the period is open
+DELETE FROM 
+ keyjsonvalue where namespace = 'dedupe' 
+ and namespacekey = 'periodSettings';
+
+ INSERT INTO keyjsonvalue VALUES
+ (
+     1,'aXK5w4fK05s','',now(),now(),
+     'dedupe','periodSettings',
+     '{"TARGETS":{"2018Oct":{"start":1515189600,"end":1546286400,"datasets":["l796jk9SW7q","BWBS39fydnX","eyI0UOWJnDk","X8sn5HE5inC"]},"2017Oct":{"start":1485554400,"end":1513972800,"datasets":["YWZrOj5KS1c","BuRoS9i851o","ePndtmDbOJj","AitXBHsC7RA"]}},"RESULTS":{"2017Q4":{"start":1520020800,"end":1521831600,"datasets":["WbszaIdCi92","tz1bQ3ZwUKJ","IZ71Y2mEBJF","uN01TT331OP","BxIx51zpAjh","mByGopCrDvL"]},"2017Q3":{"start":1506715200,"end":1555231581,"datasets":["O3VMNi8EZSV","Ir58H3zBKEC","uTvHPA1zqzi","asptuHohmHt","kuV7OezWYUj","jTRF4LdklYA"]},"2017Q1":{"start":1506715200,"end":1491080400,"datasets":["kkXf2zXqTM0","K7FMzevlBAp","MqNLEXmzIzr","UZ2PLqSe5Ri","LWE9GdlygD5","CGoi5wjLHDy"]}}}',
+     '',false,2192079);
+
+ 
 --Initial tests to ensure that everything is setup 
 
 BEGIN;
@@ -124,8 +138,6 @@ SELECT hasnt_table(' _temp_dsd_ta_crosswalk',' _temp_dsd_ta_crosswalk should not
 SELECT hasnt_table('datavalueaudit_dedupes_temp','datavalueaudit_dedupes_temp should not exist after');
 SELECT * FROM finish();
 ROLLBACK;
-
-
 
 --Test plan for a valid duplicate. 
 --Cleansing function should not remove anything.
@@ -848,6 +860,78 @@ SELECT is(resolve_bad_duplication_adjustments(),0,'Should remove zero records');
 SELECT results_eq('SELECT * FROM datavalue',
 'SELECT * FROM dedupetests',
 'Valid pure duplicates that are zero should remain untouched.');
+-- Finish the tests and clean up.
+SELECT * FROM finish();
+ROLLBACK;
+
+
+--Test plan for a valid duplicate which has the same timestamp for data and adjustments.
+--Cleansing function should not remove anything.
+BEGIN;
+--Helper function for creation of a pure dupe which is resolved
+CREATE OR REPLACE FUNCTION puredupe_sametime() RETURNS integer AS $$
+BEGIN
+TRUNCATE datavalue;
+TRUNCATE datavalueaudit;
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',FALSE);
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',FALSE);
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,-5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2210817,'2016-12-25 12:17:07.734',FALSE);
+DROP TABLE IF EXISTS dedupetests;
+CREATE TABLE dedupetests as TABLE datavalue;
+RETURN 1;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT plan(3);
+--Seed the data
+SELECT puredupe_sametime();
+--Data and test results should be the same
+SELECT results_eq('SELECT * FROM datavalue',
+'SELECT * FROM dedupetests',
+'Valid pure duplicates with same time stamp should remain untouched.');
+--Function should removed zero rows
+SELECT is(resolve_bad_duplication_adjustments(),0,'Should remove zero records');
+--Same test as above, but should still be valid
+SELECT results_eq('SELECT * FROM datavalue',
+'SELECT * FROM dedupetests',
+'Valid pure duplicates with same time stamp should remain untouched.');
+-- Finish the tests and clean up.
+SELECT * FROM finish();
+ROLLBACK;
+
+
+--Test plan for a valid crosswalk duplicate. 
+--Cleansing function should not touch anything. 
+BEGIN;
+
+--Helper function for creation of a pure dupe which is resolved
+CREATE OR REPLACE FUNCTION crosswalk_dupe_sametime() RETURNS integer AS $$
+BEGIN
+TRUNCATE datavalue;
+TRUNCATE datavalueaudit;
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',FALSE);
+INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',FALSE);
+INSERT INTO datavalue VALUES(2192546,21351215,2138647,15,-10,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,3993514,'2016-12-25 12:17:07.734',FALSE);
+DROP TABLE IF EXISTS dedupetests;
+CREATE TABLE dedupetests as TABLE datavalue;
+
+RETURN 1;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT plan(3);
+--Seed the data
+SELECT crosswalk_dupe_sametime();
+--Data and test results should be the same
+SELECT results_eq('SELECT * FROM datavalue',
+'SELECT * FROM dedupetests',
+'Valid crosswalk duplicates should remain untouched.');
+--Function should remove zero rows
+SELECT is(resolve_bad_duplication_adjustments(),0,'Should remove zero records');
+--Same test as above, but should still be valid
+SELECT results_eq('SELECT * FROM datavalue',
+'SELECT * FROM dedupetests',
+'Valid pure duplicates should remain untouched.');
 -- Finish the tests and clean up.
 SELECT * FROM finish();
 ROLLBACK;

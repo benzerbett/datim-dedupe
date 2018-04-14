@@ -224,7 +224,7 @@ SELECT group_id,MAX(lastupdated) as data_time from temp1
 WHERE attributeoptioncomboid != %L
 GROUP BY group_id ) b
 on a.group_id = b.group_id
-WHERE a.dedupe_time <= b.data_time
+WHERE a.dedupe_time <  b.data_time
  )
 AND group_id IN (SELECT DISTINCT group_id from temp1 where value ~(''^[-|0]'') and
   attributeoptioncomboid = %L)',pure_id,pure_id,pure_id); 
@@ -362,7 +362,7 @@ SELECT group_id,MAX(lastupdated) as data_time from temp1
 WHERE attributeoptioncomboid != $1
 GROUP BY group_id ) b
 on a.group_id = b.group_id
-WHERE a.dedupe_time <= b.data_time)' USING crosswalk_id;
+WHERE a.dedupe_time <  b.data_time)' USING crosswalk_id;
 
 
 END IF;
