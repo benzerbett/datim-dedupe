@@ -77,7 +77,8 @@ ALTER TABLE _temp_dedupe_adjustments
   WHERE attributeoptioncomboid = %L',pure_id);
 
 --Calculate the group count. All duplicates should have at least two members
-EXECUTE format('UPDATE _temp_dedupe_adjustments a set group_count = b.group_count from (
+EXECUTE format('UPDATE _temp_dedupe_adjustments a 
+set group_count = b.group_count from (
 SELECT dv.sourceid ,dv.periodid,dv.dataelementid,
 dv.categoryoptioncomboid,count(*) as group_count from
 datavalue dv
@@ -88,8 +89,9 @@ and a.periodid = b.periodid
 and a.dataelementid = b.dataelementid
 and a.categoryoptioncomboid = b.categoryoptioncomboid',pure_id,crosswalk_id);
 
---All pure duplication adjustments should be older than their components
-EXECUTE format('UPDATE _temp_dedupe_adjustments a set pure_timestamp = b.timestamp from (
+--All pure duplication adjustments should be older than or equal to their components
+EXECUTE format('UPDATE _temp_dedupe_adjustments a set
+ pure_timestamp = b.timestamp from (
 SELECT dv.sourceid ,dv.periodid,dv.dataelementid,
 dv.categoryoptioncomboid,max(dv.lastupdated) as timestamp from 
 datavalue dv
@@ -102,7 +104,8 @@ and a.categoryoptioncomboid = b.categoryoptioncomboid',pure_id,crosswalk_id);
 
 --All pure duplication adjustments should be older than any audited components as well
 --This may happen in situations where a data value has been deleted for instance
-EXECUTE format('UPDATE _temp_dedupe_adjustments a set pure_audit_timestamp = b.timestamp from (
+EXECUTE format('UPDATE _temp_dedupe_adjustments a 
+set pure_audit_timestamp = b.timestamp from (
 SELECT dv.organisationunitid as sourceid ,dv.periodid,dv.dataelementid,
 dv.categoryoptioncomboid,max(dv.created) as timestamp from 
 datavalueaudit dv
@@ -117,7 +120,8 @@ and a.categoryoptioncomboid = b.categoryoptioncomboid',pure_id,crosswalk_id);
 -- Positive dedupe should be excluded
 
 EXECUTE format('INSERT INTO datavalueaudit_dedupes_temp
-SELECT nextval(''datavalueaudit_dedupes_serialid''), a.dataelementid, a.periodid, a.sourceid, a.categoryoptioncomboid, a.value, 
+SELECT nextval(''datavalueaudit_dedupes_serialid''), 
+a.dataelementid, a.periodid, a.sourceid, a.categoryoptioncomboid, a.value, 
        a.storedby, a.lastupdated, a.comment, a.followup, a.attributeoptioncomboid, 
        a.created FROM datavalue a INNER JOIN
     (SELECT sourceid,

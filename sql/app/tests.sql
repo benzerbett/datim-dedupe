@@ -1,3 +1,8 @@
+--Must setup the period settings
+UPDATE  keyjsonvalue set value = '{"RESULTS":{"2016Q3":{"start":1503349200,"end":2506114000,"datasets":["i29foJcLY9Y"]}}}'  where namespace='dedupe' and namespacekey='periodSettings';
+TRUNCATE datavalue;
+TRUNCATE datavalueaudit;
+
 BEGIN;
 SELECT plan(21);
 SELECT has_function(
@@ -58,8 +63,7 @@ CREATE OR REPLACE FUNCTION puredupe() RETURNS integer AS $$
 BEGIN
 TRUNCATE datavalue;
 TRUNCATE datavalueaudit;
---Must setup the period settings
-UPDATE  keyjsonvalue set value = '{"RESULTS":{"2016Q3":{"start":1503349200,"end":2506114000,"datasets":["i29foJcLY9Y"]}}}'  where namespace='dedupe' and namespacekey='periodSettings';
+
 INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.17',FALSE);
 INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:09.909',NULL,FALSE,2121892,'2016-12-25 12:07:09.91',FALSE);
 
@@ -339,5 +343,32 @@ SELECT plan(1);
 --Should return empty
 SELECT is_empty( $$ SELECT ou_uid,de_uid,coc_uid,value,duplicate_status 
 FROM view_duplicates('XOivy2uDpMF','2016Q3',FALSE,50,1,'RESULTS', 'CROSSWALK' ) $$,'Resolved crosswalk. SHould be empty');
+SELECT * FROM finish();
+ROLLBACK;
+
+
+BEGIN;
+CREATE OR REPLACE FUNCTION puredupe_resolved_sametime() RETURNS integer AS $$
+BEGIN
+TRUNCATE datavalue;
+TRUNCATE datavalueaudit;
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121684,'2016-12-25 12:07:04.168',FALSE);
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,10,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2121892,'2016-12-25 12:07:04.168',FALSE);
+INSERT INTO datavalue VALUES(2192705,21351215,2138647,15,-5,'jpickering','2016-12-25 12:07:04.168',NULL,FALSE,2210817,'2016-12-25 12:07:04.168',FALSE);
+DROP TABLE IF EXISTS dedupetests;
+CREATE TABLE dedupetests as TABLE datavalue;
+RETURN 1;
+END;
+$$ LANGUAGE plpgsql;
+
+SELECT puredupe_resolved_sametime();
+
+SELECT plan(1);
+--Should be marked as resolvefd
+SELECT bag_eq( $$ SELECT ou_uid,de_uid,coc_uid,value,duplicate_status,group_count,total_groups
+FROM view_duplicates('XOivy2uDpMF','2016Q3',TRUE,50,1,'RESULTS', 'PURE' ) $$,
+$$ VALUES ('IHuZkWbFwNK'::character varying (11),'uUZqgHNWKD7'::character varying (11),'HllvX50cXC0'::character varying (11),'5'::character varying (50000),'RESOLVED'::character varying(50),1::integer,1::integer),
+('IHuZkWbFwNK'::character varying (11),'uUZqgHNWKD7'::character varying (11),'HllvX50cXC0'::character varying (11),'10'::character varying (50000),'RESOLVED'::character varying (50),1::integer,1::integer),
+('IHuZkWbFwNK'::character varying (11),'uUZqgHNWKD7'::character varying (11),'HllvX50cXC0'::character varying (11),'-5'::character varying (50000),'RESOLVED'::character varying(50),1::integer,1::integer) $$);
 SELECT * FROM finish();
 ROLLBACK;
