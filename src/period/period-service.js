@@ -178,11 +178,13 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify, dataSt
 
                             // Check if we have a start and end time
                             if (periodSetting && periodSetting.start && periodSetting.end) {
-                                // Start and end timestamps are in seconds not milliseconds so we create a timestamp for the current date
-                                var timeStampForNow = Math.floor(Date.now() / 1000);
+                                var timeStampForNow = Math.floor(Date.now());
+
+                                var startDate = new Date(periodSetting.start);
+                                var endDate = new Date(periodSetting.end);
 
                                 // We will only show periods that are open for dedupe
-                                return (timeStampForNow > periodSetting.start && timeStampForNow < periodSetting.end);
+                                return (timeStampForNow > startDate.getTime() && timeStampForNow < endDate.getTime());
                             }
 
                             return false;
