@@ -9,7 +9,8 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify, dataSt
     ];
     var service = {
         getPastPeriodsRecentFirst: getPastPeriodsRecentFirst,
-        setPeriodType: setPeriodType
+        setPeriodType: setPeriodType,
+        isPeriodSettingISOFormat: isPeriodSettingISOFormat
     };
 
     var calendarLoaded = $q.defer();
@@ -41,6 +42,8 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify, dataSt
         'nepali',
         'thai'
     ];
+
+    var datePattern = /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2]\d|3[0-1])T(?:[0-1]\d|2[0-3]):[0-5]\d:[0-5]\d(?:(?:\.\d{3})?Z|\+00:00)$/;
 
     initialise();
     return service;
@@ -177,11 +180,19 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify, dataSt
                             var periodSetting = periodSettings[periodIdentifier];
 
                             // Check if we have a start and end time
-                            if (periodSetting && periodSetting.start && periodSetting.end) {
-                                var timeStampForNow = Math.floor(Date.now());
+                            if (periodSetting && periodSetting.start && periodSetting.end &&
+                                isPeriodSettingISOFormat(periodIdentifier, periodSetting)) {
 
+                                var timeStampForNow = Math.floor(Date.now());
                                 var startDate = new Date(periodSetting.start);
                                 var endDate = new Date(periodSetting.end);
+
+                                // Start date greater than end date
+                                if (startDate.getTime() > endDate.getTime()) {
+                                    window.console.warn('Skipping period settings ' + periodIdentifier + ', start' +
+                                        ' date: ' + periodSetting.start + ' greater than end date: ' + periodSetting.end);
+                                    return false;
+                                }
 
                                 // We will only show periods that are open for dedupe
                                 return (timeStampForNow > startDate.getTime() && timeStampForNow < endDate.getTime());
@@ -203,6 +214,23 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify, dataSt
 
                 notify.warn('Could not find periodSettings for :' + periodType);
             });
+    }
+
+    function isPeriodSettingISOFormat(periodIdentifier, periodSetting) {
+        var isValid = true;
+        if (!datePattern.test(periodSetting.start)) {
+            window.console.warn('Invalid start date format: ' + periodSetting.start);
+            isValid = false;
+        }
+        if (!datePattern.test(periodSetting.end)) {
+            window.console.warn('Invalid end date format: ' + periodSetting.end);
+            isValid = false;
+        }
+        if (!isValid) {
+            window.console.warn('Skipping period settings ' + periodIdentifier + '. Expected format:' +
+                ' YYYY-MM-DDThh:mm:ss[.sss]Z or YYYY-MM-DDThh:mm:ss+00:00');
+        }
+        return isValid;
     }
 
     function loadCalendarScript(calendarType) {
