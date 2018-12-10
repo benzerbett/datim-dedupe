@@ -8,6 +8,8 @@ function organisationUnitSelectDirective(organisationUnitService, currentUserSer
         templateUrl: 'organisationunits/organisation-select.html',
         link: function (scope) {
             scope.organisationUnit = undefined;
+            scope.isGlobalOrgUnit = isGlobalOrgUnit;
+            scope.isUserHasAnOrgUnit = isUserHasAnOrgUnit;
             scope.selectbox = {
                 items: [],
                 placeholder: 'Select an organisation unit',
@@ -23,9 +25,14 @@ function organisationUnitSelectDirective(organisationUnitService, currentUserSer
                     currentUserService.getCurrentUser()
                         .then(function (currentUser) {
                             if (isUserHasAnOrgUnit(currentUser)) {
-                                scope.organisationUnit = findItemInListById(currentUser.organisationUnits[0].id, scope.selectbox.items);
-
+                                var isGlobal = isGlobalOrgUnit(currentUser);
+                                if (isGlobal) {
+                                    scope.organisationUnit = findItemInListById(currentUser.organisationUnits[0].id, scope.selectbox.items);
+                                } else {
+                                    scope.organisationUnit = {id: currentUser.organisationUnits[0].id};
+                                }
                                 dedupeRecordFilters.changeOrganisationUnit(scope.organisationUnit);
+                                scope.$emit('SELECT_ORGANISATION_UNIT_DIRECTIVE.currentUser', isGlobal);
                             }
                         })
                         .catch(function () {
@@ -46,6 +53,22 @@ function organisationUnitSelectDirective(organisationUnitService, currentUserSer
                     }
                 });
             }
+
+            function isGlobalOrgUnit(user) {
+                var isGlobalOrgUnit = false;
+                if (user.dataViewOrganisationUnits &&
+                    user.dataViewOrganisationUnits[0] &&
+                    user.dataViewOrganisationUnits[0].id)
+                {
+                    isGlobalOrgUnit = user.organisationUnits[0].id === user.dataViewOrganisationUnits[0].id;
+
+                    if (user.organisationUnits.length > 1 || user.dataViewOrganisationUnits.length > 1) {
+                        window.console.warn('Detected several organisation units for current user.');
+                    }
+                }
+                return isGlobalOrgUnit;
+            }
+
         }
     };
 }
