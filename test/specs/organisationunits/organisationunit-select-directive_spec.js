@@ -28,11 +28,11 @@ describe('Organisation unit select directive', function () {
             return {
                 getCurrentUser: function () {
                     return $q.when({
-                        organisationUnits: [{
-                            id:'W73PRZcjFIU',
-                            name:'Indonesia',
-                            code:'ID'
-                        }]
+                        organisationUnits: [ {
+                            id: 'W73PRZcjFIU',
+                            name: 'Indonesia',
+                            code: 'ID'
+                        } ]
                     });
                 }
             };

@@ -32,7 +32,7 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
 
     function extractHeaders(sqlViewData) {
         headers = _.chain(sqlViewData.headers)
-            .map(_.compose(_.values, _.partialRight(_.pick, ['column'])))
+            .map(_.compose(_.values, _.partialRight(_.pick, [ 'column' ])))
             .flatten()
             .value();
 
@@ -174,9 +174,9 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
                 })
                 .map(pickValueColumn)
                 .reduce(add, 0) - getNonCrosswalkDedupeRows(rows)
-                                    .filter(isDSDValueRow)
-                                    .map(pickValueColumn)
-                                    .reduce(add, 0);
+                .filter(isDSDValueRow)
+                .map(pickValueColumn)
+                .reduce(add, 0);
 
             if (defaultValue > 0) {
                 return defaultValue;
@@ -233,14 +233,14 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
 
     function isResolved(dataRows) {
         return dataRows.some(isDedupeMechanismRow) && dataRows.every(function (row) {
-                return (getColumnValue('duplicate_status', row) === 'RESOLVED');
-            });
+            return (getColumnValue('duplicate_status', row) === 'RESOLVED');
+        });
     }
 
     function isCrosswalkResolved(dataRows) {
         return dataRows.some(isDedupeCrosswalkMechanismRow) && dataRows.every(function (row) {
-                return (getColumnValue('duplicate_status', row) === 'RESOLVED');
-            });
+            return (getColumnValue('duplicate_status', row) === 'RESOLVED');
+        });
     }
 
     function getDedupeType(dataRows, isCrosswalk) {

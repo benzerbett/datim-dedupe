@@ -1,7 +1,7 @@
-module.exports = function( config ) {
+module.exports = function(config) {
     config.set({
         basePath: '../src',
-        frameworks: ['jasmine'],
+        frameworks: [ 'jasmine' ],
 
         preprocessors: {
             '../src/**/*.html': 'ng-html2js',
@@ -27,7 +27,7 @@ module.exports = function( config ) {
         autoWatchBatchDelay: 100,
         usePolling: true,
 
-        browsers: ['PhantomJS'],
+        browsers: [ 'PhantomJS' ],
         singleRun: true
     });
 };

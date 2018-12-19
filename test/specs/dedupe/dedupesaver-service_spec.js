@@ -95,7 +95,7 @@ describe('Dedupe saver service', function () {
                     $httpBackend.expectPOST('/dhis/api/dataValues?cc=wUpfppgjEza&co=HllvX50cXC0&cp=xEzelmtHWPn&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
                         .respond(200, fixtures.get('importResponse'));
 
-                    dedupeSaverService.saveDeduplication([dedupeRecordOne]);
+                    dedupeSaverService.saveDeduplication([ dedupeRecordOne ]);
 
                     $httpBackend.flush();
                 });
@@ -105,7 +105,7 @@ describe('Dedupe saver service', function () {
                     $httpBackend.expectPOST('/dhis/api/dataValues?cc=wUpfppgjEza&co=HllvX50cXC0&cp=xEzelmtHWPn&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
                         .respond(200, fixtures.get('importResponse'));
 
-                    dedupeSaverService.saveDeduplication([dedupeRecordOne])
+                    dedupeSaverService.saveDeduplication([ dedupeRecordOne ])
                         .then(function (response) {
                             responseStructure = response;
                         });
@@ -122,7 +122,7 @@ describe('Dedupe saver service', function () {
 
                     delete dedupeRecordOne.resolve.adjustedValue;
 
-                    dedupeSaverService.saveDeduplication([dedupeRecordOne])
+                    dedupeSaverService.saveDeduplication([ dedupeRecordOne ])
                         .catch(catchFunction);
                     $rootScope.$apply();
 
@@ -135,11 +135,11 @@ describe('Dedupe saver service', function () {
                     $httpBackend.expectPOST('/dhis/api/dataValues?cc=wUpfppgjEza&co=HllvX50cXC0&cp=xEzelmtHWPn&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
                         .respond(409, {httpStatus: 'Conflict', httpStatusCode: 409, status: 'ERROR', message: 'Data set is locked'});
 
-                    dedupeSaverService.saveDeduplication([dedupeRecordOne])
+                    dedupeSaverService.saveDeduplication([ dedupeRecordOne ])
                         .catch(catchFunction);
                     $httpBackend.flush();
 
-                    expect(catchFunction).toHaveBeenCalledWith({successCount: 0, errorCount: 1, errors: [new Error('Saving failed (Data set is locked)')]});
+                    expect(catchFunction).toHaveBeenCalledWith({successCount: 0, errorCount: 1, errors: [ new Error('Saving failed (Data set is locked)') ]});
                 });
 
                 describe('crosswalk', function () {
@@ -151,7 +151,7 @@ describe('Dedupe saver service', function () {
                         $httpBackend.expectPOST('/dhis/api/dataValues?cc=wUpfppgjEza&co=HllvX50cXC0&cp=OM58NubPbx1&de=K6f6jR0NOcZ&ou=HfiOUYEPgLK&pe=2013Oct&value=-400')
                             .respond(200, fixtures.get('importResponse'));
 
-                        dedupeSaverService.saveDeduplication([dedupeRecordOne]);
+                        dedupeSaverService.saveDeduplication([ dedupeRecordOne ]);
 
                         $httpBackend.flush();
                     });
@@ -314,7 +314,7 @@ describe('Dedupe saver service', function () {
                     importResponse.importCount.imported = 1;
                     importResponse.importCount.ignored = 1;
                     importResponse.conflicts = [
-                        {value:'Data element not found or not acccessible'}
+                        {value: 'Data element not found or not acccessible'}
                     ];
                     delete dedupeRecordOne.resolve.adjustedValue;
 

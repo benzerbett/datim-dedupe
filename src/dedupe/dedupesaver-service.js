@@ -1,11 +1,11 @@
 angular.module('PEPFAR.dedupe').factory('dedupeSaverService', dedupeSaverService);
 
 function dedupeSaverService($q, Restangular,
-                            DEDUPE_CATEGORY_OPTION_ID,
-                            DEDUPE_CATEGORY_OPTION_COMBO_ID,
-                            DEDUPE_CROSSWALK_CATEGORY_OPTION_ID,
-                            DEDUPE_CROSSWALK_CATEGORY_OPTION_COMBO_ID,
-                            DEDUPE_CATEGORY_COMBO_ID) {
+    DEDUPE_CATEGORY_OPTION_ID,
+    DEDUPE_CATEGORY_OPTION_COMBO_ID,
+    DEDUPE_CROSSWALK_CATEGORY_OPTION_ID,
+    DEDUPE_CROSSWALK_CATEGORY_OPTION_COMBO_ID,
+    DEDUPE_CATEGORY_COMBO_ID) {
     return {
         saveDeduplication: saveDeduplication
     };
@@ -70,7 +70,7 @@ function dedupeSaverService($q, Restangular,
                 })
                 .catch(function (response) {
                     var statusMessage = response.data && response.data.message ? ' (' + response.data.message + ')' : '' ;
-                    return $q.reject(getResponseStructure(0, 1, [new Error('Saving failed' + statusMessage)]));
+                    return $q.reject(getResponseStructure(0, 1, [ new Error('Saving failed' + statusMessage) ]));
                 });
         } catch (e) {
             return $q.reject(e.message);

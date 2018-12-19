@@ -20,7 +20,7 @@ function orgunitParentsHover($parse, $compile, Restangular) {
                             fields: 'level,name',
                             includeAncestors: true
                         })
-                        .then(function (data) { return data.organisationUnits || [data]; })
+                        .then(function (data) { return data.organisationUnits || [ data ]; })
                         .then(function (organisationUnits) {
                             return organisationUnits.filter(function (orgUnit) {
                                 return orgUnit.level >= 3;

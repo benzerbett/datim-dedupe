@@ -1,6 +1,6 @@
-!function () {
+!(function () {
     var isFunction = function(o) {
-        return typeof o == 'function';
+        return typeof o === 'function';
     };
 
 
@@ -36,4 +36,4 @@
         };
         proto.bind = bind;
     }
-}();
+}());

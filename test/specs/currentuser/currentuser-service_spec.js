@@ -18,10 +18,10 @@ describe('Dedupe service', function () {
         $httpBackend = $injector.get('$httpBackend');
 
         userRequest = $httpBackend.expectGET('/dhis/api/me?fields=:all,userCredentials%5B:owner,!userGroupAccesses%5D,!userGroupAccesses')
-            .respond(200, {name:'John'});
+            .respond(200, {name: 'John'});
 
         $httpBackend.expectGET('/dhis/api/me/authorization')
-            .respond(200, ['ALL']);
+            .respond(200, [ 'ALL' ]);
 
     }));
 
@@ -81,7 +81,7 @@ describe('Dedupe service', function () {
             currentUser.authorities.forEach(function (authority) {
                 authorities.push(authority);
             });
-            expect(authorities).toEqual(['ALL']);
+            expect(authorities).toEqual([ 'ALL' ]);
         });
     });
 });

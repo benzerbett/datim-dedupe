@@ -65,14 +65,14 @@ function dedupeDirectiveController(dedupeService, $scope, $q) {
 
     function resolve() {
         ctrl.isProcessing = true;
-        dedupeService.resolveDuplicates([ctrl.dedupeRecord])
+        dedupeService.resolveDuplicates([ ctrl.dedupeRecord ])
             .then(function (responseStatus) {
                 $scope.$emit('DEDUPE_DIRECTIVE.resolve', ctrl.dedupeRecord.id, responseStatus);
                 return responseStatus;
             })
             .catch(function (responseStatus) {
                 if (angular.isString(responseStatus)) {
-                    responseStatus = {successCount: 0, errorCount: 0, errors: [responseStatus]};
+                    responseStatus = {successCount: 0, errorCount: 0, errors: [ responseStatus ]};
                 }
 
                 $scope.$emit('DEDUPE_DIRECTIVE.resolve', undefined, responseStatus);

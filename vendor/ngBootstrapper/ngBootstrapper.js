@@ -40,7 +40,7 @@
         //Defer the bootstrapping by setting the name flag
         window.name = 'NG_DEFER_BOOTSTRAP!';
 
-        angular.bootstrap(element, [this.appName]);
+        angular.bootstrap(element, [ this.appName ]);
 
         //Reset the bootstrapping defer
         window.name = undefined;
@@ -228,7 +228,7 @@
                 this.modules.forEach(function (moduleName) {
                     angular.module(moduleName);
                 });
-                angular.resumeBootstrap([self.appName + '.injectables']);
+                angular.resumeBootstrap([ self.appName + '.injectables' ]);
             } catch (e) {
                 if (window.console && window.console.info && resumeBootstrapWhenLoaded.attempts < limit) {
                     resumeBootstrapWhenLoaded.attempts += 1;
@@ -299,5 +299,5 @@
 
         return new NgBootstrapper(appName, element);
     };
-    window.getBootstrapper.$inject = ['ng'];
+    window.getBootstrapper.$inject = [ 'ng' ];
 }(window, angular));

@@ -208,8 +208,8 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify, dataSt
             function () {
                 prepareCalendar();
             }).error(function () {
-                throw new Error('Unable to load ' + calendarType + ' calendar');
-            });
+            throw new Error('Unable to load ' + calendarType + ' calendar');
+        });
 
     }
 }
