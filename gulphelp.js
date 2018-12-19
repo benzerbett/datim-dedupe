@@ -5,20 +5,18 @@ module.exports = {
 };
 
 function runKarma(watch) {
-    var karma = require('gulp-karma');
-    var config = {
-        configFile: 'test/karma.conf.js'
-    };
+    var karma = require('gulp-karma-runner');
+    var server = karma.server({
+        configFile: __dirname + '/test/karma.conf.js',
+        autoWatch: watch,
+        singleRun: true,
+        plugins: [
+            'karma-coverage', 'karma-ng-html2js-preprocessor', 'karma-jasmine', 'karma-phantomjs-launcher'
+        ],
+        frameworks: [ 'jasmine' ]
+    });
 
-    if (!watch) {
-        watch = false;
-    }
-
-    if (watch === true) {
-        config.action = 'watch';
-    }
-
-    return karma(config);
+    return server;
 }
 
 /**
