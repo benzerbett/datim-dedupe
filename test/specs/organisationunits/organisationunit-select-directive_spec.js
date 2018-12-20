@@ -118,18 +118,18 @@ describe('Organisation unit select directive', function () {
             expect(innerScope.isGlobalOrgUnit).toEqual(jasmine.any(Function));
         });
 
-        it('should return true when current user organisationUnits[0].id and dataViewOrganisationUnits[0].id match', function () {
+        it('should return true when user dataViewOrganisationUnits contains global id "ybg3MO3hcf4"', function () {
             var mockCurrentUser = {
                 organisationUnits: [{id: 'ybg3MO3hcf4'}],
-                dataViewOrganisationUnits: [{id: 'ybg3MO3hcf4'}]
+                dataViewOrganisationUnits: [{id: 'ybg3MO3aaa'}, {id: 'ybg3MO3hcf4'}]
             };
             expect(innerScope.isGlobalOrgUnit(mockCurrentUser)).toBe(true);
         });
 
-        it('should return false when current user organisationUnits[0].id differs from dataViewOrganisationUnits[0].id', function () {
+        it('should return false when user dataViewOrganisationUnits does not contains id "ybg3MO3hcf4"', function () {
             var mockCurrentUser = {
                 organisationUnits: [{id: 'ybg3MO3hc99'}],
-                dataViewOrganisationUnits: [{id: 'ybg3MO3hcf4'}]
+                dataViewOrganisationUnits: [{id: 'ybg3MO3hcaaa'}, {id: 'ybg3MO3hc99'}]
             };
             expect(innerScope.isGlobalOrgUnit(mockCurrentUser)).toBe(false);
         });
