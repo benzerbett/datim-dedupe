@@ -8,6 +8,10 @@ describe('Period service', function () {
     var currentYear = new Date().getFullYear();
     var timeStampForNow = Math.floor(Date.now() / 1000);
 
+    function getISODateFromSeconds(seconds) {
+        return new Date(seconds * 1000).toISOString();
+    }
+
     function createFakePeriodSettingsResponseFor(settingsConfig) {
         return Object
             .keys(settingsConfig) // `results` or `targets`
@@ -15,8 +19,8 @@ describe('Period service', function () {
                 acc[key] = settingsConfig[key]
                     .reduce(function (periodSettings, periodName) {
                         periodSettings[periodName] = {
-                            start: timeStampForNow - 2000,
-                            end: timeStampForNow + 2000
+                            start: getISODateFromSeconds(timeStampForNow - 2000),
+                            end: getISODateFromSeconds(timeStampForNow + 2000)
                         };
                         return periodSettings;
                     }, {});
@@ -112,6 +116,91 @@ describe('Period service', function () {
         });
     });
 
+    describe('isPeriodSettingISOFormat', function () {
+        beforeEach(function () {
+            $httpBackend.flush();
+        });
+
+        it('should be a function', function () {
+            expect(service.isPeriodSettingISOFormat).toBeAFunction();
+        });
+
+        it('should validate wrong format for period start date', function () {
+            var periodSettings = {
+                start: '2018-08-31T19:00:00',
+                end: '2018-09-21T19:00:00Z'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeFalsy();
+            periodSettings = {
+                start: '2018-08-31T19:00:00.000',
+                end: '2018-09-21T19:00:00Z'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeFalsy();
+            periodSettings = {
+                start: '2018-08-31Z',
+                end: '2018-09-21T19:00:00Z'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeFalsy();
+            periodSettings = {
+                start: 'Jul 01 2018 01:00:00 GMT-0500',
+                end: '2018-09-21T19:00:00Z'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeFalsy();
+            periodSettings = {
+                start: 'Jul 01 2018 01:00:00 GMT+0000',
+                end: '2018-09-21T19:00:00Z'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeFalsy();
+        });
+
+        it('should validate wrong format for period end date', function () {
+            var periodSettings = {
+                start: '2018-08-31T19:00:00Z',
+                end: '2018-09-21T19:00:00'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeFalsy();
+            periodSettings = {
+                start: '2018-08-31T19:00:00Z',
+                end: '2018-09-21T19:00:000'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeFalsy();
+            periodSettings = {
+                start: '2018-08-31T19:00:00Z',
+                end: '2018-09-21Z'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeFalsy();
+            periodSettings = {
+                start: '2018-08-31T19:00:00Z',
+                end: 'Oct 01 2018 01:00:00 GMT-0500'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeFalsy();
+            periodSettings = {
+                start: '2018-08-31T19:00:00Z',
+                end: 'Oct 01 2018 01:00:00 GMT-0500'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeFalsy();
+        });
+
+        it('should accept correct date format for period setting', function () {
+            var periodSettings = {
+                start: '2018-08-31T19:00:00Z',
+                end: '2018-09-21T19:00:00Z'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeTruthy();
+            periodSettings = {
+                start: '2018-08-31T19:00:00.000Z',
+                end: '2018-09-21T19:00:00.000Z'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeTruthy();
+            periodSettings = {
+                start: '2017-09-29T20:00:00+00:00',
+                end: '2017-04-01T21:00:00+00:00'
+            };
+            expect(service.isPeriodSettingISOFormat('2018Q2', periodSettings)).toBeTruthy();
+        });
+
+    });
+
     describe('getPastPeriodsRecentFirst with a year in the past', function () {
         it('should return the periods from the periodSettings', function () {
             periodSettingsRequest.respond(200, createFakePeriodSettingsResponseFor({
@@ -139,8 +228,8 @@ describe('Period service', function () {
         it('should not return the the period when the data dedupe period has expired', function () {
             var targets = {};
             targets[(currentYear - 1) + 'Oct'] = {
-                start: timeStampForNow - 200,
-                end: timeStampForNow - 100
+                start:  getISODateFromSeconds(timeStampForNow - 200),
+                end:  getISODateFromSeconds(timeStampForNow - 100)
             };
             periodSettingsRequest.respond(200, {
                 TARGETS: targets
@@ -163,8 +252,8 @@ describe('Period service', function () {
         it('should not return the the period when the data dedupe period has not yet started', function () {
             var targets = {};
             targets[(currentYear - 1) + 'Oct'] = {
-                start: timeStampForNow + 500,
-                end: timeStampForNow + 600
+                start:  getISODateFromSeconds(timeStampForNow + 500),
+                end:  getISODateFromSeconds(timeStampForNow + 600)
             };
             periodSettingsRequest.respond(200, {
                 TARGETS: targets
