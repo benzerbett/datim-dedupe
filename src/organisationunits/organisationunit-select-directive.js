@@ -58,9 +58,9 @@ function organisationUnitSelectDirective(organisationUnitService, currentUserSer
                 var isGlobalOrgUnit = false;
                 var globalOrgUnitId = 'ybg3MO3hcf4';
 
-                if (user.dataViewOrganisationUnits && user.dataViewOrganisationUnits.length )
+                if (user.dataViewOrganisationUnits && user.dataViewOrganisationUnits.length)
                 {
-                    isGlobalOrgUnit = !!user.dataViewOrganisationUnits.filter(function(element){return element.id === globalOrgUnitId }).length;
+                    isGlobalOrgUnit = !!user.dataViewOrganisationUnits.filter(function (element) { return element.id === globalOrgUnitId; }).length;
 
                     if (user.organisationUnits.length > 1 || user.dataViewOrganisationUnits.length > 1) {
                         window.console.warn('Detected several organisation units for current user.');
