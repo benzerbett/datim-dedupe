@@ -679,12 +679,6 @@ describe('Dedupe directive', function () {
         });
 
         describe('resolve interaction', function () {
-            var isolatedScope;
-
-            beforeEach(function () {
-                isolatedScope = element.scope();
-            });
-
             it('should set the resolve to max when the max action is clicked', function () {
                 var maxRadioButton = element[0].querySelector('.resolve-action-max input[type=radio]');
 
@@ -792,7 +786,7 @@ describe('Dedupe directive', function () {
                 resolveButton.click();
                 $scope.$apply();
 
-                expect(dedupeService.resolveDuplicates).toHaveBeenCalledWith([$scope.firstDedupeRecord]);
+                expect(dedupeService.resolveDuplicates).toHaveBeenCalledWith([ $scope.firstDedupeRecord ]);
             }));
 
             it('should emit an event when the record has been resolved', function () {
@@ -835,7 +829,7 @@ describe('Dedupe directive', function () {
 
                 expect(eventFunction.calls.argsFor(0)[1]).toBe(undefined);
                 expect(eventFunction.calls.argsFor(0)[2]).toEqual(
-                    {successCount: 0, errorCount: 0, errors: ['Duplicate records passed to resolveDuplicates should be an array with at least one element']}
+                    {successCount: 0, errorCount: 0, errors: [ 'Duplicate records passed to resolveDuplicates should be an array with at least one element' ]}
                 );
             }));
 

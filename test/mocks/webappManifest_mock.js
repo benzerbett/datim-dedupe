@@ -1,20 +1,20 @@
 angular.module('PEPFAR.dedupe').factory('webappManifest', function () {
     return {
-        "version": "0.0.1",
-        "name": "PEPFAR User Management",
-        "description": "User management app for PEPFAR.",
-        "icons": {
-            "48": "images/icons/user-maintenance.png"
+        version: '0.0.1',
+        name: 'PEPFAR User Management',
+        description: 'User management app for PEPFAR.',
+        icons: {
+            48: 'images/icons/user-maintenance.png'
         },
-        "developer": {
-            "url": "",
-            "name": "Mark Polak"
+        developer: {
+            url: '',
+            name: 'Mark Polak'
         },
-        "launch_path": "index.html",
-        "default_locale": "en",
-        "activities": {
-            "dhis": {
-                "href": "/dhis"
+        launch_path: 'index.html',
+        default_locale: 'en',
+        activities: {
+            dhis: {
+                href: '/dhis'
             }
         }
     };

@@ -201,13 +201,13 @@ describe('Dedupe service', function () {
         });
 
         it('should call the saveDuplicates on the dedupesaver service', function () {
-            dedupeService.resolveDuplicates([dedupeRecord]);
+            dedupeService.resolveDuplicates([ dedupeRecord ]);
 
             expect(dedupeSaverServiceMock.saveDeduplication).toHaveBeenCalled();
         });
 
         it('should return a promise', function () {
-            expect(dedupeService.resolveDuplicates([dedupeRecord])).toBeAPromiseLikeObject();
+            expect(dedupeService.resolveDuplicates([ dedupeRecord ])).toBeAPromiseLikeObject();
         });
 
         it('should reject when the passed records is not an array', inject(function ($rootScope) {
@@ -231,7 +231,7 @@ describe('Dedupe service', function () {
         }));
 
         it('should set the adjustedvalue onto the dedupe record', function () {
-            dedupeService.resolveDuplicates([dedupeRecord]);
+            dedupeService.resolveDuplicates([ dedupeRecord ]);
 
             expect(dedupeRecord.resolve.adjustedValue).toBe(-1600);
         });
@@ -239,7 +239,7 @@ describe('Dedupe service', function () {
         it('should filter out unresolved dedupes', function () {
             dedupeService.resolveDuplicates(dedupeRecords);
 
-            expect(dedupeSaverServiceMock.saveDeduplication).toHaveBeenCalledWith([dedupeRecord]);
+            expect(dedupeSaverServiceMock.saveDeduplication).toHaveBeenCalledWith([ dedupeRecord ]);
         });
 
         it('should not call saveDeduplicates if there are no resolved records', function () {

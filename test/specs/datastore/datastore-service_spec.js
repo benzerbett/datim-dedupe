@@ -1,7 +1,6 @@
 /* global xit */
 describe('DataStore Service', function () {
     var $httpBackend;
-    var $rootScope;
     var dataStore;
     var periodSettingsFixture =
         {
@@ -45,7 +44,6 @@ describe('DataStore Service', function () {
     beforeEach(module('PEPFAR.dedupe'));
     beforeEach(inject(function ($injector) {
         dataStore = $injector.get('dataStore');
-        $rootScope = $injector.get('$rootScope');
     }));
 
     it('should have a getPeriodSettings method', function () {

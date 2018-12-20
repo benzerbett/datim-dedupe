@@ -338,7 +338,7 @@ describe('App controller', function () {
         });
 
         it('should report back when the save failed', function () {
-            $rootScope.$broadcast('DEDUPE_DIRECTIVE.resolve', '2364f5b15e57185fc6564ce64cc9c629', {successCount: 0, errorCount: 1, errors: ['Save failed']});
+            $rootScope.$broadcast('DEDUPE_DIRECTIVE.resolve', '2364f5b15e57185fc6564ce64cc9c629', {successCount: 0, errorCount: 1, errors: [ 'Save failed' ]});
 
             expect(notifyMock.warning).toHaveBeenCalled();
             expect(notifyMock.error).toHaveBeenCalled();

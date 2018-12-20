@@ -3,7 +3,7 @@ describe('Dedupe record service', function () {
     var $httpBackend;
     var dedupeRecordService;
     var getRecordsRequest;
-    var dedupeSystemSetting;
+    var dedupeSystemSetting; // eslint-disable-line no-unused-vars
     var oldDateObject;
 
     beforeEach(module('PEPFAR.dedupe'));

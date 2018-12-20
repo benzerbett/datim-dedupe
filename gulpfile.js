@@ -1,6 +1,5 @@
 /* global require, console */
 var gulp = require('gulp');
-var runSequence = require('run-sequence');
 var runKarma = require('./gulphelp.js').runKarma;
 var dhis2Config = require('./gulphelp.js').checkForDHIS2ConfigFile();
 
@@ -40,16 +39,15 @@ var files = [
 gulp.task('sass', function () {
     var sass = require('gulp-ruby-sass');
 
-    return gulp.src('src/app/app.sass', { base: './src/' })
-        .pipe(sass())
-        .pipe(gulp.dest(
-            ['temp', 'css'].join('/')
-        ));
+    return sass('src/app/app.sass', { base: './src/' })
+        .on('error', function (err) { console.log(err.message); })
+        .pipe(gulp.dest(['temp', 'css'].join('/')));
 });
 
-gulp.task('clean', function () {
+gulp.task('clean', function (done) {
     var del = require('del');
     del(buildDirectory);
+    done();
 });
 
 gulp.task('test', function () {
@@ -60,47 +58,35 @@ gulp.task('watch', function () {
     return gulp.src(files).pipe(runKarma(true));
 });
 
-gulp.task('jshint', function () {
-    var jshint = require('gulp-jshint');
+gulp.task('eslint', function () {
+    var eslint = require('gulp-eslint');
     return gulp.src([
         'test/specs/**/*.js',
         'src/**/*.js'
     ])
-        .pipe(jshint())
-        .pipe(jshint.reporter('jshint-stylish'))
-        .pipe(jshint.reporter('fail'));
+        .pipe(eslint())
+        .pipe(eslint.format())
+        .pipe(eslint.failAfterError());
 });
 
-gulp.task('jscs', function () {
-    var jscs = require('gulp-jscs');
-    return gulp.src([
-        'test/specs/**/*.js',
-        'src/**/*.js'
-    ]).pipe(jscs('./.jscsrc'));
-});
-
-gulp.task('min', ['sass'], function () {
+gulp.task('min', gulp.series([ 'sass' ], function () {
     var mangleJS = false;
 
     var useref = require('gulp-useref');
     var gulpif = require('gulp-if');
     var ngAnnotate = require('gulp-ng-annotate');
     var uglify = require('gulp-uglify');
-    var minifyCss = require('gulp-minify-css');
+    var minifyCss = require('gulp-clean-css');
     var rev = require('gulp-rev');
     var revReplace = require('gulp-rev-replace');
 
-    var assets = useref.assets();
-
     return gulp.src('src/**/*.html')
-        .pipe(assets)
-        .pipe(assets.restore())
         .pipe(useref())
         .pipe(gulpif('**/*.css', minifyCss()))
         .pipe(gulpif('**/app.js', ngAnnotate({
             add: true,
             remove: true,
-            single_quotes: true, //jshint ignore:line
+            single_quotes: true,
             stats: true
         })))
         .pipe(gulpif('**/*.js', uglify({
@@ -109,7 +95,7 @@ gulp.task('min', ['sass'], function () {
         .pipe(gulpif('!**/index.html', rev()))
         .pipe(revReplace())
         .pipe(gulp.dest(buildDirectory));
-});
+}));
 
 gulp.task('i18n', function () {
     return gulp.src('src/i18n/**/*.json', { base: './src/' }).pipe(gulp.dest(
@@ -129,34 +115,41 @@ gulp.task('images', function () {
     ));
 });
 
-gulp.task('copy-files', function () {
+gulp.task('copy-files', function (done) {
     //TODO: Copy templates
+    done();
 });
 
 gulp.task('copy-fonts', function () {
-    return gulp.src(['vendor/font-awesome/fonts/**/*.*'], {base: './vendor/font-awesome/'})
+    return gulp.src([ 'vendor/font-awesome/fonts/**/*.*' ], {base: './vendor/font-awesome/'})
         .pipe(gulp.dest(buildDirectory));
 });
 
-gulp.task('build', function (cb) {
-    runSequence('clean', 'test', 'i18n', 'manifest', 'images', 'jshint', 'jscs', 'min', 'copy-files', 'copy-fonts', cb);
+gulp.task('package', function () {
+    var zip = require('gulp-zip');
+    return gulp.src('build/**/*', { base: './build/' })
+        .pipe(zip('datim-dedupe.zip', { compress: false }))
+        .pipe(gulp.dest('.'));
 });
 
-gulp.task('build-prod', function () {
-    runSequence('build', 'package', function () {
+gulp.task('build', gulp.series('clean', 'test', 'i18n', 'manifest', 'images', 'eslint', 'min', 'copy-files', 'copy-fonts'));
+
+gulp.task('build-prod', gulp.series('build', 'package',
+    function (done) {
         console.log();
         console.log([__dirname, 'datim-dedupe.zip'].join('/'));
-    });
-});
+        done();
+    }
+));
 
-gulp.task('modify-manifest', function () {
+gulp.task('modify-manifest', function (done) {
     var fs = require('fs');
 
     fs.readFile('build/manifest.webapp', 'utf8', function (err, data) {
         var manifest;
 
         if (err) {
-            console.log('Failed to load manifest from build directory');
+            console.log('Failed to load manifest from build directory', err);
             return;
         }
 
@@ -173,23 +166,13 @@ gulp.task('modify-manifest', function () {
             }
         });
     });
+    done();
 });
 
 gulp.task('copy-app', function () {
-    gulp.src('build/**/*.*', { base: './build/' }).pipe(gulp.dest(dhisDirectory));
+    return gulp.src('build/**/*.*', { base: './build/' }).pipe(gulp.dest(dhisDirectory));
 });
 
-gulp.task('copy-to-dev', function () {
-    return runSequence('clean', 'i18n', 'manifest', 'images', 'jshint', 'jscs', 'min', 'copy-files', 'copy-fonts', 'modify-manifest', 'copy-app');
-});
+gulp.task('copy-to-dev', gulp.series('clean', 'i18n', 'manifest', 'images', 'eslint', 'min', 'copy-files', 'copy-fonts', 'modify-manifest', 'copy-app'));
 
-gulp.task('package', function () {
-    var zip = require('gulp-zip');
-    return gulp.src('build/**/*', { base: './build/' })
-        .pipe(zip('datim-dedupe.zip', { compress: false }))
-        .pipe(gulp.dest('.'));
-});
-
-gulp.task('travis', function () {
-    return runSequence('test', 'jshint', 'jscs');
-});
+gulp.task('travis', gulp.series('test'));
