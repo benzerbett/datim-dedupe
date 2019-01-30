@@ -228,8 +228,8 @@ describe('Period service', function () {
         it('should not return the the period when the data dedupe period has expired', function () {
             var targets = {};
             targets[(currentYear - 1) + 'Oct'] = {
-                start:  getISODateFromSeconds(timeStampForNow - 200),
-                end:  getISODateFromSeconds(timeStampForNow - 100)
+                start: getISODateFromSeconds(timeStampForNow - 200),
+                end: getISODateFromSeconds(timeStampForNow - 100)
             };
             periodSettingsRequest.respond(200, {
                 TARGETS: targets
@@ -252,8 +252,8 @@ describe('Period service', function () {
         it('should not return the the period when the data dedupe period has not yet started', function () {
             var targets = {};
             targets[(currentYear - 1) + 'Oct'] = {
-                start:  getISODateFromSeconds(timeStampForNow + 500),
-                end:  getISODateFromSeconds(timeStampForNow + 600)
+                start: getISODateFromSeconds(timeStampForNow + 500),
+                end: getISODateFromSeconds(timeStampForNow + 600)
             };
             periodSettingsRequest.respond(200, {
                 TARGETS: targets
