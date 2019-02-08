@@ -25,7 +25,7 @@ describe('Dedupe record service', function () {
                 id: 'AuL6zTSLxNc'
             });
 
-        getRecordsRequest = $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?cacheBuster=1432214364597&var=ty:PURE')
+        getRecordsRequest = $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?cacheBuster=1432214364597&paging=false&var=ty:PURE')
             .respond(200, fixtures.get('smallerDedupe'));
     }));
 
@@ -216,7 +216,7 @@ describe('Dedupe record service', function () {
                     id: 'AuL6zTSLxNc'
                 });
 
-            $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?cacheBuster=1432214364597&var=ty:CROSSWALK')
+            $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?cacheBuster=1432214364597&paging=false&var=ty:CROSSWALK')
                 .respond(200, fixtures.get('dsdvaluedupes'));
 
             dedupeRecordService.getRecords({ty: 'CROSSWALK'})
@@ -275,7 +275,7 @@ describe('Dedupe record service', function () {
                 $httpBackend.expectGET('/dhis/api/systemSettings/keyDedupeSqlViewId')
                     .respond(200, {id: 'AuL6zTSLxNc'});
 
-                getRecordsRequest = $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?cacheBuster=1432214364597&var=ou:HfiOUYEPgLK')
+                getRecordsRequest = $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?cacheBuster=1432214364597&paging=false&var=ou:HfiOUYEPgLK')
                     .respond(200, fixtures.get('smallerDedupe'));
             });
 
@@ -293,7 +293,7 @@ describe('Dedupe record service', function () {
                 $httpBackend.expectGET('/dhis/api/systemSettings/keyDedupeSqlViewId')
                     .respond(200, {id: 'AuL6zTSLxNc'});
 
-                $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?cacheBuster=1432214364597&var=pe:2013Oct')
+                $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?cacheBuster=1432214364597&paging=false&var=pe:2013Oct')
                     .respond(200, fixtures.get('smallerDedupe'));
             });
 
@@ -349,7 +349,7 @@ describe('Dedupe record service', function () {
 
             dedupeRecordService.getCsvUrl(filters)
                 .then(function (url) {
-                    expect(url).toEqual('/dhis/api/sqlViews/AuL6zTSLxNc/data.csv?var=ou:HfiOUYEPgLK&var=pe:2013Oct&var=ty:PURE&cacheBuster=1432214364597');
+                    expect(url).toEqual('/dhis/api/sqlViews/AuL6zTSLxNc/data.csv?var=ou:HfiOUYEPgLK&var=pe:2013Oct&var=ty:PURE&paging=false&cacheBuster=1432214364597');
                     done();
                 });
 
@@ -368,7 +368,7 @@ describe('Dedupe record service', function () {
                     id: 'AuL6zTSLxNc'
                 });
 
-            $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?cacheBuster=1432214364597&var=ty:CROSSWALK')
+            $httpBackend.expectGET('/dhis/api/sqlViews/AuL6zTSLxNc/data?cacheBuster=1432214364597&paging=false&var=ty:CROSSWALK')
                 .respond(200, fixtures.get('crosswalkresolved'));
 
             dedupeRecordService.getRecords({ty: 'CROSSWALK'})
