@@ -149,6 +149,13 @@ gulp.task('build-prod', function () {
     });
 });
 
+gulp.task('build-prod-skipTest', function () {
+    runSequence('clean', 'i18n', 'manifest', 'images', 'jshint', 'jscs', 'min', 'copy-files', 'copy-fonts', 'package', function () {
+        console.log();
+        console.log([__dirname, 'datim-dedupe.zip'].join('/'));
+    });
+});
+
 gulp.task('modify-manifest', function () {
     var fs = require('fs');
 
