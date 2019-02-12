@@ -142,6 +142,10 @@ gulp.task('build', function (cb) {
     runSequence('clean', 'test', 'i18n', 'manifest', 'images', 'jshint', 'jscs', 'min', 'copy-files', 'copy-fonts', cb);
 });
 
+gulp.task('build-skipTest', function (cb) {
+    runSequence('clean', 'i18n', 'images', 'jshint', 'jscs', 'min', 'copy-files', 'copy-fonts', cb);
+});
+
 gulp.task('build-prod', function () {
     runSequence('build', 'package', function () {
         console.log();
@@ -150,7 +154,7 @@ gulp.task('build-prod', function () {
 });
 
 gulp.task('build-prod-skipTest', function () {
-    runSequence('clean', 'i18n', 'manifest', 'images', 'jshint', 'jscs', 'min', 'copy-files', 'copy-fonts', 'package', function () {
+    runSequence('build-skipTest', 'manifest', 'package', function () {
         console.log();
         console.log([__dirname, 'datim-dedupe.zip'].join('/'));
     });
