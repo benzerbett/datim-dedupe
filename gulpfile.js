@@ -134,15 +134,27 @@ gulp.task('package', function () {
 
 gulp.task('build', gulp.series('clean', 'test', 'i18n', 'manifest', 'images', 'eslint', 'min', 'copy-files', 'copy-fonts'));
 
-gulp.task('build-prod', gulp.series('build', 'package',
-    function (done) {
+gulp.task('build-skipTest', function (cb) {
+    runSequence('clean', 'i18n', 'images', 'jshint', 'jscs', 'min', 'copy-files', 'copy-fonts', cb);
+});
+
+gulp.task('build-prod', function () {
+    runSequence('build', 'package', function () {
         console.log();
         console.log([__dirname, 'datim-dedupe.zip'].join('/'));
         done();
     }
 ));
 
-gulp.task('modify-manifest', function (done) {
+
+gulp.task('build-prod-skipTest', function () {
+    runSequence('build-skipTest', 'manifest', 'package', function () {
+        console.log();
+        console.log([__dirname, 'datim-dedupe.zip'].join('/'));
+    });
+});
+
+gulp.task('modify-manifest', function () {
     var fs = require('fs');
 
     fs.readFile('build/manifest.webapp', 'utf8', function (err, data) {
