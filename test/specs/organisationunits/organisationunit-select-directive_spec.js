@@ -112,4 +112,61 @@ describe('Organisation unit select directive', function () {
             expect(notifyMock.error).toHaveBeenCalledWith('Failed to load current user object');
         });
     });
+
+    describe('isGlobalOrgUnit', function () {
+        it('should be a function', function () {
+            expect(innerScope.isGlobalOrgUnit).toEqual(jasmine.any(Function));
+        });
+
+        it('should return true when user dataViewOrganisationUnits contains global id "ybg3MO3hcf4"', function () {
+            var mockCurrentUser = {
+                organisationUnits: [{id: 'ybg3MO3hcf4'}],
+                dataViewOrganisationUnits: [{id: 'ybg3MO3aaa'}, {id: 'ybg3MO3hcf4'}]
+            };
+            expect(innerScope.isGlobalOrgUnit(mockCurrentUser)).toBe(true);
+        });
+
+        it('should return false when user dataViewOrganisationUnits does not contains id "ybg3MO3hcf4"', function () {
+            var mockCurrentUser = {
+                organisationUnits: [{id: 'ybg3MO3hc99'}],
+                dataViewOrganisationUnits: [{id: 'ybg3MO3hcaaa'}, {id: 'ybg3MO3hc99'}]
+            };
+            expect(innerScope.isGlobalOrgUnit(mockCurrentUser)).toBe(false);
+        });
+
+        it('should return false when current user does not have dataViewOrganisationUnits', function () {
+            var mockCurrentUser = {
+                organisationUnits: [{id: 'ybg3MO3hcf4'}]
+            };
+            expect(innerScope.isGlobalOrgUnit(mockCurrentUser)).toBe(false);
+            mockCurrentUser = {
+                organisationUnits: [{id: 'ybg3MO3hcf4'}],
+                dataViewOrganisationUnits: []
+            };
+            expect(innerScope.isGlobalOrgUnit(mockCurrentUser)).toBe(false);
+        });
+    });
+
+    describe('isUserHasAnOrgUnit', function () {
+        it('should be a function', function () {
+            expect(innerScope.isUserHasAnOrgUnit).toEqual(jasmine.any(Function));
+        });
+
+        it('should return false when current user does not have organisationUnits', function () {
+            var mockCurrentUser = {
+                dataViewOrganisationUnits: [{id: 'ybg3MO3hcf4'}]
+            };
+            expect(innerScope.isUserHasAnOrgUnit(mockCurrentUser)).toBeFalsy();
+            mockCurrentUser = {
+                organisationUnits: [],
+                dataViewOrganisationUnits: []
+            };
+            expect(innerScope.isGlobalOrgUnit(mockCurrentUser)).toBeFalsy();
+            mockCurrentUser = {
+                organisationUnits: [{}],
+                dataViewOrganisationUnits: []
+            };
+            expect(innerScope.isGlobalOrgUnit(mockCurrentUser)).toBeFalsy();
+        });
+    });
 });

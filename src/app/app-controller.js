@@ -7,37 +7,46 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
         ty: 'PURE'
     };
 
-    ctrl.isFilterToggle = false;
-    ctrl.noLoadDone = true;
-    ctrl.isProcessing = false;
-    ctrl.dedupeRecords = [];
-    ctrl.allDedupeRecords = [];
-    ctrl.pager = {
-        current: 1,
-        total: 0,
-        pageSize: DEDUPE_PAGE_SIZE
-    };
-    ctrl.customPageSize = ctrl.pager.pageSize;
-    ctrl.pageToGoTo = ctrl.pager.current;
-    ctrl.goToPage = goToPage;
-    ctrl.maxPageNumber = maxPageNumber;
-    ctrl.maxPageSize = maxPageSize;
+    init();
 
-    //Controller methods
-    ctrl.useMax = useMax;
-    ctrl.useSum = useSum;
-    ctrl.resolveDuplicates = resolveDuplicates;
-    ctrl.changedIncludeResolved = changedIncludeResolved;
-    ctrl.isShowingAll = isShowingAll;
-    ctrl.getDuplicateRecords = getDuplicateRecords;
-    ctrl.pageChanged = pageChanged;
-    ctrl.filters = dedupeRecordFilters;
-    ctrl.showCrossWalkMessage = showCrossWalkMessage;
-    ctrl.isShowingCrosswalkDedupes = isShowingCrosswalkDedupes;
-    ctrl.csvSettings = {
-        url: '',
-        show: false
-    };
+    function init() {
+        ctrl.showOrgUnitFilter = false;
+        ctrl.isFilterToggle = false;
+        ctrl.noLoadDone = true;
+        ctrl.isProcessing = false;
+        ctrl.dedupeRecords = [];
+        ctrl.allDedupeRecords = [];
+        ctrl.pager = {
+            current: 1,
+            total: 0,
+            pageSize: DEDUPE_PAGE_SIZE
+        };
+        ctrl.customPageSize = ctrl.pager.pageSize;
+        ctrl.pageToGoTo = ctrl.pager.current;
+        ctrl.goToPage = goToPage;
+        ctrl.maxPageNumber = maxPageNumber;
+        ctrl.maxPageSize = maxPageSize;
+
+        //Controller methods
+        ctrl.useMax = useMax;
+        ctrl.useSum = useSum;
+        ctrl.resolveDuplicates = resolveDuplicates;
+        ctrl.changedIncludeResolved = changedIncludeResolved;
+        ctrl.isShowingAll = isShowingAll;
+        ctrl.getDuplicateRecords = getDuplicateRecords;
+        ctrl.pageChanged = pageChanged;
+        ctrl.filters = dedupeRecordFilters;
+        ctrl.showCrossWalkMessage = showCrossWalkMessage;
+        ctrl.isShowingCrosswalkDedupes = isShowingCrosswalkDedupes;
+        ctrl.csvSettings = {
+            url: '',
+            show: false
+        };
+    }
+
+    $scope.$on('SELECT_ORGANISATION_UNIT_DIRECTIVE.currentUser', function (event, show) {
+        ctrl.showOrgUnitFilter = show;
+    });
 
     $scope.$on('DEDUPE_DIRECTIVE.resolve', function (event, dedupeRecordId, saveStatus) {
 

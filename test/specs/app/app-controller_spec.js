@@ -567,4 +567,13 @@ describe('App controller', function () {
             expect(controller.pageChanged).not.toHaveBeenCalled();
         });
     });
+
+    describe('when received on SELECT_ORGANISATION_UNIT_DIRECTIVE.currentUser event', function () {
+        it('should update showOrgUnitFilter flag', function () {
+            expect(controller.showOrgUnitFilter).toBe(false);
+            $rootScope.$broadcast('SELECT_ORGANISATION_UNIT_DIRECTIVE.currentUser', true);
+            $rootScope.$apply();
+            expect(controller.showOrgUnitFilter).toBe(true);
+        });
+    });
 });

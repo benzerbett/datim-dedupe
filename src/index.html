@@ -30,7 +30,7 @@
             </div>
             <div class="filters-collapse" collapse="isCollapsed">
                 <div class="filters well">
-                    <div class="organisation-unit row">
+                    <div class="organisation-unit row" ng-show="app.showOrgUnitFilter">
                         <div class="col-sm-12">
                             <organisation-unit-select on-orgunit-selected="app.changeOrgUnit"></organisation-unit-select>
                         </div>
