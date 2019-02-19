@@ -23,7 +23,7 @@ function periodSelectorDirective(periodService, dedupeRecordFilters) {
                     periodType = 'Quarterly';
                 }
 
-                periodService.setPeriodType(periodType, dedupeRecordFilters.getResultsTargetsFilter())
+                periodService.setPeriodType(periodType, dedupeRecordFilters.getResultsTargetsFilter(), dedupeRecordFilters.getOrgUnit())
                     .then(function (periodSettings) {
                         scope.period.periodsRecentFirst = periodService.getPastPeriodsRecentFirst();
 

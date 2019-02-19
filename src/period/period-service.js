@@ -165,12 +165,14 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify, dataSt
         return parseInt(periodIdentifier.slice(0, 4), 10);
     }
 
-    function setPeriodType(periodType, resultsTargets) {
+    function setPeriodType(periodType, resultsTargets, orgUnit) {
         var currentYear = new Date().getFullYear();
 
         return $q.all([calendarLoaded.promise, getDedupePeriodSettings()])
             .then(function (responses) {
                 var periodSettingsResponse = responses[1];
+                window.console.log('tom trying to do something');
+                window.console.log('app dedupe filter: ' + orgUnit);
 
                 if (_(periodTypes).contains(periodType) && hasPeriodSettings(periodSettingsResponse, resultsTargets)) {
                     var periodSettings = getPeriodSettings(periodSettingsResponse, resultsTargets);
@@ -183,14 +185,27 @@ function periodService(Restangular, $q, $timeout, webappManifest, notify, dataSt
                             if (periodSetting && periodSetting.start && periodSetting.end &&
                                 isPeriodSettingISOFormat(periodIdentifier, periodSetting)) {
 
+                                var tempStart = periodSetting.start;
+                                var tempEnd = periodSetting.end;
+
+                                if (periodSetting.hasOwnProperty('operatingUnits')) {
+                                    if (periodSetting.operatingUnits.hasOwnProperty(orgUnit)){
+                                    
+                                        tempStart = periodSetting['operatingUnits'][orgUnit]['start'];
+                                        tempEnd = periodSetting['operatingUnits'][orgUnit]['end'];
+                                                                               
+                                   }        
+                                }    
+
+
                                 var timeStampForNow = Math.floor(Date.now());
-                                var startDate = new Date(periodSetting.start);
-                                var endDate = new Date(periodSetting.end);
+                                var startDate = new Date(tempStart);
+                                var endDate = new Date(tempEnd);
 
                                 // Start date greater than end date
                                 if (startDate.getTime() > endDate.getTime()) {
                                     window.console.warn('Skipping period settings ' + periodIdentifier + ', start' +
-                                        ' date: ' + periodSetting.start + ' greater than end date: ' + periodSetting.end);
+                                        ' date: ' + tempStart + ' greater than end date: ' + tempEnd);
                                     return false;
                                 }
 

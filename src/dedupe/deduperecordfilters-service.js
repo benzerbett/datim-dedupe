@@ -13,6 +13,7 @@ function dedupeRecordFilters($rootScope) {
         changeIsCrosswalk: changeIsCrosswalk,
         getResultsTargetsFilter: getResultsTargetsFilter,
         getFilters: getFilters,
+        getOrgUnit: getOrgUnit,
         getPeriodName: getPeriodName,
         getPeriodDisplayName: getPeriodDisplayName,
         getDedupeType: getDedupeType
@@ -28,9 +29,14 @@ function dedupeRecordFilters($rootScope) {
 
     function changeOrganisationUnit(organisationUnit) {
         if (organisationUnit) {
+            
             dedupeFilters.ty = 'PURE';
             dedupeFilters.ou = organisationUnit.id;
+            dedupeFilters.ouName = organisationUnit.displayName;
+            window.console.log('changing filter');
+            changeFilterResultsTargets(undefined);
             fireUpdateEvent();
+            
         }
     }
 
@@ -49,6 +55,10 @@ function dedupeRecordFilters($rootScope) {
             fireUpdateEvent();
         }
         return dedupeFilters.ty;
+    }
+
+    function getOrgUnit() {
+        return dedupeFilters.ouName;
     }
 
     function getPeriodName() {

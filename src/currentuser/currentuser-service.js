@@ -25,7 +25,7 @@ function currentUserService($q, Restangular, notify) {
 
     function requestCurrentUser() {
         return Restangular.one('me').withHttpConfig({cache: true}).get({
-            fields: ':all,userCredentials[:owner,!userGroupAccesses],!userGroupAccesses'
+            fields: ':all,organisationUnits[id,name],userCredentials[:owner,!userGroupAccesses],!userGroupAccesses'
         });
     }
 

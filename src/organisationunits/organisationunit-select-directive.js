@@ -29,7 +29,7 @@ function organisationUnitSelectDirective(organisationUnitService, currentUserSer
                                 if (isGlobal) {
                                     scope.organisationUnit = findItemInListById(currentUser.organisationUnits[0].id, scope.selectbox.items);
                                 } else {
-                                    scope.organisationUnit = {id: currentUser.organisationUnits[0].id};
+                                    scope.organisationUnit = {id: currentUser.organisationUnits[0].id, displayName: currentUser.organisationUnits[0].name};
                                 }
                                 dedupeRecordFilters.changeOrganisationUnit(scope.organisationUnit);
                                 scope.$emit('SELECT_ORGANISATION_UNIT_DIRECTIVE.currentUser', isGlobal);
