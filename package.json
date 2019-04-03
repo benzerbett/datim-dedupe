@@ -26,10 +26,11 @@
   },
   "homepage": "https://github.com/dhis2/datim-dedupe",
   "dependencies": {
+    "acorn-jsx": "^4.1.1",
     "bower": "^1.8.8",
     "coveralls": "^2.11.2",
     "del": "^1.1.1",
-    "gulp": "^3.9.1",
+    "gulp-eslint": "^5.0.0",
     "gulp-if": "^1.2.5",
     "gulp-jscs": "^1.6.0",
     "gulp-jshint": "^1.9.0",
@@ -53,10 +54,11 @@
     "run-sequence": "^2.2.1"
   },
   "devDependencies": {
-    "gulp": "^4.0.0",
+    "gulp": "git://github.com/gulpjs/gulp.git#6d71a658c61edb3090221579d8f97dbe086ba2ed",
     "gulp-clean-css": "^4.0.0",
     "gulp-useref": "^3.1.6",
     "karma-chrome-launcher": "^2.2.0",
-    "karma-jasmine": "^2.0.1"
+    "karma-jasmine": "^2.0.1",
+    "vinyl-source-stream": "^2.0.0"
   }
 }
