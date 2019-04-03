@@ -13,7 +13,7 @@ temp/
 coverage
 
 *.zip
-!**/releases/*.zip
+!releases/*/*.zip
 
 dhis.json
 npm-debug.log
