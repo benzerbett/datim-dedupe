@@ -138,9 +138,9 @@ gulp.task('package', function () {
         .pipe(gulp.dest('.'));
 });
 
-gulp.task('build', gulp.series('clean', 'test', 'i18n', 'manifest', 'images', 'eslint', 'min', 'copy-files', 'copy-fonts'));
+gulp.task('build', gulp.series('clean', 'test', 'i18n', 'eslint', 'min', 'copy-files', 'copy-fonts'));
 
-gulp.task('build-skipTest', gulp.series('clean', 'i18n', 'images', 'eslint', 'min', 'copy-files', 'copy-fonts',
+gulp.task('build-skipTest', gulp.series('clean', 'i18n', 'eslint', 'min', 'copy-files', 'copy-fonts',
         function (done) {
         console.log();
         console.log([__dirname, 'datim-dedupe.zip'].join('/'));
@@ -148,7 +148,7 @@ gulp.task('build-skipTest', gulp.series('clean', 'i18n', 'images', 'eslint', 'mi
     }
 ));
 
-gulp.task('build-prod', gulp.series('build', 'package',
+gulp.task('build-prod', gulp.series('build', 'images', 'manifest', 'package',
     function (done) {
         console.log();
         console.log([__dirname, 'datim-dedupe.zip'].join('/'));
@@ -156,7 +156,7 @@ gulp.task('build-prod', gulp.series('build', 'package',
     }
 ));
 
-gulp.task('build-prod-skipTest', gulp.series('build-skipTest', 'manifest', 'package',
+gulp.task('build-prod-skipTest', gulp.series('build-skipTest', 'images', 'manifest', 'package',
     function (done) {
         console.log();
         console.log([__dirname, 'datim-dedupe.zip'].join('/'));
