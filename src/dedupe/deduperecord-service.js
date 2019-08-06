@@ -41,7 +41,7 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
     }
 
     function executeSqlViewOnApi(filters) {
-        var queryParameters = {var: getFilterArrayFromFilters(filters), cacheBuster: (new Date()).getTime()};
+        var queryParameters = {var: getFilterArrayFromFilters(filters), cacheBuster: (new Date()).getTime(), paging: false};
 
         return getSqlViewIdFromSystemSettings()
             .then(function (sqlViewId) {
