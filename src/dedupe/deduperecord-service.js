@@ -31,16 +31,17 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
     }
 
     function extractHeaders(sqlViewData) {
-        headers = _.chain(sqlViewData.headers)
-            .map(_.compose(_.values, _.partialRight(_.pick, [ 'column' ])))
+
+        headers = _.chain(sqlViewData.listGrid.headers)
+            .map(_.compose(_.values, _.partialRight(_.pick, ['column'])))
             .flatten()
             .value();
 
-        return sqlViewData.rows;
+        return sqlViewData.listGrid.rows;
     }
 
     function executeSqlViewOnApi(filters) {
-        var queryParameters = {var: getFilterArrayFromFilters(filters), cacheBuster: (new Date()).getTime()};
+        var queryParameters = {var: getFilterArrayFromFilters(filters), cacheBuster: (new Date()).getTime(), paging: false};
 
         return getSqlViewIdFromSystemSettings()
             .then(function (sqlViewId) {

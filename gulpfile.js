@@ -39,9 +39,11 @@ var files = [
 gulp.task('sass', function () {
     var sass = require('gulp-ruby-sass');
 
-    return sass('src/app/app.sass', { base: './src/' })
-        .on('error', function (err) { console.log(err.message); })
-        .pipe(gulp.dest(['temp', 'css'].join('/')));
+    return gulp.src('src/app/app.sass', { base: './src/' })
+        .pipe(sass())
+        .pipe(gulp.dest(
+            ['temp', 'css'].join('/')
+        ));
 });
 
 gulp.task('clean', function (done) {
@@ -69,24 +71,28 @@ gulp.task('eslint', function () {
         .pipe(eslint.failAfterError());
 });
 
-gulp.task('min', gulp.series([ 'sass' ], function () {
+gulp.task('min', gulp.series('sass', function() {
     var mangleJS = false;
 
     var useref = require('gulp-useref');
     var gulpif = require('gulp-if');
     var ngAnnotate = require('gulp-ng-annotate');
     var uglify = require('gulp-uglify');
-    var minifyCss = require('gulp-clean-css');
+    var minifyCss = require('gulp-minify-css');
     var rev = require('gulp-rev');
     var revReplace = require('gulp-rev-replace');
 
+    var assets = useref.assets();
+
     return gulp.src('src/**/*.html')
+        .pipe(assets)
+        .pipe(assets.restore())
         .pipe(useref())
         .pipe(gulpif('**/*.css', minifyCss()))
         .pipe(gulpif('**/app.js', ngAnnotate({
             add: true,
             remove: true,
-            single_quotes: true,
+            single_quotes: true, //jshint ignore:line
             stats: true
         })))
         .pipe(gulpif('**/*.js', uglify({
@@ -132,9 +138,25 @@ gulp.task('package', function () {
         .pipe(gulp.dest('.'));
 });
 
-gulp.task('build', gulp.series('clean', 'test', 'i18n', 'manifest', 'images', 'eslint', 'min', 'copy-files', 'copy-fonts'));
+gulp.task('build', gulp.series('clean', 'test', 'i18n', 'eslint', 'min', 'copy-files', 'copy-fonts'));
 
-gulp.task('build-prod', gulp.series('build', 'package',
+gulp.task('build-skipTest', gulp.series('clean', 'i18n', 'eslint', 'min', 'copy-files', 'copy-fonts',
+        function (done) {
+        console.log();
+        console.log([__dirname, 'datim-dedupe.zip'].join('/'));
+        done();
+    }
+));
+
+gulp.task('build-prod', gulp.series('build', 'images', 'manifest', 'package',
+    function (done) {
+        console.log();
+        console.log([__dirname, 'datim-dedupe.zip'].join('/'));
+        done();
+    }
+));
+
+gulp.task('build-prod-skipTest', gulp.series('build-skipTest', 'images', 'manifest', 'package',
     function (done) {
         console.log();
         console.log([__dirname, 'datim-dedupe.zip'].join('/'));
