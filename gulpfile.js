@@ -37,8 +37,8 @@ var files = [
 ];
 
 gulp.task('sass', function () {
-    var sass = require('gulp-ruby-sass');
-
+    // var sass = require('gulp-ruby-sass');
+    let sass = require('gulp-sass')
     return gulp.src('src/app/app.sass', { base: './src/' })
         .pipe(sass())
         .pipe(gulp.dest(
