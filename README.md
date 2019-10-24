@@ -2,7 +2,7 @@
 
 **Repo Owner:** Ben Guaraldi [@benguaraldi](https://github.com/benguaraldi)
 
-[![Build Status](https://travis-ci.org/dhis2/datim-dedupe.svg)](https://travis-ci.org/dhis2/datim-dedupe)
+[![Build Status](https://travis-ci.org/pepfar-datim/datim-dedupe.svg)](https://travis-ci.org/pepfar-datim/datim-dedupe)
 [![Coverage Status](https://coveralls.io/repos/dhis2/datim-dedupe/badge.svg)](https://coveralls.io/r/dhis2/datim-dedupe)
 [![Code Climate](https://codeclimate.com/github/dhis2/datim-dedupe/badges/gpa.svg)](https://codeclimate.com/github/dhis2/datim-dedupe)
 
