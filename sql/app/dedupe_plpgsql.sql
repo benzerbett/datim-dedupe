@@ -1,8 +1,12 @@
 DROP FUNCTION  IF EXISTS view_duplicates(character,character varying,
 boolean,integer,integer,character varying,character varying);
 
+DROP FUNCTION  IF EXISTS view_duplicates(character,character varying,
+boolean,integer,integer,character varying,character varying,character varying);
+
 CREATE OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
-ps integer default 50,pg integer default 1,dt character varying(50) default 'ALL',ty character varying(50) default 'PURE' ) 
+ps integer default 50,pg integer default 1,dt character varying(50) default 'ALL',ty character varying(50) default 'PURE',
+degfilter character varying(50) default '' ) 
 RETURNS setof duplicate_records AS  $$
  DECLARE
  returnrec duplicate_records;
@@ -11,6 +15,7 @@ RETURNS setof duplicate_records AS  $$
  start_group integer;
  end_group integer;
  dataset_filter character varying (100);
+ deg_filter text;
  this_exists boolean;
  --Internal ID of the pure mechanism
 pure_id integer;
@@ -103,6 +108,15 @@ WHEN 'ALL' THEN
 END CASE;
 
 
+CASE COALESCE(degfilter,'')
+ WHEN '' THEN
+ deg_filter := ' ';
+ ELSE
+deg_filter := ' AND dataelementid in (SELECT dataelementid from dataelementgroupmembers 
+ WHERE dataelementgroupid = (SELECT dataelementgroupid from dataelementgroup WHERE shortname = ''' || $8 || ''' ) ) ';
+END CASE;
+
+
  CREATE TEMP TABLE temp1
  (sourceid integer,
  periodid integer,
@@ -172,7 +186,7 @@ IF ty = 'PURE'::character varying(50) THEN
  SELECT datasetid from dataset where uid in ( 
 SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
   from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ')'
-|| dataset_filter ||
+|| dataset_filter || deg_filter  || 
  ' ) 
  INTERSECT (SELECT dataelementid from dataelement where valuetype IN 
     (''NUMBER'',
@@ -275,7 +289,7 @@ EXECUTE 'INSERT INTO temp1
 SELECT DISTINCT dataelementid from datasetelement WHERE datasetid IN (
  SELECT datasetid from dataset where uid in (
 SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
-  from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ' )))) map
+  from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ' )) ' || deg_filter || ')) map
  on dv1.dataelementid = map.dsd_dataelementid
   AND dv1.deleted IS FALSE ) dsd
  on ta.sourceid = dsd.sourceid
