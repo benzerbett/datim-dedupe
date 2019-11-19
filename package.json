@@ -6,7 +6,7 @@
   "scripts": {
     "test": "gulp test",
     "test:watch": "gulp watch",
-    "build": "gulp build-prod"
+    "build": "gulp build-prod-skipTest"
   },
   "repository": {
     "type": "git",
