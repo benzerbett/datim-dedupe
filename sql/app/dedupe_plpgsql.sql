@@ -6,7 +6,8 @@ boolean,integer,integer,character varying,character varying,character varying);
 
 CREATE OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
 ps integer default 50,pg integer default 1,dt character varying(50) default 'ALL',ty character varying(50) default 'PURE',
-degfilter character varying(50) default '' ) 
+degfilter character varying(50) default '',
+agfilter character varying(50) default '') 
 RETURNS setof duplicate_records AS  $$
  DECLARE
  returnrec duplicate_records;
@@ -81,6 +82,17 @@ END IF;
 EXECUTE 'SELECT ''' || $7 || '''  IN (''PURE'',''CROSSWALK'');' into this_exists;
 IF this_exists != true THEN
   RAISE EXCEPTION 'Invalid dedupe type. Must be PURE or CROSSWALK';
+END IF;
+
+-- Validate the DEG filter
+EXECUTE 'SELECT ''' || $8 || '''  IN (SELECT DISTINCT shortname from dataelementgroup);' into this_exists;
+IF this_exists != true THEN
+  RAISE EXCEPTION 'Invalid data element group filter!';
+END IF;
+--Validate the agency filter
+EXECUTE 'SELECT ''' || $9 || '''  IN (SELECT DISTINCT uid from categoryoptiongroup);' into this_exists;
+IF this_exists != true THEN
+  RAISE EXCEPTION 'Invalid agency filter!';
 END IF;
 
 --End validation, begin business logic
@@ -289,7 +301,7 @@ EXECUTE 'INSERT INTO temp1
 SELECT DISTINCT dataelementid from datasetelement WHERE datasetid IN (
  SELECT datasetid from dataset where uid in (
 SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
-  from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ' )) ' || deg_filter || ')) map
+  from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ' )))) map
  on dv1.dataelementid = map.dsd_dataelementid
   AND dv1.deleted IS FALSE ) dsd
  on ta.sourceid = dsd.sourceid
@@ -391,6 +403,24 @@ EXECUTE 'SELECT COUNT(*) > 0 FROM temp1;' into this_exists;
 
 IF this_exists = TRUE THEN
 
+  /*Agency*/
+ ALTER TABLE temp1 ADD COLUMN agency character varying(250);
+ UPDATE temp1 set agency = b."Funding Agency" from _categorystructure b
+ where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
+--Apply the agency filter
+
+
+CASE COALESCE(agfilter,'')
+ WHEN '' THEN
+ ELSE
+   EXECUTE 'DELETE from temp1 
+   WHERE (dataelementid,categoryoptioncomboid,sourceid,periodid) NOT IN 
+   ( SELECT DISTINCT dataelementid,categoryoptioncomboid,sourceid,periodid 
+   from temp1 where agency =  (SELECT shortname from categoryoptiongroup where 
+   uid = ''' || $9 || '''))';
+END CASE;
+
+
 /*Paging*/
  ALTER TABLE temp1 ADD COLUMN group_count integer;
  ALTER TABLE temp1 ADD COLUMN total_groups integer;
@@ -435,11 +465,7 @@ UPDATE temp1 set total_groups =  ( SELECT max(group_count) from temp1 );
 UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
  where temp1.categoryoptioncomboid = b.categoryoptioncomboid;
 
-  /*Agency*/
- ALTER TABLE temp1 ADD COLUMN agency character varying(250);
- 
- UPDATE temp1 set agency = b."Funding Agency" from _categorystructure b
- where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
+
  
  UPDATE temp1 set agency = 'DSD Value' where attributeoptioncomboid = -1;
 
