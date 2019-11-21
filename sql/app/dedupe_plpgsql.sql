@@ -26,6 +26,9 @@ startdate timestamp with time zone;
 enddate timestamp with time zone;
 good_to_go boolean;
 period_exists boolean;
+degfilter ALIAS FOR $8;
+agfilter ALIAS for $9;
+
  BEGIN
 --Validation
 
@@ -86,12 +89,12 @@ END IF;
 
 -- Validate the DEG filter
 EXECUTE 'SELECT ''' || $8 || '''  IN (SELECT DISTINCT shortname from dataelementgroup);' into this_exists;
-IF this_exists != true THEN
+IF this_exists != true AND degfilter != '' THEN 
   RAISE EXCEPTION 'Invalid data element group filter!';
 END IF;
 --Validate the agency filter
 EXECUTE 'SELECT ''' || $9 || '''  IN (SELECT DISTINCT uid from categoryoptiongroup);' into this_exists;
-IF this_exists != true THEN
+IF this_exists != true AND agfilter != '' THEN
   RAISE EXCEPTION 'Invalid agency filter!';
 END IF;
 
