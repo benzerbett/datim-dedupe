@@ -117,32 +117,6 @@ END CASE;
 
 CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
 
-
-EXECUTE 'SELECT 
-CASE WHEN foo LIKE ''%-%'' THEN
-  to_timestamp(foo,''YYYY-MM-DD"T"HH24:MI:SS"Z"'')
-  ELSE to_timestamp(foo::bigint) 
-  END 
-  from (SELECT (value::json->''' || $6  || '''->''' || $2 || '''->>''start'')::text as
- foo from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings'' ) as startdate' INTO startdate;
-
-EXECUTE 'SELECT
-CASE WHEN foo LIKE ''%-%'' THEN
-  to_timestamp(foo,''YYYY-MM-DD"T"HH24:MI:SS"Z"'')
-  ELSE to_timestamp(foo::bigint) 
-  END 
-  from (SELECT (value::json->''' || $6  || '''->''' || $2 || '''->>''end'')::text as
- foo from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings'' ) as enddate' INTO enddate;
-
-EXECUTE 'SELECT (value::json->''' || $6  || '''->''' || $2 || ''') IS NOT NULL as
- foo from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' INTO period_exists;
-
-
-good_to_go:= (SELECT COALESCE(startdate<=now(),true) AND  COALESCE(enddate>=now(),true) AND period_exists);
-
-
-IF good_to_go = true THEN
-
 IF ty = 'PURE'::character varying(50) THEN
  
  EXECUTE 'INSERT INTO temp1
@@ -480,8 +454,6 @@ total_groups
 FROM temp1';
 
 END IF;
-
-END IF; --Timestamp check
 
    /*Return the records*/
    FOR returnrec IN SELECT * FROM temp2 ORDER BY group_count LOOP
