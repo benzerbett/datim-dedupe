@@ -1,10 +1,10 @@
-const express = require('express');
-const app = express();
-const requestProxy = require("express-request-proxy");
-
-app.use(express.static('./dev'));
+const express = require('express'),
+ app = express(),
+ requestProxy = require("express-request-proxy");
 
 const credentials = process.env.DHIS_USERNAME + ":" + process.env.DHIS_PASSWORD;
+
+app.use(express.static('./dev'));
 
 app.all("/api/*", requestProxy({
     url: process.env.DHIS_BASEURL + '/*',
@@ -12,16 +12,5 @@ app.all("/api/*", requestProxy({
         Authorization: "Basic " + new Buffer(credentials).toString("base64")
     }
 }));
-
-// app.all("/api/*", (req,res,next)=>{
-//     let f = requestProxy({
-//         url: process.env.DHIS_BASEURL + '/api/me',
-//         headers: {
-//             Authorization: "Basic " + new Buffer(credentials).toString("base64")
-//         }
-//     });
-//     f(req,res,next);
-// });
-
 
 app.listen(8000);
