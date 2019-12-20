@@ -1,7 +1,7 @@
 angular.module('PEPFAR.dedupe').factory('dedupeService', dedupeService);
 
 function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_SIZE) {
-    var requiredFilters = ['ou', 'pe', 'rs', 'ps', 'pg', 'dt', 'ty'];
+    var requiredFilters = ['ou', 'pe', 'rs', 'ps', 'pg', 'dt', 'ty', 'ag', 'dg'];
 
     return {
         getDuplicateRecords: getDuplicateRecords,
@@ -11,8 +11,8 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         resolveDuplicates: resolveDuplicates
     };
 
-    function getDuplicateRecords(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType, pageSize) {
-        var filters = getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType, pageSize);
+    function getDuplicateRecords(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType, agency, dataElementGroup, pageSize) {
+        var filters = getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType, agency, dataElementGroup,pageSize);
 
         if (isRequiredFiltersPresent(filters)) {
             return dedupeRecordService.getRecords(filters);
@@ -31,7 +31,7 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         return $q.reject('Unable to get the correct url, because filters are not correct');
     }
 
-    function getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType, pageSize) {
+    function getFilters(organisationUnitId, periodId, includeResolved, targetsResults, pageNumber, dedupeType, agency, dataElementGroup, pageSize) {
         var filters = {};
 
         if (organisationUnitId && angular.isString(organisationUnitId)) {
@@ -47,6 +47,9 @@ function dedupeService(dedupeRecordService, dedupeSaverService, $q, DEDUPE_PAGE_
         filters.pg = pageNumber || 1;
         filters.dt = (angular.isString(targetsResults) && targetsResults.toUpperCase()) || 'ALL';
         filters.ty = dedupeType;
+
+        filters.ag = agency;
+        filters.dg = dataElementGroup;
 
         return filters;
     }
