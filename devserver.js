@@ -6,23 +6,22 @@ app.use(express.static('./dev'));
 
 const credentials = process.env.DHIS_USERNAME + ":" + process.env.DHIS_PASSWORD;
 
-// app.all("/api/*", requestProxy({
-//     url: process.env.DHIS_BASEURL + '/api/user/me',
-//     headers: {
-//         Authorization: "Basic " + new Buffer(credentials).toString("base64")
-//     }
-// }));
+app.all("/api/*", requestProxy({
+    url: process.env.DHIS_BASEURL + '/*',
+    headers: {
+        Authorization: "Basic " + new Buffer(credentials).toString("base64")
+    }
+}));
 
-app.all("/api/*", (req,res,next)=>{
-    let f = requestProxy({
-        url: process.env.DHIS_BASEURL + '/api/me',
-        headers: {
-            Authorization: "Basic " + new Buffer(credentials).toString("base64")
-        }
-    });
-    f(req,res,next);
-});
+// app.all("/api/*", (req,res,next)=>{
+//     let f = requestProxy({
+//         url: process.env.DHIS_BASEURL + '/api/me',
+//         headers: {
+//             Authorization: "Basic " + new Buffer(credentials).toString("base64")
+//         }
+//     });
+//     f(req,res,next);
+// });
 
-app.all('/test', requestProxy({url:'http://www.google.com/'}));
 
 app.listen(8000);
