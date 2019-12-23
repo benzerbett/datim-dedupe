@@ -45,6 +45,11 @@
                             <period-selector></period-selector>
                         </div>
                     </div>
+                    <div ng-show="app.filters.getResultsTargetsFilter()" class="period-selector row">
+                        <div class="col-sm-12">
+                            <agency-filter-select></agency-filter-select>
+                        </div>
+                    </div>
                     <div class="dedupe-type-buttons">
                         <button class="btn btn-default"
                                 ng-class="{active: !app.isShowingCrosswalkDedupes()}"
@@ -187,6 +192,7 @@
     <script src="currentuser/currentuser-service.js"></script>
     <script src="period/period-service.js"></script>
     <script src="period/periodselector-directive.js"></script>
+    <script src="agencyFilter/agencyFilter-directive.js"></script>
     <script src="dedupe/deduperecordfilters-service.js"></script>
     <script src="resultstargets/resultstargets-directive.js"></script>
     <script src="orgunitparents/orgunitparents-directive.js"></script>

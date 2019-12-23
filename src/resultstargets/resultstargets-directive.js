@@ -7,6 +7,7 @@ function resultsTargetsSelectDirectiveController($scope, dataStore, notify, dedu
 
     dataStore.getPeriodSettings()
         .then(function (periodSettings) {
+
             ctrl.items = Object.keys(periodSettings || {})
                 .map(function (key) { return key.charAt(0).toUpperCase() + key.slice(1).toLowerCase(); })
                 .map(function (key) { return {name: key}; });
