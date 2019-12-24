@@ -6,7 +6,7 @@ const credentials = process.env.DHIS_USERNAME + ":" + process.env.DHIS_PASSWORD;
 
 app.use(express.static('./dev'));
 
-app.all("/api/*", requestProxy({
+app.all("/server/*", requestProxy({
     url: process.env.DHIS_BASEURL + '/*',
     headers: {
         Authorization: "Basic " + new Buffer(credentials).toString("base64")

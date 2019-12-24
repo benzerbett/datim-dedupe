@@ -5,7 +5,9 @@ function controller($scope, agencyFilterService, dedupeRecordFilters) {
     $scope.selectAgency = function(agency){
         dedupeRecordFilters.changeAgencyFilter(agency);
     };
-    $scope.agencies = agencyFilterService.getAgencyList();
+    agencyFilterService.getAgencyList().then(function(agencies){
+        $scope.agencies = agencies;
+    });
 }
 
 function agencyFilterSelect() {

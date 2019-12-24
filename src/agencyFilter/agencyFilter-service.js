@@ -1,7 +1,13 @@
 angular.module('PEPFAR.dedupe').factory('agencyFilterService', agencyFilterService);
 
-function agencyFilterService(Restangular){
+function agencyFilterService($http, webappManifest){
     return {getAgencyList: function(){
-        return [{name: 'USAID', id: 'NLV6dy7BE2O'}, {name: 'HHS/CDC', id: 'FPUgmtt8HRi'}];
+        var prefix = webappManifest.activities.dhis.href;
+        var query = '/api/categoryOptionGroups.json?filter=groupSets.id:eq:bw8KHXzxd9i';
+        var url = prefix?(prefix+query):query;
+        return $http.get(url, {withCredentials: true}).then(function(res){
+            return res.data.categoryOptionGroups.map(function(i){return {name: i.displayName, id: i.id}});
+        });
+        // return [{name: 'USAID', id: 'NLV6dy7BE2O'}, {name: 'HHS/CDC', id: 'FPUgmtt8HRi'}];
     }};
 }
