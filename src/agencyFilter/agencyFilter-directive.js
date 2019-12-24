@@ -6,7 +6,8 @@ function controller($scope, agencyFilterService, dedupeRecordFilters) {
         dedupeRecordFilters.changeAgencyFilter(agency);
     };
     agencyFilterService.getAgencyList().then(function(agencies){
-        $scope.agencies = agencies;
+        var all = [{name: 'All Agencies', id: 'NONE'}];
+        $scope.agencies = all.concat(agencies);
     });
 }
 
