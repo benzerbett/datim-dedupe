@@ -1,8 +1,13 @@
 DROP FUNCTION  IF EXISTS view_duplicates(character,character varying,
 boolean,integer,integer,character varying,character varying);
 
+DROP FUNCTION  IF EXISTS view_duplicates(character,character varying,
+boolean,integer,integer,character varying,character varying,character varying);
+
 CREATE OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
-ps integer default 50,pg integer default 1,dt character varying(50) default 'ALL',ty character varying(50) default 'PURE' ) 
+ps integer default 50,pg integer default 1,dt character varying(50) default 'ALL',ty character varying(50) default 'PURE',
+degfilter character varying(50) default 'NONE',
+agfilter character varying(50) default 'NONE') 
 RETURNS setof duplicate_records AS  $$
  DECLARE
  returnrec duplicate_records;
@@ -11,6 +16,7 @@ RETURNS setof duplicate_records AS  $$
  start_group integer;
  end_group integer;
  dataset_filter character varying (100);
+ deg_filter text;
  this_exists boolean;
  --Internal ID of the pure mechanism
 pure_id integer;
@@ -20,6 +26,9 @@ startdate timestamp with time zone;
 enddate timestamp with time zone;
 good_to_go boolean;
 period_exists boolean;
+degfilter ALIAS FOR $8;
+agfilter ALIAS for $9;
+
  BEGIN
 --Validation
 
@@ -78,6 +87,17 @@ IF this_exists != true THEN
   RAISE EXCEPTION 'Invalid dedupe type. Must be PURE or CROSSWALK';
 END IF;
 
+-- Validate the DEG filter
+EXECUTE 'SELECT ''' || $8 || '''  IN (SELECT DISTINCT shortname from dataelementgroup);' into this_exists;
+IF this_exists != true AND degfilter != 'NONE' THEN 
+  RAISE EXCEPTION 'Invalid data element group filter!';
+END IF;
+--Validate the agency filter
+EXECUTE 'SELECT ''' || $9 || '''  IN (SELECT DISTINCT uid from categoryoptiongroup);' into this_exists;
+IF this_exists != true AND agfilter != 'NONE' THEN
+  RAISE EXCEPTION 'Invalid agency filter!';
+END IF;
+
 --End validation, begin business logic
 --Support large page sizes when the page size is 0
 CASE ps
@@ -100,6 +120,15 @@ WHEN 'ALL' THEN
   dataset_filter := ' ';
  ELSE
  RAISE EXCEPTION 'Invalid dataset type. Must be RESULTS or TARGETS or ALL';
+END CASE;
+
+
+CASE COALESCE(degfilter,'')
+ WHEN 'NONE' THEN
+ deg_filter := ' ';
+ ELSE
+deg_filter := ' AND dataelementid in (SELECT dataelementid from dataelementgroupmembers 
+ WHERE dataelementgroupid = (SELECT dataelementgroupid from dataelementgroup WHERE shortname = ''' || $8 || ''' ) ) ';
 END CASE;
 
 
@@ -172,7 +201,7 @@ IF ty = 'PURE'::character varying(50) THEN
  SELECT datasetid from dataset where uid in ( 
 SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
   from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ')'
-|| dataset_filter ||
+|| dataset_filter || deg_filter  || 
  ' ) 
  INTERSECT (SELECT dataelementid from dataelement where valuetype IN 
     (''NUMBER'',
@@ -377,6 +406,24 @@ EXECUTE 'SELECT COUNT(*) > 0 FROM temp1;' into this_exists;
 
 IF this_exists = TRUE THEN
 
+  /*Agency*/
+ ALTER TABLE temp1 ADD COLUMN agency character varying(250);
+ UPDATE temp1 set agency = b."Funding Agency" from _categorystructure b
+ where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
+--Apply the agency filter
+
+
+CASE COALESCE(agfilter,'NONE')
+ WHEN 'NONE' THEN
+ ELSE
+   EXECUTE 'DELETE from temp1 
+   WHERE (dataelementid,categoryoptioncomboid,sourceid,periodid) NOT IN 
+   ( SELECT DISTINCT dataelementid,categoryoptioncomboid,sourceid,periodid 
+   from temp1 where agency =  (SELECT shortname from categoryoptiongroup where 
+   uid = ''' || $9 || '''))';
+END CASE;
+
+
 /*Paging*/
  ALTER TABLE temp1 ADD COLUMN group_count integer;
  ALTER TABLE temp1 ADD COLUMN total_groups integer;
@@ -421,11 +468,7 @@ UPDATE temp1 set total_groups =  ( SELECT max(group_count) from temp1 );
 UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
  where temp1.categoryoptioncomboid = b.categoryoptioncomboid;
 
-  /*Agency*/
- ALTER TABLE temp1 ADD COLUMN agency character varying(250);
- 
- UPDATE temp1 set agency = b."Funding Agency" from _categorystructure b
- where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
+
  
  UPDATE temp1 set agency = 'DSD Value' where attributeoptioncomboid = -1;
 

@@ -57,13 +57,24 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
         dedupeFilters.tr = dedupeRecordFilters.tr;
         dedupeFilters.ty = dedupeRecordFilters.ty;
 
+        dedupeFilters.ag = dedupeRecordFilters.ag?dedupeRecordFilters.ag:'NONE';
+        dedupeFilters.dg = 'NONE';
+
         ctrl.getDuplicateRecords();
     });
 
     function getDuplicateRecords() {
         ctrl.isProcessing = true;
 
-        dedupeService.getDuplicateRecords(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, ctrl.pager.current, dedupeFilters.ty, ctrl.pager.pageSize)
+        dedupeService.getDuplicateRecords(dedupeFilters.ou,
+            dedupeFilters.pe,
+            dedupeFilters.includeResolved,
+            dedupeFilters.tr,
+            ctrl.pager.current,
+            dedupeFilters.ty,
+            dedupeFilters.ag,
+            dedupeFilters.dg,
+            ctrl.pager.pageSize)
             .then(addPeriodInformationToRecords)
             .then(function (duplicateRecords) {
                 ctrl.allDedupeRecords = ctrl.dedupeRecords = duplicateRecords;

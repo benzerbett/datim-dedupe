@@ -10,6 +10,7 @@ function dedupeRecordFilters($rootScope) {
         changeOrganisationUnit: changeOrganisationUnit,
         changeFilterResultsTargets: changeFilterResultsTargets,
         changePeriodFilter: changePeriodFilter,
+        changeAgencyFilter: changeAgencyFilter,
         changeIsCrosswalk: changeIsCrosswalk,
         getResultsTargetsFilter: getResultsTargetsFilter,
         getFilters: getFilters,
@@ -39,6 +40,14 @@ function dedupeRecordFilters($rootScope) {
             dedupeFilters.ty = 'PURE';
             periodDisplayName = period.name;
             dedupeFilters.pe = period.iso;
+            fireUpdateEvent();
+        }
+    }
+
+    function changeAgencyFilter(agency) {
+        console.log(agency);
+        if (agency) {
+            dedupeFilters.ag = agency.id;
             fireUpdateEvent();
         }
     }

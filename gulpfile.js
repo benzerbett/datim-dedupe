@@ -195,6 +195,6 @@ gulp.task('copy-app', function () {
     return gulp.src('build/**/*.*', { base: './build/' }).pipe(gulp.dest(dhisDirectory));
 });
 
-gulp.task('copy-to-dev', gulp.series('clean', 'i18n', 'manifest', 'images', 'eslint', 'min', 'copy-files', 'copy-fonts', 'modify-manifest', 'copy-app'));
+gulp.task('copy-to-dev', gulp.series('clean', 'i18n', 'images', 'min', 'copy-files', 'copy-fonts','manifest', 'modify-manifest', 'copy-app'));
 
 gulp.task('travis', gulp.series('test'));
