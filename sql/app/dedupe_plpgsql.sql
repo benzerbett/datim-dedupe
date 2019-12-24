@@ -6,8 +6,8 @@ boolean,integer,integer,character varying,character varying,character varying);
 
 CREATE OR REPLACE FUNCTION view_duplicates(ou character (11),pe character varying(15),rs boolean default false,
 ps integer default 50,pg integer default 1,dt character varying(50) default 'ALL',ty character varying(50) default 'PURE',
-degfilter character varying(50) default '',
-agfilter character varying(50) default '')
+degfilter character varying(50) default 'NONE',
+agfilter character varying(50) default 'NONE') 
 RETURNS setof duplicate_records AS  $$
  DECLARE
  returnrec duplicate_records;
@@ -89,12 +89,12 @@ END IF;
 
 -- Validate the DEG filter
 EXECUTE 'SELECT ''' || $8 || '''  IN (SELECT DISTINCT shortname from dataelementgroup);' into this_exists;
-IF this_exists != true AND degfilter != '' THEN
+IF this_exists != true AND degfilter != 'NONE' THEN 
   RAISE EXCEPTION 'Invalid data element group filter!';
 END IF;
 --Validate the agency filter
 EXECUTE 'SELECT ''' || $9 || '''  IN (SELECT DISTINCT uid from categoryoptiongroup);' into this_exists;
-IF this_exists != true AND agfilter != '' THEN
+IF this_exists != true AND agfilter != 'NONE' THEN
   RAISE EXCEPTION 'Invalid agency filter!';
 END IF;
 
@@ -124,10 +124,10 @@ END CASE;
 
 
 CASE COALESCE(degfilter,'')
- WHEN '' THEN
+ WHEN 'NONE' THEN
  deg_filter := ' ';
  ELSE
-deg_filter := ' AND dataelementid in (SELECT dataelementid from dataelementgroupmembers
+deg_filter := ' AND dataelementid in (SELECT dataelementid from dataelementgroupmembers 
  WHERE dataelementgroupid = (SELECT dataelementgroupid from dataelementgroup WHERE shortname = ''' || $8 || ''' ) ) ';
 END CASE;
 
@@ -147,19 +147,19 @@ END CASE;
 CREATE TEMP TABLE temp2 OF duplicate_records ON COMMIT DROP ;
 
 
-EXECUTE 'SELECT
+EXECUTE 'SELECT 
 CASE WHEN foo LIKE ''%-%'' THEN
   to_timestamp(foo,''YYYY-MM-DD"T"HH24:MI:SS"Z"'')
-  ELSE to_timestamp(foo::bigint)
-  END
+  ELSE to_timestamp(foo::bigint) 
+  END 
   from (SELECT (value::json->''' || $6  || '''->''' || $2 || '''->>''start'')::text as
  foo from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings'' ) as startdate' INTO startdate;
 
 EXECUTE 'SELECT
 CASE WHEN foo LIKE ''%-%'' THEN
   to_timestamp(foo,''YYYY-MM-DD"T"HH24:MI:SS"Z"'')
-  ELSE to_timestamp(foo::bigint)
-  END
+  ELSE to_timestamp(foo::bigint) 
+  END 
   from (SELECT (value::json->''' || $6  || '''->''' || $2 || '''->>''end'')::text as
  foo from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings'' ) as enddate' INTO enddate;
 
@@ -173,7 +173,7 @@ good_to_go:= (SELECT COALESCE(startdate<=now(),true) AND  COALESCE(enddate>=now(
 IF good_to_go = true THEN
 
 IF ty = 'PURE'::character varying(50) THEN
-
+ 
  EXECUTE 'INSERT INTO temp1
  SELECT DISTINCT
  dv1.sourceid,
@@ -198,12 +198,12 @@ IF ty = 'PURE'::character varying(50) THEN
  and ous.path ~ ''' ||  $1 || '''
  WHERE dv1.dataelementid IN (
  SELECT DISTINCT dataelementid from datasetelement WHERE datasetid IN (
- SELECT datasetid from dataset where uid in (
+ SELECT datasetid from dataset where uid in ( 
 SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
   from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ')'
-|| dataset_filter || deg_filter  ||
- ' )
- INTERSECT (SELECT dataelementid from dataelement where valuetype IN
+|| dataset_filter || deg_filter  || 
+ ' ) 
+ INTERSECT (SELECT dataelementid from dataelement where valuetype IN 
     (''NUMBER'',
    ''UNIT_INTERVAL'',
     ''PERCENTAGE'',
@@ -212,7 +212,7 @@ SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || 
     ''INTEGER_NEGATIVE'',
     ''INTEGER_ZERO_OR_POSITIVE'')
     AND optionsetid IS  NULL )
-
+ 
  ) AND dv1.periodid = (SELECT DISTINCT periodid from _periodstructure where iso = ''' || $2 || ''' LIMIT 1)
   AND dv1.deleted IS FALSE
   AND dv2.deleted IS FALSE';
@@ -246,17 +246,17 @@ EXECUTE format('DELETE FROM temp1 where group_id IN (SELECT group_id from temp1
 /*Only resolve non-legacy dedupes*/
 EXECUTE format('UPDATE temp1 set duplication_status = ''RESOLVED''
 WHERE group_id NOT IN (SELECT a.group_id FROM (
-SELECT group_id,lastupdated as dedupe_time from temp1
+SELECT group_id,lastupdated as dedupe_time from temp1 
 WHERE attributeoptioncomboid = %L ) a
 INNER JOIN (
-SELECT group_id,MAX(lastupdated) as data_time from temp1
+SELECT group_id,MAX(lastupdated) as data_time from temp1 
 WHERE attributeoptioncomboid != %L
 GROUP BY group_id ) b
 on a.group_id = b.group_id
 WHERE a.dedupe_time <  b.data_time
  )
 AND group_id IN (SELECT DISTINCT group_id from temp1 where value ~(''^[-|0]'') and
-  attributeoptioncomboid = %L)',pure_id,pure_id,pure_id);
+  attributeoptioncomboid = %L)',pure_id,pure_id,pure_id); 
 
 END IF;
 /*End PURE Dedupe logic*/
@@ -273,15 +273,15 @@ CREATE TEMPORARY TABLE _temp_dsd_ta_crosswalk (
 
 
 INSERT INTO _temp_dsd_ta_crosswalk
-SELECT dsd_uid,ta_uid FROM(
-  SELECT (json_populate_recordset(null::crosswalks,value::JSON)).*
+SELECT dsd_uid,ta_uid FROM( 
+  SELECT (json_populate_recordset(null::crosswalks,value::JSON)).* 
   FROM keyjsonvalue where namespace='dedupe' and namespacekey='crosswalks') as foo;
 ALTER TABLE _temp_dsd_ta_crosswalk ADD COLUMN dsd_dataelementid integer;
 ALTER TABLE _temp_dsd_ta_crosswalk ADD COLUMN ta_dataelementid integer;
 UPDATE _temp_dsd_ta_crosswalk SET dsd_dataelementid = a.dataelementid from dataelement a where dsd_uid = a.uid;
 UPDATE _temp_dsd_ta_crosswalk SET ta_dataelementid = a.dataelementid from dataelement a where ta_uid = a.uid;
 
-EXECUTE 'INSERT INTO temp1
+EXECUTE 'INSERT INTO temp1 
  SELECT DISTINCT
  ta.sourceid,
  ta.periodid,
@@ -315,7 +315,7 @@ SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || 
  and ous.path ~ ''' ||  $1 || '''
   AND ta.periodid = (SELECT DISTINCT periodid from _periodstructure
  where iso = ''' || $2 || ''')
- AND ta.dataelementid IN (SELECT dataelementid from dataelement where valuetype IN
+ AND ta.dataelementid IN (SELECT dataelementid from dataelement where valuetype IN 
     (''NUMBER'',
    ''UNIT_INTERVAL'',
     ''PERCENTAGE'',
@@ -333,7 +333,7 @@ EXECUTE
 format('INSERT INTO temp1
 SELECT sourceid,periodid,dataelementid,categoryoptioncomboid,-1::integer as attributeoptioncomboid,value::text,
 duplicate_type,lastupdated FROM (
-SELECT
+SELECT 
 dsd.sourceid,
 dsd.periodid,
 ta.dataelementid,
@@ -376,7 +376,7 @@ where attributeoptioncomboid NOT IN
 
 
 /*Duplication status*/
-
+ 
  ALTER TABLE temp1 ADD COLUMN duplication_status character varying(50) DEFAULT 'UNRESOLVED';
 /*Only resolve non-legacy dedupes*/
  EXECUTE 'UPDATE temp1 set duplication_status = ''RESOLVED''
@@ -413,13 +413,13 @@ IF this_exists = TRUE THEN
 --Apply the agency filter
 
 
-CASE COALESCE(agfilter,'')
- WHEN '' THEN
+CASE COALESCE(agfilter,'NONE')
+ WHEN 'NONE' THEN
  ELSE
-   EXECUTE 'DELETE from temp1
-   WHERE (dataelementid,categoryoptioncomboid,sourceid,periodid) NOT IN
-   ( SELECT DISTINCT dataelementid,categoryoptioncomboid,sourceid,periodid
-   from temp1 where agency =  (SELECT shortname from categoryoptiongroup where
+   EXECUTE 'DELETE from temp1 
+   WHERE (dataelementid,categoryoptioncomboid,sourceid,periodid) NOT IN 
+   ( SELECT DISTINCT dataelementid,categoryoptioncomboid,sourceid,periodid 
+   from temp1 where agency =  (SELECT shortname from categoryoptiongroup where 
    uid = ''' || $9 || '''))';
 END CASE;
 
@@ -429,10 +429,10 @@ END CASE;
  ALTER TABLE temp1 ADD COLUMN total_groups integer;
 
 UPDATE temp1 a set group_count = b.group_count FROM(
-SELECT dataelementid,categoryoptioncomboid,sourceid,
+SELECT dataelementid,categoryoptioncomboid,sourceid, 
 sum(1) OVER (ORDER BY dataelementid,categoryoptioncomboid,sourceid) as group_count
 FROM temp1
-GROUP BY dataelementid,categoryoptioncomboid,sourceid) b
+GROUP BY dataelementid,categoryoptioncomboid,sourceid) b 
 where a.dataelementid = b.dataelementid
 and a.categoryoptioncomboid = b.categoryoptioncomboid
 and a.sourceid = b.sourceid;
@@ -441,18 +441,18 @@ and a.sourceid = b.sourceid;
 UPDATE temp1 set total_groups =  ( SELECT max(group_count) from temp1 );
 
   /*Paging. Get rid of the records now.*/
-   EXECUTE 'DELETE FROM temp1
+   EXECUTE 'DELETE FROM temp1 
    WHERE group_count < $1
    OR group_count > $2
    ' USING start_group, end_group;
 
   /*Data element names*/
-
+ 
 
  ALTER TABLE temp1 ADD COLUMN dataelement character varying(230);
  UPDATE temp1 set dataelement = b.name from dataelement b
  where temp1.dataelementid = b.dataelementid;
-
+ 
 
 /*Data element uids*/
  ALTER TABLE temp1 ADD COLUMN de_uid character varying(11);
@@ -469,17 +469,17 @@ UPDATE temp1 set coc_uid = b.uid from categoryoptioncombo b
  where temp1.categoryoptioncomboid = b.categoryoptioncomboid;
 
 
-
+ 
  UPDATE temp1 set agency = 'DSD Value' where attributeoptioncomboid = -1;
 
-
+ 
  /*Mechanism*/
  ALTER TABLE temp1 ADD COLUMN mechanism character varying(250);
  UPDATE temp1 set mechanism = b.code from categoryoptioncombo b
  where temp1.attributeoptioncomboid = b.categoryoptioncomboid;
 
  UPDATE temp1 set mechanism = 'DSD Value' where attributeoptioncomboid = -1;
-
+  
   /*Orgunits*/
  /*Country level*/
 
@@ -490,23 +490,23 @@ UPDATE temp1 a set ou_name =  b.name from organisationunit b where a.sourceid = 
 UPDATE temp1 a set ou_uid = b.uid from organisationunit  b where a.sourceid = b.organisationunitid;
 
   /*Partner*/
-
+  
 ALTER TABLE temp1 ADD COLUMN partner character varying(230);
 UPDATE temp1 set partner = b.name from (
 SELECT _cocg.categoryoptioncomboid,_cog.name from categoryoptiongroup _cog
-INNER JOIN categoryoptiongroupsetmembers _cogsm on _cog.categoryoptiongroupid=_cogsm.categoryoptiongroupid
-INNER JOIN categoryoptiongroupmembers _cogm on _cog.categoryoptiongroupid=_cogm.categoryoptiongroupid
+INNER JOIN categoryoptiongroupsetmembers _cogsm on _cog.categoryoptiongroupid=_cogsm.categoryoptiongroupid 
+INNER JOIN categoryoptiongroupmembers _cogm on _cog.categoryoptiongroupid=_cogm.categoryoptiongroupid 
 INNER JOIN categoryoptioncombos_categoryoptions _cocg on _cogm.categoryoptionid=_cocg.categoryoptionid
 WHERE _cogsm.categoryoptiongroupsetid= 481662 ) b
 WHERE  temp1.attributeoptioncomboid = b.categoryoptioncomboid;
 
-EXECUTE format('UPDATE temp1 set partner = ''Dedupe adjustment'' where attributeoptioncomboid
+EXECUTE format('UPDATE temp1 set partner = ''Dedupe adjustment'' where attributeoptioncomboid 
 IN (%L,%L)',pure_id,crosswalk_id);
 
 UPDATE temp1 set partner = 'DSD Value' where attributeoptioncomboid = -1;
 
 --End check for empty table
-EXECUTE 'INSERT INTO temp2 SELECT
+EXECUTE 'INSERT INTO temp2 SELECT 
 ou_name,
 dataelement ,
 disaggregation,
@@ -530,6 +530,6 @@ END IF; --Timestamp check
    FOR returnrec IN SELECT * FROM temp2 ORDER BY group_count LOOP
      RETURN NEXT returnrec;
      END LOOP;
-
+ 
   END;
 $$ LANGUAGE plpgsql VOLATILE;

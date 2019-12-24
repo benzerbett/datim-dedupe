@@ -1,2 +1,2 @@
 1. deploy dedupe_plpgsql.sql
-2. change sql view "sqlView/wzpSd6j89wc" to "SELECT * FROM view_duplicates('${ou}', '${pe}', ${rs}, ${ps}, ${pg}, '${dt}','${ty}','${ag}','${dg}');"
+2. change sql view "sqlView/wzpSd6j89wc" to "SELECT * FROM view_duplicates('${ou}', '${pe}', ${rs}, ${ps}, ${pg}, '${dt}','${ty}','${dg}','${ag}');"

@@ -57,7 +57,7 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
         dedupeFilters.tr = dedupeRecordFilters.tr;
         dedupeFilters.ty = dedupeRecordFilters.ty;
 
-        dedupeFilters.ag = 'NONE';
+        dedupeFilters.ag = dedupeRecordFilters.ag?dedupeRecordFilters.ag:'NONE';
         dedupeFilters.dg = 'NONE';
 
         ctrl.getDuplicateRecords();
