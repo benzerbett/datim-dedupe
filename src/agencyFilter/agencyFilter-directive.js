@@ -1,6 +1,6 @@
 angular.module('PEPFAR.dedupe').directive('agencyFilterSelect', agencyFilterSelect);
 
-function controller($scope, agencyFilterService, dedupeRecordFilters) {
+function agencyFilterController($scope, agencyFilterService, dedupeRecordFilters) {
     $scope.selectedAgency = null;
     $scope.selectAgency = function(agency){
         dedupeRecordFilters.changeAgencyFilter(agency);
@@ -14,7 +14,7 @@ function controller($scope, agencyFilterService, dedupeRecordFilters) {
 function agencyFilterSelect() {
     return {
         templateUrl: 'agencyFilter/agencyFilter.html',
-        controller: controller,
+        controller: agencyFilterController,
         controllerAs: 'ctrl'
     };
 }

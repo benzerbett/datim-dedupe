@@ -11,6 +11,7 @@ function dedupeRecordFilters($rootScope) {
         changeFilterResultsTargets: changeFilterResultsTargets,
         changePeriodFilter: changePeriodFilter,
         changeAgencyFilter: changeAgencyFilter,
+        changeTechnicalAreaFilter: changeTechnicalAreaFilter,
         changeIsCrosswalk: changeIsCrosswalk,
         getResultsTargetsFilter: getResultsTargetsFilter,
         getFilters: getFilters,
@@ -45,9 +46,15 @@ function dedupeRecordFilters($rootScope) {
     }
 
     function changeAgencyFilter(agency) {
-        console.log(agency);
         if (agency) {
             dedupeFilters.ag = agency.id;
+            fireUpdateEvent();
+        }
+    }
+
+    function changeTechnicalAreaFilter(technicalArea) {
+        if (technicalArea) {
+            dedupeFilters.dg = technicalArea.id;
             fireUpdateEvent();
         }
     }
