@@ -1,0 +1,11 @@
+<div class="agency-selector">
+    <ui-select
+            class="agency-selector-agency"
+            ng-model="selectedTechnicalArea"
+            on-select="selectTechnicalArea($item)">
+        <ui-select-match placeholder="Select technical area">{{selectedTechnicalArea.name}}</ui-select-match>
+        <ui-select-choices repeat="technicalArea in technicalAreas">
+            <div>{{technicalArea.name}}</div>
+        </ui-select-choices>
+    </ui-select>
+</div>
