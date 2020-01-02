@@ -1,5 +1,7 @@
 angular.module('PEPFAR.dedupe').factory('dedupeRecordService', dedupeRecordService);
 
+var sqlViewId = 'wzpSd6j89wc';
+
 function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_NAME, DEDUPE_MECHANISM_CROSSWALK_NAME) {
     var headers;
 
@@ -19,15 +21,12 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
     }
 
     function getCsvUrl(filters) {
-        return getSqlViewIdFromSystemSettings()
-            .then(function (sqlViewId) {
-                return [
-                    [webappManifest.activities.dhis.href, 'api', 'sqlViews', sqlViewId, 'data.csv'].join('/'),
-                    (getFilterArrayFromFilters(filters).map(function (value) {
-                        return 'var=' + value;
-                    }).concat('cacheBuster=' + (new Date()).getTime())).join('&')
-                ].join('?');
-            });
+            return [
+                [webappManifest.activities.dhis.href, 'api', 'sqlViews', sqlViewId, 'data.csv'].join('/'),
+                (getFilterArrayFromFilters(filters).map(function (value) {
+                    return 'var=' + value;
+                }).concat('cacheBuster=' + (new Date()).getTime())).join('&')
+            ].join('?');
     }
 
     function extractHeaders(sqlViewData) {
@@ -43,25 +42,33 @@ function dedupeRecordService($q, Restangular, webappManifest, DEDUPE_MECHANISM_N
     function executeSqlViewOnApi(filters) {
         var queryParameters = {var: getFilterArrayFromFilters(filters), cacheBuster: (new Date()).getTime(), paging: false};
 
-        return getSqlViewIdFromSystemSettings()
-            .then(function (sqlViewId) {
-                return Restangular.all('sqlViews')
-                    .all(sqlViewId)
-                    .get('data', queryParameters);
-            });
+        return Restangular.all('sqlViews')
+                .all(sqlViewId)
+                .get('data', queryParameters);
     }
 
-    function getSqlViewIdFromSystemSettings() {
-        return Restangular.all('systemSettings').withHttpConfig({cache: true})
-            .get('keyDedupeSqlViewId')
-            .then(function (settingsObject) {
-                if (settingsObject && angular.isString(settingsObject.id)) {
-                    return settingsObject.id;
-                }
+    // function executeSqlViewOnApi(filters) {
+    //     var queryParameters = {var: getFilterArrayFromFilters(filters), cacheBuster: (new Date()).getTime(), paging: false};
+    //
+    //     return getSqlViewIdFromSystemSettings()
+    //         .then(function (sqlViewId) {
+    //             return Restangular.all('sqlViews')
+    //                 .all(sqlViewId)
+    //                 .get('data', queryParameters);
+    //         });
+    // }
 
-                return $q.reject('System setting with id of sqlview not found. Please check if your app is configured correctly.');
-            });
-    }
+    // function getSqlViewIdFromSystemSettings() {
+    //     return Restangular.all('systemSettings').withHttpConfig({cache: true})
+    //         .get('keyDedupeSqlViewId')
+    //         .then(function (settingsObject) {
+    //             if (settingsObject && angular.isString(settingsObject.id)) {
+    //                 return settingsObject.id;
+    //             }
+    //
+    //             return $q.reject('System setting with id of sqlview not found. Please check if your app is configured correctly.');
+    //         });
+    // }
 
     function getFilterArrayFromFilters(filters) {
         return _.map(filters, function (value, key) {
