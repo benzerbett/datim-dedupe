@@ -199,7 +199,7 @@ IF ty = 'PURE'::character varying(50) THEN
  WHERE dv1.dataelementid IN (
  SELECT DISTINCT dataelementid from datasetelement WHERE datasetid IN (
  SELECT datasetid from dataset where uid in ( 
-SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
+SELECT replace(json_array_elements(jbvalue::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
   from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ')'
 || dataset_filter || deg_filter  || 
  ' ) 
@@ -274,7 +274,7 @@ CREATE TEMPORARY TABLE _temp_dsd_ta_crosswalk (
 
 INSERT INTO _temp_dsd_ta_crosswalk
 SELECT dsd_uid,ta_uid FROM( 
-  SELECT (json_populate_recordset(null::crosswalks,value::JSON)).* 
+  SELECT (json_populate_recordset(null::crosswalks,jbvalue::JSON)).* 
   FROM keyjsonvalue where namespace='dedupe' and namespacekey='crosswalks') as foo;
 ALTER TABLE _temp_dsd_ta_crosswalk ADD COLUMN dsd_dataelementid integer;
 ALTER TABLE _temp_dsd_ta_crosswalk ADD COLUMN ta_dataelementid integer;
@@ -303,7 +303,7 @@ EXECUTE 'INSERT INTO temp1
  INNER JOIN  (SELECT * FROM _temp_dsd_ta_crosswalk where dsd_dataelementid in (
 SELECT DISTINCT dataelementid from datasetelement WHERE datasetid IN (
  SELECT datasetid from dataset where uid in (
-SELECT replace(json_array_elements(value::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
+SELECT replace(json_array_elements(jbvalue::json->''' || $6  || '''->''' || $2 || '''->''datasets'')::text,''"'','''') as uid
   from keyjsonvalue where namespace = ''dedupe'' and namespacekey = ''periodSettings''' || ' )))) map
  on dv1.dataelementid = map.dsd_dataelementid
   AND dv1.deleted IS FALSE ) dsd
