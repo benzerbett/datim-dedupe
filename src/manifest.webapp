@@ -1,5 +1,5 @@
 {
-    "version": "1.5.1",
+    "version": "1.5.5",
     "name": "Data Deduplication",
     "description": "Pepfar deduplication app",
     "icons": {
@@ -8,7 +8,7 @@
     "developer":{
         "name": "Mark Polak, Jason Pickering, Jakub Flaska"
     },
-    "launch_path": "index.html?v=1.5.0",
+    "launch_path": "index.html?v=1.5.5",
     "default_locale": "en",
     "activities": {
         "dhis": {
