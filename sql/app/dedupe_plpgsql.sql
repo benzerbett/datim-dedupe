@@ -115,7 +115,7 @@ CASE dt
  WHEN 'RESULTS' THEN
  dataset_filter := ' AND name ~*(''RESULTS'') ';
 WHEN 'TARGETS' THEN
-  dataset_filter := ' AND name ~*(''TARGETS'') ';
+  dataset_filter := ' AND name ~*(''TARGET'') ';
 WHEN 'ALL' THEN
   dataset_filter := ' ';
  ELSE
