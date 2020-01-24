@@ -7,7 +7,8 @@
     "test": "gulp test",
     "test:watch": "gulp watch",
     "build": "gulp build-prod-skipTest",
-    "dev": "gulp copy-to-dev"
+    "build:dev": "gulp copy-to-dev",
+    "start:dev": "node devserver.js"
   },
   "repository": {
     "type": "git",

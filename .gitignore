@@ -16,5 +16,5 @@ coverage
 *.zip
 !releases/*/*.zip
 
-dhis.json
+#dhis.json
 npm-debug.log
