@@ -17,10 +17,11 @@
     <!-- build:css css/app.css -->
     <link href="../temp/css/app/app.css" rel="stylesheet" type="text/css" />
     <!-- endbuild -->
+
+    <script type="text/javascript" src="react-header-bar/main.js"></script>
 </head>
 <body ng-controller="appController as app">
-    <d2-header-bar></d2-header-bar>
-
+    <div  id="header-bar"></div>
     <div class="app-content-wrap">
 
         <div class="dedupe-filter-settings" ng-class="{'filter-dropdown': app.dedupeRecords.length}">

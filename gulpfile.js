@@ -121,10 +121,6 @@ gulp.task('images', function () {
     ));
 });
 
-gulp.task('copy-files', function (done) {
-    //TODO: Copy templates
-    done();
-});
 
 gulp.task('copy-fonts', function () {
     return gulp.src([ 'vendor/font-awesome/fonts/**/*.*' ], {base: './vendor/font-awesome/'})
@@ -138,9 +134,13 @@ gulp.task('package', function () {
         .pipe(gulp.dest('.'));
 });
 
-gulp.task('build', gulp.series('clean', 'test', 'i18n', 'eslint', 'min', 'copy-files', 'copy-fonts'));
+gulp.task('copy-react-header-bar', function(){
+    return gulp.src('./react-header-bar/*').pipe(gulp.dest('build/react-header-bar'));
+});
 
-gulp.task('build-skipTest', gulp.series('clean', 'i18n', 'eslint', 'min', 'copy-files', 'copy-fonts',
+gulp.task('build', gulp.series('clean', 'test', 'i18n', 'eslint', 'min', 'copy-fonts', 'copy-react-header-bar'));
+
+gulp.task('build-skipTest', gulp.series('clean', 'i18n', 'eslint', 'min', 'copy-fonts', 'copy-react-header-bar',
         function (done) {
         console.log();
         console.log([__dirname, 'datim-dedupe.zip'].join('/'));
@@ -148,7 +148,7 @@ gulp.task('build-skipTest', gulp.series('clean', 'i18n', 'eslint', 'min', 'copy-
     }
 ));
 
-gulp.task('build-prod', gulp.series('build', 'images', 'manifest', 'package',
+gulp.task('build-prod', gulp.series('build', 'images', 'manifest', 'package', 'copy-react-header-bar',
     function (done) {
         console.log();
         console.log([__dirname, 'datim-dedupe.zip'].join('/'));
@@ -191,10 +191,13 @@ gulp.task('modify-manifest', function (done) {
     done();
 });
 
-gulp.task('copy-app', function () {
+gulp.task('copy-app-to-dev', function () {
+    var del = require('del');
+    del('dev/**/*');
     return gulp.src('build/**/*.*', { base: './build/' }).pipe(gulp.dest(dhisDirectory));
 });
 
-gulp.task('copy-to-dev', gulp.series('clean', 'i18n', 'images', 'min', 'copy-files', 'copy-fonts','manifest', 'modify-manifest', 'copy-app'));
+
+gulp.task('copy-to-dev', gulp.series('clean', 'i18n', 'images', 'eslint', 'min', 'copy-fonts', 'manifest', 'modify-manifest', 'copy-react-header-bar', 'copy-app-to-dev'));
 
 gulp.task('travis', gulp.series('test'));

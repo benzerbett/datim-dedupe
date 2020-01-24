@@ -28,6 +28,11 @@
   },
   "homepage": "https://github.com/dhis2/datim-dedupe",
   "dependencies": {
+    "@dhis2/ui-core": "^4.1.1",
+    "@dhis2/ui-widgets": "^2.0.5",
+    "@dhis2/app-runtime": "^2.0.4",
+    "@dhis2/d2-i18n": "^1.0.6",
+    "d2": "^31.8.0",
     "acorn-jsx": "^5.1.0",
     "bower": "^1.8.8",
     "coveralls": "^3.0.7",
@@ -54,6 +59,7 @@
     "karma-jasmine": "^1.1.0",
     "karma-ng-html2js-preprocessor": "^1.0.0",
     "karma-phantomjs-launcher": "^1.0.4",
+    "styled-jsx": "^3.2.4",
     "run-sequence": "^2.2.1"
   },
   "devDependencies": {
