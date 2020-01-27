@@ -45,6 +45,6 @@ window.getBootstrapper('PEPFAR.dedupe', document)
     // .loadStylesheet('dhis-web-commons/css/menu.css')
     .loadScript('dhis-web-commons/javascripts/dhis2/dhis2.util.js')
     .loadScript('dhis-web-commons/javascripts/dhis2/dhis2.translate.js')
-    .loadModule('dhis-web-commons/javascripts/dhis2/dhis2.menu.js', 'd2HeaderBar')
-    .loadScript('dhis-web-commons/javascrips/dhis2/dhis2.menu.ui.js')
+    // .loadModule('dhis-web-commons/javascripts/dhis2/dhis2.menu.js', 'd2HeaderBar')
+    // .loadScript('dhis-web-commons/javascrips/dhis2/dhis2.menu.ui.js')
     .bootstrap();
