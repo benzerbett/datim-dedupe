@@ -94,14 +94,17 @@ function appController(dedupeService, dedupeRecordFilters, $scope, $modal, notif
                 }
 
                 //Get the download link
-                dedupeService.getCsvUrl(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, 1, dedupeFilters.ty, duplicateRecords.totalNumber)
-                    .then(function (csvUrl) {
-                        ctrl.csvSettings.url = csvUrl;
-                        ctrl.csvSettings.show = true;
-                    })
-                    .catch(function () {
-                        ctrl.csvSettings.show = false;
-                    });
+                // dedupeService.getCsvUrl(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, 1, dedupeFilters.ty, duplicateRecords.totalNumber)
+                //     .then(function (csvUrl) {
+                //         ctrl.csvSettings.url = csvUrl;
+                //         ctrl.csvSettings.show = true;
+                //     })
+                //     .catch(function () {
+                //         ctrl.csvSettings.show = false;
+                //     });
+
+                ctrl.csvSettings.url = dedupeService.getCsvUrl(dedupeFilters.ou, dedupeFilters.pe, dedupeFilters.includeResolved, dedupeFilters.tr, 1, dedupeFilters.ty, duplicateRecords.totalNumber);
+                ctrl.csvSettings.show = true;
 
                 return duplicateRecords;
             })

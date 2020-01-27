@@ -1,6 +1,6 @@
 {
   "name": "datim-dedupe",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Dedupe app for DATIM instance of DHIS2",
   "main": "index.js",
   "scripts": {
